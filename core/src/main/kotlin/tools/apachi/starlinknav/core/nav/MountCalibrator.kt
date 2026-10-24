@@ -4,6 +4,7 @@ import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.hypot
+import kotlin.math.sqrt
 
 /**
  * Mount offset (dish heading_x − car course, degrees) learned from AUTO chords while driving straight and fast
@@ -42,25 +43,46 @@ internal class MountCalibrator(
         return wrapDeg(ref + med) to mad
     }
 
+    /** The dish headings over a chord when they stay within [InertialConfig.mntStraightDeg], else null. */
+    private fun straight(j: Fix, k: Fix, heads: List<Head>): List<Double>? {
+        if (heads.isEmpty() || heads.first().t > j.tf + 1.0) return null
+        val hs = heads.filter { it.t >= j.tf - 0.5 && it.t <= k.tf + 0.5 }.map { it.hxU }
+        if (hs.size < 3) return null
+        val d = hs.map { wrapDeg(it - hs[0]) }
+        return if (d.max() - d.min() > c.mntStraightDeg) null else hs
+    }
+
     fun onFix(t: Double, fixes: List<Fix>, heads: List<Head>, trusted: Boolean) {
         if (!trusted || t - lastSampleT < 2.0 || fixes.size < 2) return
         val k = fixes.last()
-        val j = fixes.asReversed().firstOrNull { k.tf - it.tf in c.mntChordMinS..c.mntChordMaxS } ?: return
-        if (minOf(k.hs, j.hs) < c.mntMinSpeed) return
+        val chord: Pair<Fix, List<Double>>
+        if (c.mntLongChordS > c.mntChordMaxS) {
+            // The longest straight chord: a course over 100 m is a few times less noisy than over 30 m (AUTO without
+            // GNSS is noisier than with it).
+            chord = fixes.asReversed().filter { k.tf - it.tf in c.mntChordMinS..c.mntLongChordS }.asReversed()
+                .firstNotNullOfOrNull { j ->
+                    if (minOf(k.hs, j.hs) < c.mntMinSpeed || hypot(k.e - j.e, k.n - j.n) < 20.0) null
+                    else straight(j, k, heads)?.let { j to it }
+                } ?: return
+        } else {
+            val j = fixes.asReversed().firstOrNull { k.tf - it.tf in c.mntChordMinS..c.mntChordMaxS } ?: return
+            if (minOf(k.hs, j.hs) < c.mntMinSpeed) return
+            if (hypot(k.e - j.e, k.n - j.n) < 20.0) return
+            chord = j to (straight(j, k, heads) ?: return)
+        }
+        val (j, hs) = chord
         val de = k.e - j.e
         val dn = k.n - j.n
-        if (hypot(de, dn) < 20.0) return
-        val hs = heads.filter { it.t >= j.tf - 0.5 && it.t <= k.tf + 0.5 }.map { it.hxU }
-        if (hs.size < 3) return
         val d = hs.map { wrapDeg(it - hs[0]) }
-        if (d.max() - d.min() > c.mntStraightDeg) return
         val course = Math.toDegrees(atan2(de, dn))
         samples.addLast(wrapDeg(hs[0] + d.average() - course))
         while (samples.size > c.mntKeep) samples.removeFirst()
         lastSampleT = t
         if (samples.size >= c.mntN) {
             val (v, mad) = robust()
-            if (mad <= c.mntMadDeg) {
+            val precise = c.mntSeDeg?.let { se -> mad <= c.mntMadMaxDeg && MEDIAN_SE * mad / sqrt(samples.size.toDouble()) <= se }
+                ?: (mad <= c.mntMadDeg)
+            if (precise) {
                 val first = learned == null
                 if (first) log(t, "mount_learned", "deg=%+.1f n=%d mad=%.1f".format(Locale.ROOT, v, samples.size, mad))
                 learned = v
@@ -83,6 +105,9 @@ internal class MountCalibrator(
     }
 
     companion object {
+        /** Standard error of a median per MAD and √n for normal samples: 1.2533 (median vs mean) · 1.4826 (MAD → σ). */
+        private const val MEDIAN_SE = 1.2533 * 1.4826
+
         /** numpy median: the mean of the two middle values for an even count. */
         fun median(xs: List<Double>): Double {
             val s = xs.sorted()

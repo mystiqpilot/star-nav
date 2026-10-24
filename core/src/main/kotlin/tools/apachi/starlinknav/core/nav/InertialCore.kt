@@ -424,7 +424,7 @@ internal class InertialCore(
             tryInit(t, tf, e, n, hs, prev)
             return
         }
-        mount.onFix(t, fixes, heads, bMode == B_TIGHT && t - lastTrustBreak > c.mntTrustS)
+        mount.onFix(t, fixes, heads, bMode == B_TIGHT && t - lastTrustBreak > c.mntTrustS && !(c.mntSkipReversing && reversing))
         var decel = if (fHist.size >= 5) fHist.sum() / fHist.size - ekf.x[4] else ddec
         decel = minOf(decel, ddec)
         ekf.insert(Meas(tf, emptyList(), decided = false, auto = AutoFix(e, n, hs, t, verdict, decel)))
@@ -612,7 +612,7 @@ internal class InertialCore(
             } else {
                 accept = false
                 log(t, "dish_gate_reject", "nis=%.0f along_m=%+.0f cross_m=%+.0f".format(Locale.ROOT, nis, yAl, yCr))
-                if (abs(yCr) > abs(yAl) && bMode != B_OPEN) {
+                if (abs(yCr) > abs(yAl) && bMode != B_OPEN && (mount.value != null || !c.gateHoldNeedsMount)) {
                     val k = sq(c.openInitCr)
                     parts += Part.OpenB(k * n0 * n0, k * n0 * n1, k * n1 * n1)
                     bMode = B_OPEN

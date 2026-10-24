@@ -35,6 +35,13 @@ data class InertialConfig(
     val tRev: Double = 30.0,
     val gate: Double = 18.42,
     val nReanchor: Int = 3,
+    /**
+     * A gate reject opens a sideways hold only with a mount offset. Without one the filter has no car heading from the
+     * dish, and a hold ran on its own heading: on 2026-10-24 (dish GNSS jammed) the held courses were 19-86° off the
+     * dish heading and up to 256 m from AUTO, which kept to that heading. Without a mount the reject only re-anchors
+     * to AUTO after [nReanchor] rejects, as for an along-track jump. False = the prototype.
+     */
+    val gateHoldNeedsMount: Boolean = true,
     // measurements
     val rAl: Double = 1.0,
     val rCr: Double = 1.0,
@@ -79,6 +86,21 @@ data class InertialConfig(
     val mntRelearnDiffDeg: Double = 5.0,
     val mntTrustS: Double = 30.0,
     val mntKeep: Int = 100,
+    /**
+     * Chords up to this long, the longest straight one (a longer chord's course is less noisy); at or below
+     * [mntChordMaxS] the prototype's choice (the shortest chord of [mntChordMinS]..[mntChordMaxS]).
+     */
+    val mntLongChordS: Double = 15.0,
+    /**
+     * The value is taken once its median is this precise (standard error from the MAD and the sample count, degrees)
+     * with a MAD up to [mntMadMaxDeg]; null = the prototype's rule (MAD ≤ [mntMadDeg]). The dish without GNSS gives
+     * a noisier AUTO: on 2026-10-24 (29 min, dish GNSS jammed throughout) the MAD stayed above 1.5° and nothing
+     * was learned, so the sideways correction never ran; 0.7° is what the prototype's rule allows at its minimum count.
+     */
+    val mntSeDeg: Double? = 0.7,
+    val mntMadMaxDeg: Double = 4.0,
+    /** No samples while reversing: the course is then opposite the heading (180° off the mount). False = the prototype. */
+    val mntSkipReversing: Boolean = true,
     // IMU front end
     val gTau: Double = 20.0,
     val gTauFast: Double = 1.0,
@@ -250,6 +272,7 @@ data class InertialConfig(
             accFloorM = 0.0, accOpenOffset = false, noRawAfterReset = false, rawMaxAgeS = Double.POSITIVE_INFINITY,
             reverseHold = false, network = false, rebaseM = Double.POSITIVE_INFINITY,
             holdSig = false, returnRule = false, leakGuard = false,
+            mntLongChordS = 6.0, mntSeDeg = null, mntSkipReversing = false, gateHoldNeedsMount = false,
         )
 
         /** CFG2 with the shipped detector (h = 9 m, hold 25 s): what `nav2.py` runs for the port comparison. */

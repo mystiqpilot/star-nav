@@ -99,8 +99,10 @@ private class Synth(
         config: InertialConfig, useImu: Boolean = true, nullImu: Boolean = false,
         events: MutableList<Triple<Double, String, String>> = ArrayList(), poke: (Double, InertialCore) -> Unit = { _, _ -> },
         recordFires: Boolean = false,
+        /** The mount offset the app has stored (null = none yet: the calibrator has to learn it). */
+        storedMount: Double? = mount,
     ): List<Served> {
-        val core = InertialCore(config, mount, useImu, recordFires = recordFires) { t, k, m -> events += Triple(t, k, m) }
+        val core = InertialCore(config, storedMount, useImu, recordFires = recordFires) { t, k, m -> events += Triple(t, k, m) }
         val out = ArrayList<Served>()
         for (e in inputs) {
             poke(e.t, core)
@@ -401,6 +403,26 @@ class InertialNavTest {
         assertTrue(ret.first < 73.5, "$ev")
         assertTrue(ev.named("dish_degraded").size == 1, "$ev")
         assertTrue(out.filter { it.t > ret.first + 0.5 }.all { it.err < 2.0 }, "max ${out.filter { it.t > ret.first + 0.5 }.maxOf { it.err }}")
+    }
+
+    @Test
+    fun withoutAMountOffsetAGateRejectDoesNotHoldButReanchors() {
+        // a one-way jump of 40 m to the right at fix time 12 s, before the calibrator has learned anything: there is no
+        // car heading from the dish, so no hold on the filter's own heading; AUTO is taken after the rejects
+        val synth = Synth(60.0, step = { tf -> if (tf >= 12.0) 40.0 else 0.0 })
+        val ev = ArrayList<Triple<Double, String, String>>()
+        val out = synth.run(InertialConfig.SHIPPED, events = ev, storedMount = null)
+        assertTrue(ev.named("dish_degraded").isEmpty(), "$ev")
+        assertTrue(out.none { it.state == InertialState.SIDEWAYS_OPEN })
+        val re = ev.named("dish_reanchor").single()
+        assertTrue(re.first < 16.0, "$ev")
+        // after the re-anchor the serve is AUTO's track (40 m off the synthetic truth), not a held position
+        assertTrue(out.filter { it.t in re.first + 1.0..30.0 }.all { abs(it.err - 40.0) < 3.0 }, "${out.map { it.err }}")
+        // with the mount known the same jump opens a hold (unchanged)
+        val ev2 = ArrayList<Triple<Double, String, String>>()
+        val out2 = synth.run(InertialConfig.SHIPPED, events = ev2)
+        assertTrue(ev2.named("dish_degraded").isNotEmpty(), "$ev2")
+        assertTrue(out2.any { it.state == InertialState.SIDEWAYS_OPEN })
     }
 
     @Test
