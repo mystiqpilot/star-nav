@@ -48,7 +48,7 @@ jobs:
           done
           cp app/build/outputs/bundle/playRelease/app-play-release.aab "dist/star-nav-$v-play.aab"
           (cd dist && sha256sum * > SHA256SUMS)
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: dist/*
           generate_release_notes: true
