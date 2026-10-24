@@ -94,10 +94,12 @@ android {
         jniLibs.useLegacyPackaging = true
     }
 
-    // One APK per ABI plus a universal one for GitHub releases; Play gets the bundle.
+    // One APK per ABI plus a universal one for GitHub releases; Play gets the bundle. AGP cannot
+    // build a bundle with ABI splits on (issuetracker.google.com/402800800), so a Gradle run that
+    // asks for a bundle task builds without them: build the bundle in a run of its own.
     splits {
         abi {
-            isEnable = true
+            isEnable = gradle.startParameter.taskNames.none { it.substringAfterLast(':').startsWith("bundle") }
             reset()
             include("arm64-v8a", "armeabi-v7a", "x86_64")
             isUniversalApk = true

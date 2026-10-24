@@ -143,6 +143,9 @@ Planned: fusion with the phone's own GNSS when it can be trusted.
 Builds from different sources are signed with different keys: to switch between them,
 export the sessions you want to keep, uninstall, then install the other build.
 
+The APKs on GitHub Releases are signed with the certificate
+`75:94:08:AF:93:E5:57:FF:B3:C5:79:A8:CC:A4:CE:88:11:08:9F:06:8E:07:64:1B:9C:14:38:C1:7B:D4:FD:42` (SHA-256).
+
 ## Privacy
 
 No accounts, analytics, ads or crash reporting. The app talks to the dish and router on your

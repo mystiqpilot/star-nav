@@ -1,7 +1,9 @@
 name: Release
 
-# Push a tag like v0.2.0. Needs repository secrets: STARNAV_KEYSTORE_BASE64 (the release
-# keystore, base64), STARNAV_STORE_PASSWORD, STARNAV_KEY_ALIAS, STARNAV_KEY_PASSWORD.
+# Push a tag v<versionName> (v0.5.5); CHANGELOG.md needs a "## [<versionName>]" section, which
+# becomes the release text. A tag with a "-" (v0.6.0-rc1) makes a pre-release. Needs repository
+# secrets: STARNAV_KEYSTORE_BASE64 (the release keystore, base64), STARNAV_STORE_PASSWORD,
+# STARNAV_KEY_ALIAS, STARNAV_KEY_PASSWORD.
 on:
   push:
     tags: ["v*"]
@@ -9,20 +11,33 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   release:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - name: Tag matches the app version
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          app="$(sed -n 's/^ *versionName = "\(.*\)"$/\1/p' app/build.gradle.kts)"
+          test "$v" = "$app" || { echo "tag $GITHUB_REF_NAME, but versionName is $app"; exit 1; }
+          echo "VERSION=$v" >> "$GITHUB_ENV"
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
         with:
           packages: "platforms;android-37.2 build-tools;36.1.0"
-      - uses: gradle/actions/setup-gradle@v4
+      # No cache: a release is built from the tag alone.
+      - uses: gradle/actions/setup-gradle@v5
+        with:
+          cache-disabled: true
       - name: Keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.STARNAV_KEYSTORE_BASE64 }}
@@ -30,25 +45,58 @@ jobs:
           test -n "$KEYSTORE_BASE64" || { echo "STARNAV_KEYSTORE_BASE64 secret missing"; exit 1; }
           echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
           echo "STARNAV_STORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
-      - name: Build signed APKs and bundle
+      - name: Build signed APKs
         env:
           STARNAV_STORE_PASSWORD: ${{ secrets.STARNAV_STORE_PASSWORD }}
           STARNAV_KEY_ALIAS: ${{ secrets.STARNAV_KEY_ALIAS }}
           STARNAV_KEY_PASSWORD: ${{ secrets.STARNAV_KEY_PASSWORD }}
           STARNAV_REQUIRE_RELEASE_KEY: "true"
-        run: ./gradlew --stacktrace :core:test :app:assembleFossRelease :app:assemblePlayRelease :app:bundlePlayRelease
-      - name: Collect artifacts
+        run: ./gradlew --stacktrace :core:test :app:assembleFossRelease :app:assemblePlayRelease
+      - name: Collect and check the signatures
         run: |
+          apksigner="$ANDROID_HOME/build-tools/36.1.0/apksigner"
           mkdir -p dist
-          v="${GITHUB_REF_NAME#v}"
           # app-<flavor>-<abi or universal>-release.apk -> star-nav-<version>-<flavor>-<abi>.apk
           for f in app/build/outputs/apk/*/release/app-*-release.apk; do
             n="$(basename "$f" -release.apk)"
-            cp "$f" "dist/star-nav-$v-${n#app-}.apk"
+            cp "$f" "dist/star-nav-$VERSION-${n#app-}.apk"
           done
-          cp app/build/outputs/bundle/playRelease/app-play-release.aab "dist/star-nav-$v-play.aab"
-          (cd dist && sha256sum * > SHA256SUMS)
-      - uses: softprops/action-gh-release@v2
+          ls dist
+          test "$(ls dist/*.apk | wc -l)" -eq 8 || { echo "expected 8 APKs (2 flavors x 3 ABIs + universal)"; exit 1; }
+          : > "$RUNNER_TEMP/digests.txt"
+          for f in dist/*.apk; do
+            "$apksigner" verify --print-certs "$f" > "$RUNNER_TEMP/certs.txt"
+            if grep -q "CN=Android Debug" "$RUNNER_TEMP/certs.txt"; then echo "$f has the debug key"; exit 1; fi
+            sed -n 's/^Signer #1 certificate SHA-256 digest: //p' "$RUNNER_TEMP/certs.txt" >> "$RUNNER_TEMP/digests.txt"
+          done
+          sort -u -o "$RUNNER_TEMP/digests.txt" "$RUNNER_TEMP/digests.txt"
+          test "$(wc -l < "$RUNNER_TEMP/digests.txt")" -eq 1 || { echo "not one signing certificate:"; cat "$RUNNER_TEMP/digests.txt"; exit 1; }
+          cert="$(tr a-f A-F < "$RUNNER_TEMP/digests.txt" | sed 's/../&:/g; s/:$//')"
+          echo "Signing certificate SHA-256: $cert"
+          (cd dist && sha256sum *.apk > SHA256SUMS)
+          .github/release-notes.sh "$VERSION" "$cert" > "$RUNNER_TEMP/notes.md"
+      # In a Gradle run of its own: the bundle is built without the ABI splits (app/build.gradle.kts).
+      - name: Build signed bundle
+        env:
+          STARNAV_STORE_PASSWORD: ${{ secrets.STARNAV_STORE_PASSWORD }}
+          STARNAV_KEY_ALIAS: ${{ secrets.STARNAV_KEY_ALIAS }}
+          STARNAV_KEY_PASSWORD: ${{ secrets.STARNAV_KEY_PASSWORD }}
+          STARNAV_REQUIRE_RELEASE_KEY: "true"
+        run: |
+          ./gradlew --stacktrace :app:bundlePlayRelease
+          rm -f "$RUNNER_TEMP/release.jks"
+          mkdir -p bundle
+          cp app/build/outputs/bundle/playRelease/app-play-release.aab "bundle/star-nav-$VERSION-play.aab"
+      # The bundle is for a Google Play upload, not for phones: a workflow artifact, not a release file.
+      - uses: actions/upload-artifact@v7
         with:
+          name: star-nav-${{ env.VERSION }}-play-bundle
+          path: bundle/*.aab
+          if-no-files-found: error
+      - uses: softprops/action-gh-release@v3
+        with:
+          name: Star Nav ${{ env.VERSION }}
+          body_path: ${{ runner.temp }}/notes.md
           files: dist/*
-          generate_release_notes: true
+          fail_on_unmatched_files: true
+          prerelease: ${{ contains(github.ref_name, '-') }}
