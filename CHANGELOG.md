@@ -6,6 +6,20 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.5.5] - 2026-10-24
+
+### Fixed
+- With the dish's GNSS jammed (its position then comes from Starlink alone) the mount offset was never learned, and
+  without it a dish fix that jumped sideways started a 25 s sideways hold on the filter's own heading: apps were
+  served positions up to about 250 m off for tens of seconds. Without a mount offset the filter now follows the dish
+  after such a jump (as after an along-track jump); the sideways correction acts only once the mount offset is known.
+- The mount offset is now learned from a noisier dish position too: from the longest straight stretch of up to 15 s
+  (a less noisy course than 3-6 s) and taken once the median of the samples is precise to 0.7°, instead of requiring
+  the samples to agree within 1.5°. Replays of a 29-minute drive with the dish's GNSS jammed throughout: learned
+  (before: never); served positions more than 100 m from the dish's 80 s → 6 s (the moments the dish itself jumped).
+  Replays of earlier drives with GNSS: the same accuracy, the same learned offset within 0.2°.
+- No mount-offset samples while reversing (the course is then opposite the heading).
+
 ### Removed
 - The drive-analysis tools are no longer part of this repository: `slnav report`, `slnav inertial`,
   `inertial-sweep` and `inertial-review`, and the Python scripts in `analysis/`. `slnav` keeps `probe`, `debugdata`,

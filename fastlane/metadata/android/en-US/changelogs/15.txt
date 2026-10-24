@@ -1,0 +1,1 @@
+Better positioning when GNSS is jammed: the app now learns how the dish is mounted even when the dish has no GNSS, and until it knows, it follows the dish after a sudden jump instead of holding a position that could drift far off. Tested on recorded drives.
