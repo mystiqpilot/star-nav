@@ -1,0 +1,1 @@
+First public release: English and Ukrainian, setup checklist with live status, reliable mock location, live map of every position source, map backgrounds, network fallback, cut-off and dish restart alerts, accuracy reports.

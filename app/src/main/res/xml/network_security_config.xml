@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The dish API is plain HTTP on the local network. The only other traffic is https: map tiles (when picked) and the optional Starlink account sign-in. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

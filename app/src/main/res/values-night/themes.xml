@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The dark look; `background` equals the dark Compose background role (ui/Theme.kt). values-night-v27 adds the navigation bar attribute (API 27). -->
+    <style name="Theme.StarlinkNav" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+    <color name="background">#FF101418</color>
+</resources>

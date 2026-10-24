@@ -1,0 +1,1 @@
+A polish pass over every screen: one consistent look with the same spacing, type and buttons everywhere, monospace for all readings, and states shown with an icon and words instead of colour alone. No number was hidden or dropped. Also fixes a doubled tick in Mock GPS "apps receive".

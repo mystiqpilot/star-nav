@@ -1,0 +1,1 @@
+Runs on Android 8.0 and later (was 14). On older Android a few extras are missing: the start-up screen follows the phone's theme, Android 8-11 have no fused location to replace (apps still get the dish position through GPS and network), Android 8-9 have no dark system theme, and recordings hold less raw satellite data.

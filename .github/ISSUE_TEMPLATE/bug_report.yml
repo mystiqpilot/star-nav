@@ -1,0 +1,40 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not attach full recordings here: they contain precise positions. Export only the
+        part that shows the problem, and prefer sending it privately.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version and build
+      description: Config screen, bottom line; and foss or play
+      placeholder: "Star Nav 0.2.0 (build 6), play"
+    validations:
+      required: true
+  - type: input
+    id: phone
+    attributes:
+      label: Phone model and Android version
+    validations:
+      required: true
+  - type: input
+    id: dish
+    attributes:
+      label: Dish model, firmware and plan
+      placeholder: "Gen 3 Mini, 2026.05.13.mr80201, Priority"
+  - type: textarea
+    id: probe
+    attributes:
+      label: Probe report
+      description: Probe tab → Run probe → Copy report (coordinates off)
+      render: text

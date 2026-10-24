@@ -1,0 +1,27 @@
+When GNSS is jammed or spoofed, a phone's GPS freezes, drifts or jumps to another continent, and every navigation app follows it. A Starlink dish on the car roof keeps knowing where it is. Star Nav reads the dish's position over its local network and serves it to all apps on the phone as Android's GPS, using Android's mock location provider.
+
+What it does
+• Position page: the dish's position and the phone's GPS side by side on a map, each with its state in plain words and a warning when the GPS looks spoofed; one tap centers the map and one opens the position in Google Maps (only when you tap).
+• Dish position as the phone's GPS, moved forward along the course by its age so it keeps up at highway speed.
+• Inertial correction (Auto mode): the phone's motion sensors and the dish heading hold the car on its track when the dish position drifts off to the side, and carry the position on through dish outages with an honest accuracy. Computed on the phone only; a switch on the Mock GPS page turns it off.
+• Detects when the dish switches its location off because the car is "moving too fast for the plan", shows it on screen and raises a silent heads-up alert.
+• Mock GPS page: what it is and how to enable it, with a checklist of every setting the phone needs, with its current state and a button that opens the exact settings page.
+• Recorder: dish answers, the phone's GNSS (fixes, satellites, raw measurements) and motion sensors, kept on the phone. One switch in Settings turns logging off completely.
+• Accuracy report for every recording: the track coloured by error, cut-offs, interference and speed.
+• Private export: you choose the start and end of what leaves the phone; identifiers are removed.
+• Dish probe: shows which location sources and features your dish and plan answer.
+• Starlink page: the dish's state, alerts, history charts, obstruction map and controls (restart, sleep schedule, stow and more), and the router's status, connected devices and Wi-Fi settings. Every change asks first; the Wi-Fi password is shown masked and never stored.
+• English and Ukrainian.
+
+Requirements
+• A Starlink dish that reports its location on the local network (tested with a Gen 3 Mini on a Priority plan).
+• The phone on the dish's Wi-Fi.
+• Developer options enabled and Star Nav selected as the mock location app; the app walks you through it.
+
+Privacy
+No accounts, analytics, ads or crash reporting. The app talks to the dish and router on your local network, and to map tile servers only when you pick a map background. Nothing leaves the phone unless you export a part of a recording or Debug data yourself.
+
+Safety
+Use it as an aid, not as your only means of navigation, and do not operate the app while driving.
+
+Star Nav is free and open source (GPL-3.0). It is not affiliated with or endorsed by SpaceX. Starlink is a trademark of Space Exploration Technologies Corp.

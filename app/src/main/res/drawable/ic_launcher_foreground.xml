@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A flat dish (tilted rectangle) over a location pin. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFE8EEF4"
+        android:pathData="M36,32 L72,26 L76,46 L40,52 Z" />
+    <path
+        android:fillColor="#FF5BC0EB"
+        android:pathData="M54,56 C45.7,56 39,62.7 39,71 C39,82 54,92 54,92 C54,92 69,82 69,71 C69,62.7 62.3,56 54,56 Z M54,77 C50.7,77 48,74.3 48,71 C48,67.7 50.7,65 54,65 C57.3,65 60,67.7 60,71 C60,74.3 57.3,77 54,77 Z" />
+</vector>

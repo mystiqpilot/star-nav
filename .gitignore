@@ -1,0 +1,21 @@
+.gradle/
+.kotlin/
+build/
+local.properties
+.idea/
+*.iml
+captures/
+# recorded sessions and exports pulled from the phone: they contain real coordinates
+/sessions/
+*.slog
+*.slog.zip
+# accuracy report caches and pages built from sessions: same coordinates
+*.report.json
+/reports/
+# release signing: never commit
+keystore.properties
+*.jks
+*.keystore
+
+# local AI-agent instructions, kept out of the repository
+CLAUDE.md

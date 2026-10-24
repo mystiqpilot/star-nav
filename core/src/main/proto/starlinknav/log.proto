@@ -1,0 +1,188 @@
+// Session log format. A .slog file is the 8-byte magic "SLNAVLG1" followed by Record
+// messages, each prefixed with its length as a protobuf varint. Readers stop at a
+// truncated tail (the app may be killed mid-write). Add fields, never renumber.
+syntax = "proto3";
+
+package starlinknav.log;
+
+option java_package = "tools.apachi.starlinknav.core.log.proto";
+
+message Record {
+  // Capture time on the recorder's monotonic clock (Android: elapsedRealtimeNanos, the same
+  // base as SensorEvent.timestamp and Location.elapsedRealtimeNanos; JVM tools: nanoTime).
+  int64 t_mono_ns = 1;
+  int64 t_wall_ms = 2;
+  oneof payload {
+    SessionHeader header = 10;
+    DishCall dish = 11;
+    ImuBatch imu = 12;
+    PhoneLocation phone_location = 13;
+    GnssStatusSnapshot gnss_status = 14;
+    GnssMeasurementBatch gnss_measurements = 15;
+    NmeaSentence nmea = 16;
+    AppEvent event = 17;
+    MockOutput mock_output = 18;
+    NavMessage nav_message = 19;
+  }
+}
+
+// Never carries coordinates: the exporter keeps it even outside the export window.
+message SessionHeader {
+  string session_id = 1;
+  string app_version = 2;
+  string device_manufacturer = 3;
+  string device_model = 4;
+  int32 sdk_int = 5;
+  string config_json = 6;
+  string clock = 7;
+}
+
+message DishCall {
+  int32 kind = 1;
+  int64 sent_mono_ns = 2;
+  int64 rtt_ns = 3;
+  string transport = 4;
+  int32 http_status = 5;
+  optional int32 grpc_status = 6;
+  string grpc_message = 7;
+  // Raw SpaceX.API.Device.Response bytes, so later schemas can re-decode old sessions.
+  bytes response = 8;
+  string error = 9;
+}
+
+message ImuBatch {
+  repeated ImuSample samples = 1;
+}
+
+message ImuSample {
+  int32 sensor_type = 1;
+  int64 t_ns = 2;
+  repeated float v = 3;
+  int32 accuracy = 4;
+}
+
+message PhoneLocation {
+  string provider = 1;
+  double lat = 2;
+  double lon = 3;
+  optional double alt = 4;
+  optional float h_acc = 5;
+  optional float v_acc = 6;
+  optional float speed = 7;
+  optional float speed_acc = 8;
+  optional float bearing = 9;
+  optional float bearing_acc = 10;
+  int64 time_ms = 11;
+  int64 elapsed_ns = 12;
+  bool is_mock = 13;
+  optional double msl_alt = 14;
+  optional float msl_acc = 15;
+  optional double elapsed_unc_ns = 16;
+}
+
+message GnssStatusSnapshot {
+  repeated GnssSat sats = 1;
+}
+
+message GnssSat {
+  int32 constellation = 1;
+  int32 svid = 2;
+  float cn0 = 3;
+  float elevation = 4;
+  float azimuth = 5;
+  bool used = 6;
+  bool almanac = 7;
+  bool ephemeris = 8;
+  optional float carrier_hz = 9;
+  optional double baseband_cn0 = 10;
+}
+
+message GnssMeasurementBatch {
+  GnssClockData clock = 1;
+  repeated GnssMeas meas = 2;
+  repeated GnssAgc agc = 3;
+  bool full_tracking = 4;
+}
+
+message GnssClockData {
+  int64 time_ns = 1;
+  optional int64 full_bias_ns = 2;
+  optional double bias_ns = 3;
+  optional double bias_unc_ns = 4;
+  optional double drift_nsps = 5;
+  optional double drift_unc_nsps = 6;
+  int32 hw_discontinuity_count = 7;
+  optional int32 leap_second = 8;
+  optional int64 elapsed_realtime_ns = 9;
+  optional double elapsed_realtime_unc_ns = 10;
+  optional double time_unc_ns = 11;
+}
+
+message GnssMeas {
+  int32 svid = 1;
+  int32 constellation = 2;
+  double time_offset_ns = 3;
+  int32 state = 4;
+  int64 received_sv_time_ns = 5;
+  int64 received_sv_time_unc_ns = 6;
+  double cn0 = 7;
+  double pseudorange_rate_mps = 8;
+  double pseudorange_rate_unc_mps = 9;
+  int32 adr_state = 10;
+  double adr_m = 11;
+  double adr_unc_m = 12;
+  optional float carrier_hz = 13;
+  int32 multipath = 14;
+  optional double snr_db = 15;
+  optional double agc_db = 16;
+  optional double baseband_cn0 = 17;
+  optional double full_isb_ns = 18;
+  optional double satellite_isb_ns = 19;
+  optional string code_type = 20;
+}
+
+
+message GnssAgc {
+  double level_db = 1;
+  int32 constellation = 2;
+  int64 carrier_hz = 3;
+}
+
+message NmeaSentence {
+  int64 timestamp_ms = 1;
+  string sentence = 2;
+}
+
+message AppEvent {
+  string kind = 1;
+  string detail = 2;
+}
+
+// lat/lon are what was pushed: from 0.1.4 the dish fix moved forward by its age (fix_* is the
+// fix as the dish gave it, shift_m how far it was moved).
+message MockOutput {
+  string provider = 1;
+  double lat = 2;
+  double lon = 3;
+  optional double alt = 4;
+  float h_acc = 5;
+  optional float speed = 6;
+  optional float bearing = 7;
+  string source = 8;
+  string error = 9;
+  optional double fix_lat = 10;
+  optional double fix_lon = 11;
+  optional float shift_m = 12;
+  optional float age_s = 13;
+}
+
+// Raw GNSS navigation message (GnssNavigationMessage): broadcast orbit/clock data, for an own
+// position solve from raw measurements and for comparing against the real broadcast (spoofing).
+message NavMessage {
+  int32 type = 1;
+  int32 svid = 2;
+  int32 message_id = 3;
+  int32 submessage_id = 4;
+  bytes data = 5;
+  int32 status = 6;
+}

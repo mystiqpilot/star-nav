@@ -1,0 +1,1441 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- The app name is never translated; sentences that mention it take it as %s. -->
+    <string name="app_name" translatable="false">Star Nav</string>
+    <string name="channel_service">Mock GPS status</string>
+    <string name="channel_alerts">Dish position alerts</string>
+
+    <string name="tab_sessions">Sessions</string>
+    <string name="tab_config">Settings</string>
+
+    <!-- Shared -->
+    <string name="common_delete">Delete</string>
+    <string name="common_cancel">Cancel</string>
+    <!-- %1$s: dish location source, e.g. AUTO -->
+    <string name="common_legend_dish">━ dish %1$s</string>
+
+    <!-- Status: recorder card -->
+    <string name="status_recorder_title">Recorder</string>
+    <string name="status_elapsed">elapsed</string>
+    <string name="status_written">written</string>
+    <!-- %1$s: size, %2$d: number of log records -->
+    <string name="status_dropped">dropped</string>
+    <string name="status_session">session</string>
+    <!-- %1$s: size, %2$d: number of log records -->
+    <plurals name="status_written_value">
+        <item quantity="one">%1$s · %2$d rec</item>
+        <item quantity="other">%1$s · %2$d rec</item>
+    </plurals>
+    <string name="status_location_permission_hint">Location permission is needed to record. Grant it from the system prompt or app settings.</string>
+    <!-- %1$s: system error message -->
+    <string name="status_error_internal">Internal error: %1$s</string>
+    <string name="status_error_cannot_start">Cannot start: %1$s</string>
+
+    <!-- Status: dish position cut-off card -->
+    <string name="status_cutoff_active_title">Dish position cut off</string>
+    <string name="status_cutoff_session_title">Dish cut-offs this session</string>
+    <string name="status_cutoff_reason">reason</string>
+    <string name="status_cutoff_for">for</string>
+    <string name="status_cutoff_speed_before">dish speed before</string>
+    <string name="status_cutoff_max_before">max in the minute before</string>
+    <string name="status_cutoff_hint">The dish refuses location for every source while it is disabled; status keeps answering. The mock GPS gets no new position meanwhile. On past drives this lasted about 30 s and came after a minute or more at 75–81 km/h.</string>
+    <string name="status_cutoff_last">last</string>
+    <!-- %1$s: duration in seconds, %2$s: time since it ended, m:ss -->
+    <string name="status_cutoff_last_value">%1$s s, %2$s ago</string>
+    <string name="status_cutoff_last_speeds">last: speed before / after</string>
+    <string name="status_cutoff_this_session">this session</string>
+
+    <!-- Status: mock GPS output card -->
+    <string name="mock_title">Mock GPS output</string>
+    <string name="mock_pushed">pushed</string>
+    <!-- %1$d: number of fixes pushed, %2$s: age of the last one, e.g. 0.4 s -->
+    <string name="mock_pushed_value">%1$d · last %2$s</string>
+    <string name="mock_source">source</string>
+    <string name="mock_moved_ahead">moved ahead</string>
+    <!-- %1$s: metres the fix was moved, %2$s: age of the fix in seconds -->
+    <string name="mock_moved_ahead_value">%1$s m (fix %2$s s old)</string>
+    <string name="mock_hint">Auto passes the dish fix through the inertial correction (or, with it off, moved forward along the course by its age). While the mock is on, the phone\'s own GPS fixes and NMEA stop; on a Pixel 10 its raw GNSS keeps flowing with about half the usual signals.</string>
+    <string name="mock_developer_options">Developer options</string>
+    <!-- %1$s: the app name. Developer options and the mock location entry are Android's own settings names. -->
+    <string name="mock_not_allowed">Not allowed: select %1$s in Developer options &gt; Select mock location app</string>
+    <!-- %1$s: system error message -->
+    <string name="mock_permission_revoked">mock permission revoked: %1$s</string>
+
+    <!-- Status: dish card -->
+    <string name="dish_title">Dish</string>
+    <string name="dish_network">network</string>
+    <string name="dish_network_default">default network</string>
+    <string name="dish_network_wifi">Wi-Fi (bound)</string>
+    <string name="dish_network_no_wifi">no Wi-Fi: default network</string>
+    <string name="dish_network_vpn_refused">default network (a VPN refuses the Wi-Fi binding)</string>
+    <string name="dish_transport">transport</string>
+    <string name="dish_endpoint">endpoint</string>
+    <string name="dish_no_answer">No answer yet.</string>
+    <string name="dish_status_call">status call</string>
+    <string name="dish_gps">gps</string>
+    <!-- %d: satellites the dish GNSS receiver uses -->
+    <plurals name="dish_gps_valid">
+        <item quantity="one">valid · %d sat</item>
+        <item quantity="other">valid · %d sats</item>
+    </plurals>
+    <plurals name="dish_gps_invalid">
+        <item quantity="one">INVALID · %d sat</item>
+        <item quantity="other">INVALID · %d sats</item>
+    </plurals>
+    <string name="dish_pnt_filter">pnt filter</string>
+    <string name="dish_attitude">attitude</string>
+    <string name="dish_tilt">tilt</string>
+    <string name="dish_heading">heading (body x)</string>
+    <string name="dish_normal">normal q / reported</string>
+    <string name="dish_quaternion">quaternion</string>
+    <string name="dish_quaternion_absent">absent</string>
+    <string name="dish_class_of_service">class of service</string>
+    <string name="dish_disablement">disablement</string>
+    <string name="dish_moving_fast">moving fast</string>
+    <string name="dish_mobility">mobility</string>
+    <string name="dish_uptime">uptime</string>
+    <string name="dish_firmware">firmware</string>
+
+    <!-- Status: dish location by source card -->
+    <string name="dish_locations_title">Dish location by source</string>
+    <string name="dish_no_fix">no fix</string>
+    <string name="dish_refused_now">refused now</string>
+    <string name="dish_not_supported">not supported</string>
+    <string name="dish_fix_age">fix age at receipt</string>
+
+    <!-- Status: phone cards -->
+    <string name="phone_title">Phone GNSS</string>
+    <string name="phone_no_fix">No real GPS fix yet.</string>
+    <string name="phone_fix">fix</string>
+    <string name="phone_accuracy">accuracy</string>
+    <string name="phone_speed_bearing">speed / bearing</string>
+    <string name="phone_age">age</string>
+    <string name="phone_satellites">satellites</string>
+    <!-- %1$d: satellites used in the fix, %2$d: satellites seen. Two counts and no noun after them, so no plurals. -->
+    <string name="phone_satellites_value" tools:ignore="PluralsCandidate">%1$d used / %2$d seen</string>
+    <string name="phone_cn0">mean C/N0 used</string>
+    <string name="phone_agc">AGC</string>
+    <string name="phone_agc_interference">AGC (interference?)</string>
+    <string name="phone_chipset">chipset</string>
+    <string name="phone_rates_gps">rates gps/mock/net</string>
+    <string name="phone_rates_gnss">rates status/meas/nmea/nav</string>
+    <string name="phone_sensors_title">Phone sensors</string>
+    <string name="phone_sensors_not_recording">Not recording.</string>
+
+    <!-- Probe -->
+    <string name="probe_run">Run probe</string>
+    <string name="probe_running">Probing…</string>
+    <string name="probe_include_coordinates">include coordinates</string>
+    <string name="probe_include_ids">include identifiers</string>
+    <string name="probe_ids_off">Device ids, network names (SSIDs), MAC addresses and the WAN and public IP addresses stay out of the report.</string>
+    <string name="probe_ids_on">Device ids, network names (SSIDs), MAC addresses and the WAN and public IP addresses are in the report: share it only with people you trust.</string>
+    <!-- %1$s: the dish location source names, kept as they are -->
+    <string name="probe_hint">Calls every dish RPC once: device info, status, location for each source (%1$s), diagnostics and GNSS measurements, then does the same for the router (read-only calls) when its address is known, and reports what this dish, router, firmware and plan answer. Coordinates and identifiers stay out of the report unless included; Wi-Fi passwords never appear in it.</string>
+    <string name="probe_copy_report">Copy report</string>
+    <!-- Label of the clipboard entry the report is copied as -->
+    <string name="probe_clip_label">dish probe</string>
+
+    <!-- Sessions: list -->
+    <string name="sessions_empty">No sessions yet. Switch on \"Record this drive\" above; each recording becomes one session.</string>
+    <string name="sessions_recording">recording…</string>
+    <string name="sessions_unreadable">unreadable</string>
+    <string name="sessions_duration">duration</string>
+    <string name="sessions_distance">distance</string>
+    <string name="sessions_size">size</string>
+    <string name="sessions_dish_track">dish track</string>
+    <string name="sessions_none">none</string>
+    <!-- %1$d: track points, %2$s: which dish source the track comes from -->
+    <plurals name="sessions_dish_track_value">
+        <item quantity="one">%1$d pt (%2$s)</item>
+        <item quantity="other">%1$d pts (%2$s)</item>
+    </plurals>
+    <string name="sessions_note">note</string>
+    <string name="sessions_note_truncated_killed">truncated tail (app was killed)</string>
+    <string name="sessions_note_truncated">truncated tail</string>
+
+    <!-- Sessions: detail -->
+    <string name="sessions_back">‹ Sessions</string>
+    <string name="sessions_mode_accuracy">Accuracy</string>
+    <string name="sessions_mode_sources">Sources</string>
+    <string name="sessions_map_hint">● ○ export window start and end; red dashes: dish position cut off; dots: no dish fix (phone track).</string>
+    <string name="sessions_legend_phone_gps">━ phone GPS</string>
+    <string name="sessions_legend_start">● start</string>
+    <string name="sessions_legend_end">● end</string>
+    <!-- %1$s: clock time of the export window edge -->
+    <string name="sessions_start_at">start %1$s</string>
+    <string name="sessions_end_at">end %1$s</string>
+    <!-- %1$d: track points inside the window, %2$s: its duration, m:ss -->
+    <plurals name="sessions_export_hint">
+        <item quantity="one">Export keeps only what was recorded between the two markers (%1$d track point, %2$s), plus a session header without coordinates. Dish and router IDs are redacted.</item>
+        <item quantity="other">Export keeps only what was recorded between the two markers (%1$d track points, %2$s), plus a session header without coordinates. Dish and router IDs are redacted.</item>
+    </plurals>
+    <string name="sessions_exporting">Exporting…</string>
+    <string name="sessions_export_share">Export &amp; share</string>
+    <string name="sessions_share_title">Share session export</string>
+    <!-- %1$s: size of the export file -->
+    <string name="sessions_exported">Exported %1$s</string>
+    <!-- %1$s: system error message -->
+    <string name="sessions_export_failed">Export failed: %1$s</string>
+    <string name="sessions_along_drive">Along the drive</string>
+    <string name="sessions_info_title">Session</string>
+    <string name="sessions_phone">phone</string>
+    <string name="sessions_dish_firmware">dish firmware</string>
+    <string name="sessions_app">app</string>
+    <string name="sessions_delete_title">Delete session?</string>
+    <!-- %1$s: session start, %2$s: log size -->
+    <string name="sessions_delete_text">%1$s · %2$s. This cannot be undone.</string>
+    <string name="sessions_no_positions">No positions in this session.</string>
+    <plurals name="sessions_positions_hidden">
+        <item quantity="one">%d position more than 50 km away not drawn (spoofed fixes?)</item>
+        <item quantity="other">%d positions more than 50 km away not drawn (spoofed fixes?)</item>
+    </plurals>
+
+    <!-- Accuracy report: map, legend, charts -->
+    <string name="report_building">Building the accuracy report…</string>
+    <string name="report_legend_no_reference">no reference</string>
+    <string name="report_legend_conflict">phone and dish &gt; 1 km apart</string>
+    <string name="report_cutoff">cut off</string>
+    <string name="report_legend_hint_reference">Color: distance between the served position (dish fix moved forward by its age) and the phone\'s own GNSS at the same moment, share of the moving time.</string>
+    <string name="report_legend_hint_no_reference">No phone GNSS reference in this session (the mock GPS was on, so the phone gave no real fixes): the colors cannot show the error.</string>
+    <string name="report_lane_cutoff">Dish position cut off</string>
+    <string name="report_lane_interference">Phone GNSS interference</string>
+    <string name="report_lane_dish_gnss">Dish GNSS &lt; 10 satellites</string>
+    <string name="report_lane_mock">Mock GPS on</string>
+    <string name="report_lane_unreachable">Dish unreachable</string>
+    <string name="report_lane_conflict">Phone and dish &gt; 1 km apart</string>
+    <string name="report_chart_speed">Speed, km/h</string>
+    <string name="report_chart_error">Error of the served position, m</string>
+    <string name="report_legend_phone_gnss">━ phone GNSS</string>
+    <!-- %1$s: duration in seconds, %2$s: dish speed before it, e.g. 80 km/h -->
+    <string name="report_map_cutoff">Cut off %1$s s · %2$s</string>
+    <string name="report_readout_hint">Tap or drag on a chart to read a moment; the map marks it.</string>
+    <string name="report_readout_no_fix">no dish fix</string>
+    <string name="report_readout_dish_speed">dish %1$s km/h</string>
+    <string name="report_readout_conflict">phone and dish %1$s km apart</string>
+    <!-- %1$s: error in metres, %2$s: its accuracy class, e.g. 5–10 m -->
+    <string name="report_readout_error">error %1$s m (%2$s)</string>
+    <string name="report_readout_interference">interference</string>
+
+    <!-- Accuracy report: numbers -->
+    <string name="report_accuracy_title">Accuracy</string>
+    <string name="report_typical_error">typical error (p50)</string>
+    <string name="report_within_10">within 10 m</string>
+    <string name="report_worst">worst</string>
+    <string name="report_unmoved_fix">unmoved fix (app ≤ 0.1.3)</string>
+    <string name="report_phone_ref_accuracy">phone reference accuracy</string>
+    <string name="report_error">error</string>
+    <string name="report_not_measurable">not measurable (mock on)</string>
+    <!-- %1$s: seconds -->
+    <string name="report_conflict_value">%1$s s (spoofing?)</string>
+    <string name="report_fix_age">dish fix age</string>
+    <string name="report_sigma">dish σ (reported)</string>
+    <string name="report_moving">moving</string>
+    <!-- %1$s: time moving, %2$s: kilometres driven, %3$s: top speed, e.g. 92 km/h -->
+    <string name="report_moving_value">%1$s · %2$s km · top %3$s</string>
+    <string name="report_never">never</string>
+    <string name="report_interference_keys">interference / dish GNSS weak</string>
+    <string name="report_mock_on">mock on</string>
+    <string name="report_cutoffs_title">Cut-offs</string>
+    <!-- %1$s: time into the session, m:ss -->
+    <string name="report_cutoff_at">at %1$s</string>
+    <!-- %1$s: seconds -->
+    <string name="report_cutoff_open_value">%1$s s (still on)</string>
+    <!-- %1$s: reason, %2$s..%4$s: dish speeds (before, max in the minute before, after), %5$s and %6$s: phone speeds, %7$s: distance -->
+    <string name="report_cutoff_detail">%1$s; dish %2$s before (max %3$s in the minute before), %4$s after; phone %5$s → %6$s; %7$s driven meanwhile</string>
+
+    <!-- Accuracy classes of the served position error -->
+    <string name="accuracy_class_0">&lt; 5 m</string>
+    <string name="accuracy_class_1">5–10 m</string>
+    <string name="accuracy_class_2">10–20 m</string>
+    <string name="accuracy_class_3">20–50 m</string>
+    <string name="accuracy_class_4">≥ 50 m</string>
+
+    <!-- Config -->
+    <string name="config_theme_title">Theme</string>
+    <string name="config_theme_system">System</string>
+    <string name="config_theme_light">Light</string>
+    <string name="config_theme_dark">Dark</string>
+    <string name="config_theme_system_light_hint">Android 8 and 9 have no dark theme of their own, so System means Light on this phone.</string>
+    <string name="config_dish_title">Dish</string>
+    <string name="config_dish_address">Dish address (host or host:port)</string>
+    <string name="config_transport">Transport</string>
+    <string name="config_transport_auto">auto</string>
+    <string name="config_transport_hint">gRPC-Web uses port 9201 (what the Starlink app uses), gRPC port 9200; auto tries gRPC-Web first.</string>
+    <string name="config_bind_wifi">Bind to Wi-Fi network</string>
+    <string name="config_bind_wifi_hint">Keeps dish traffic on the Mini\'s Wi-Fi even when Android routes other traffic over cellular.</string>
+    <string name="wifi_binding_vpn_refused">A VPN on this phone (Tailscale, a work VPN) does not let apps choose the Wi-Fi network, so the dish and the router are asked over the default network. That works while the VPN leaves local addresses alone. If they do not answer, allow LAN access in the VPN app, exclude this app from the VPN, or switch the VPN off.</string>
+    <string name="config_mount_title">Mount</string>
+    <string name="config_yaw_offset">Dish yaw offset vs car forward, °</string>
+    <string name="config_mount_hint">Angle between the dish heading and the car\'s forward direction (about −177° when the dish faces backwards); used for the car heading on the Position page and by the inertial correction. Learned: measured while driving straight above about 22 km/h and kept up to date. Manual: your value is used from the start; the correction still replaces it on a drive that shows one more than 5° away. A change restarts the filter.</string>
+    <string name="config_imu_rate">IMU rate, Hz (10–200)</string>
+    <string name="config_retention_days">Keep sessions, days</string>
+    <string name="config_storage_cap">Storage cap, MB</string>
+    <string name="config_recording_hint">Sessions older than the retention and the oldest ones beyond the cap are deleted when the app starts, when the Sessions page opens, when logging is switched off and when a recording starts. Logs never leave the phone except through Export.</string>
+    <!-- %1$s: app name, %2$s: version name, %3$d: version code -->
+    <string name="config_version">%1$s %2$s (build %3$d)</string>
+
+    <!-- Notifications -->
+    <string name="notif_starting">Starting</string>
+    <string name="notif_cutoff_title">Starlink position cut off</string>
+    <!-- %1$s: reason the dish gives for the cut-off -->
+    <string name="notif_cutoff_text">The dish refuses location: %1$s. The mock GPS gets no new position until it answers again (about 30 s on past drives).</string>
+    <string name="notif_back_title">Starlink position back</string>
+    <!-- %1$s: how long the cut-off lasted in seconds, %2$s: its reason -->
+    <string name="notif_back_text">After %1$s s (%2$s). The mock GPS gets dish fixes again.</string>
+
+    <!-- Reasons for a dish disablement (UtDisablementCode); lower case, they follow "refuses location:" -->
+    <string name="disablement_unknown_state">UT disablement</string>
+    <string name="disablement_okay">okay</string>
+    <string name="disablement_no_active_account">no active account</string>
+    <string name="disablement_too_far_from_service_address">too far from service address</string>
+    <string name="disablement_in_ocean">in ocean</string>
+    <string name="disablement_blocked_country">blocked country</string>
+    <string name="disablement_data_overage_sandbox_policy">data overage sandbox policy</string>
+    <string name="disablement_cell_is_disabled">cell is disabled</string>
+    <string name="disablement_roam_restricted">roam restricted</string>
+    <string name="disablement_unknown_location">unknown location</string>
+    <string name="disablement_account_disabled">account disabled</string>
+    <string name="disablement_unsupported_version">unsupported version</string>
+    <string name="disablement_moving_too_fast">moving too fast for the plan</string>
+    <string name="disablement_under_aviation_flyover_limits">under aviation flyover limits</string>
+    <string name="disablement_blocked_area">blocked area</string>
+
+    <!-- Mock delivery check -->
+    <string name="mock_google_fused_starting">starting…</string>
+    <string name="mock_google_fused_on">on</string>
+    <string name="mock_google_fused">Google fused location</string>
+    <string name="mock_providers">replaced</string>
+    <string name="mock_delivery">apps receive</string>
+    <!-- %1$s: source name (gps, network, fused, Google fused), %2$s: offset in metres -->
+    <string name="mock_delivery_ok">%1$s ✓</string>
+    <string name="mock_delivery_off">%1$s ✗ %2$s m</string>
+    <string name="mock_delivery_waiting">waiting for the first fixes…</string>
+    <string name="mock_source_gms_fused">Google fused</string>
+
+    <!-- Navigation -->
+
+    <!-- Setup page -->
+    <string name="setup_title">How to enable it</string>
+    <!-- %1$d: required steps done, %2$d: required steps in total (selects the form) -->
+    <plurals name="setup_progress">
+        <item quantity="one">%1$d of %2$d required step done</item>
+        <item quantity="other">%1$d of %2$d required steps done</item>
+    </plurals>
+    <string name="setup_all_done">Everything required is set. Switch the mock on above.</string>
+    <string name="setup_state_ok">Done</string>
+    <string name="setup_state_needed">Needed</string>
+    <string name="setup_state_recommended">Recommended</string>
+    <string name="setup_state_unknown">Not checked yet</string>
+
+    <string name="setup_location_permission_title">Precise location permission</string>
+    <string name="setup_location_permission_why">Lets the app read the phone\'s own GNSS (to compare with the dish and to record) and run the location service.</string>
+    <string name="setup_location_permission_denied">Android no longer shows the request: allow \"Location → Precise\" in the app\'s settings.</string>
+    <string name="setup_location_on_title">Location turned on</string>
+    <string name="setup_location_on_why">With location off, Android hands no position to any app, mocked or not.</string>
+    <string name="setup_developer_title">Developer options</string>
+    <string name="setup_developer_why">Needed to choose a mock location app. Open \"About phone\" and tap \"Build number\" seven times, then come back.</string>
+    <string name="setup_mock_app_title">%1$s is the mock location app</string>
+    <string name="setup_mock_app_why">In Developer options, find \"Select mock location app\" and choose %1$s. Only then may it replace the phone\'s GPS.</string>
+    <string name="setup_dish_wifi_title">Phone on the dish\'s Wi-Fi</string>
+    <string name="setup_dish_wifi_why">The dish answers only on its own network (192.168.100.1).</string>
+    <string name="setup_dish_wifi_no_dish">Connected to Wi-Fi, but the dish does not answer: is it the dish\'s network? Check the dish address under Starlink &gt; Connection.</string>
+    <string name="setup_dish_location_title">Dish shares its location on the local network</string>
+    <string name="setup_dish_location_why">The dish answers location requests from the local network only when this is allowed. %1$s can ask the dish to switch it on, but it is not verified that a dish accepts that from a phone on its Wi-Fi: it may need the Starlink app, signed in, to turn it on once (in its advanced settings).</string>
+    <string name="setup_dish_location_disabled">The dish is disabled right now (for example moving too fast for the plan), so this cannot be checked.</string>
+    <string name="setup_notifications_title">Notifications</string>
+    <string name="setup_notifications_why">For the recording notification and the heads-up alert when the dish cuts its position off.</string>
+    <string name="setup_notifications_channel_off">The \"Dish position alerts\" category is switched off.</string>
+    <string name="setup_battery_title">Battery: unrestricted</string>
+    <string name="setup_battery_why">Keeps long recordings and the mock running with the screen off. App info → App battery usage → Unrestricted.</string>
+    <string name="setup_battery_old_title">Battery: not optimised</string>
+    <string name="setup_battery_old_why">Keeps long recordings and the mock running with the screen off. Battery optimisation → All apps → Star Nav → Don\'t optimise.</string>
+    <string name="setup_battery_restricted">Background use is restricted for this app.</string>
+    <string name="setup_delivery_title">Apps receive the dish position</string>
+    <string name="setup_delivery_why">While the mock is on, %1$s checks every second that Android\'s GPS, network and fused locations (and Google\'s, in the Play build) hand apps the pushed position.</string>
+    <string name="setup_delivery_mock_off">Switch the mock on (above) to check.</string>
+    <!-- %1$s: list of sources, e.g. "network, fused" -->
+    <string name="setup_delivery_failed">Not following the dish: %1$s.</string>
+
+    <string name="setup_action_allow">Allow</string>
+    <string name="setup_action_app_settings">App settings</string>
+    <string name="setup_action_battery_settings">Battery optimisation</string>
+    <string name="setup_action_location_settings">Location settings</string>
+    <string name="setup_action_about_phone">About phone</string>
+    <string name="setup_action_developer_options">Developer options</string>
+    <string name="setup_action_wifi">Choose Wi-Fi</string>
+    <string name="setup_action_allow_on_dish">Enable on the dish</string>
+    <string name="setup_action_starlink_app">Starlink app</string>
+    <string name="setup_action_try_again">Try again</string>
+    <string name="local_location_value_answers">available</string>
+    <string name="local_location_value_unknown">can\'t tell</string>
+    <string name="local_location_reads_on">The dish reports it as on.</string>
+    <string name="local_location_reads_off">The dish reports it as off.</string>
+    <string name="local_location_off_inferred">The dish refused a position request, so this is probably off; its setting could not be read.</string>
+    <string name="local_location_answers_unread">The dish already answers position requests, so location is available; its setting could not be read.</string>
+    <string name="local_location_answers_off">The dish answers position requests although its setting reads as off, so location is available.</string>
+    <string name="local_location_unknown">Can\'t tell: the dish did not give the setting and did not answer a position request.</string>
+    <string name="local_location_plan">The dish refuses position requests because of your Starlink plan; switching this setting on does not change that.</string>
+    <string name="local_location_dish_silent">The dish does not answer yet, so this cannot be checked.</string>
+    <string name="local_location_result_ok">The dish accepted the change.</string>
+    <string name="local_location_result_denied">The dish refused it. On current firmware this may need the Starlink app, signed in, to turn on once.</string>
+    <string name="local_location_result_unauth">The dish wants a signed-in account for this. The Starlink app, signed in, may need to turn it on once.</string>
+    <string name="local_location_result_unimplemented">This dish does not offer the setting to other apps. The Starlink app, signed in, may need to turn it on once.</string>
+    <string name="local_location_last_attempt">Last attempt, %1$s: %2$s</string>
+    <string name="setup_action_notification_settings">Notification settings</string>
+    <!-- %1$s: the dish's answer -->
+    <string name="setup_delivery_foss">This build has no Google Play services: Google\'s fused location (used by Google Maps) follows the mocked GPS but may still mix in Wi-Fi and cell positions. The Play build switches it to the dish fully.</string>
+    <string name="report_delivery_title">What apps received while the mock was on</string>
+    <!-- %1$s: percent following the dish, %2$d: fixes, %3$d: fixes that were not mocked -->
+    <string name="report_delivery_value" tools:ignore="PluralsCandidate">%1$s %% of %2$d · %3$d not mocked</string>
+
+    <!-- Home -->
+    <plurals name="home_setup_missing">
+        <item quantity="one">%d setup step missing</item>
+        <item quantity="other">%d setup steps missing</item>
+    </plurals>
+    <string name="home_setup_missing_hint">The mock GPS needs them before it can work.</string>
+    <string name="home_open_setup">Open Mock GPS</string>
+    <string name="home_mock_subtitle">Replace the phone\'s GPS for every app with the dish\'s position</string>
+    <string name="home_needs_location">Allow precise location first (Mock GPS tab, How to enable it).</string>
+    <string name="home_line_off">Off: apps use the phone\'s own GPS.</string>
+    <!-- %1$s: reason, %2$s: seconds -->
+    <string name="home_line_cutoff">Dish position cut off: %1$s · %2$s s</string>
+    <string name="home_line_waiting">Waiting for the dish…</string>
+    <string name="home_line_dish_down">The dish is not answering: no new position for %1$s s</string>
+    <string name="home_line_no_fix">No new dish position for %1$s s</string>
+    <string name="home_line_frozen">The Starlink-only position has not changed for %1$s s while moving</string>
+    <!-- %1$s: mode, %2$s: age in seconds, %3$s: accuracy in metres -->
+    <string name="home_line_serving">%1$s · position %2$s s old · ±%3$s m</string>
+    <string name="home_mode_title">What the mock serves</string>
+    <string name="home_record_drive">Record this drive</string>
+    <string name="home_record_with_mock">Record whenever the mock GPS is on</string>
+    <string name="home_record_hint">Recordings stay on the phone; open one below to share part of it. They help find and fix accuracy problems.</string>
+
+    <!-- Mock modes -->
+    <string name="mode_auto">Auto</string>
+    <string name="mode_raw">Raw</string>
+    <string name="mode_starlink">Starlink only</string>
+    <string name="mode_auto_title">Auto (recommended)</string>
+    <string name="mode_auto_description">The app\'s best position: the dish fix corrected with the phone\'s motion sensors and the dish heading, which also carries the position on through dish outages. With the inertial correction off: the dish fix moved forward by its age.</string>
+    <string name="mode_raw_title">Raw: Starlink positioning only</string>
+    <string name="mode_raw_description">The dish\'s position exactly as the dish reports it; nothing added or blended.</string>
+    <string name="mode_starlink_title">Starlink only (no GNSS)</string>
+    <string name="mode_starlink_description">The dish\'s Starlink-only source, which does not use GNSS, so spoofing cannot move it. On a Gen 3 Mini it may update rarely; the app warns when it stops changing.</string>
+
+    <!-- Service notification and tile -->
+    <string name="notif_title_mock_on">Mock GPS on · %1$s</string>
+    <string name="notif_title_mock_off">Mock GPS off</string>
+    <string name="notif_line_cutoff">Dish position cut off · %1$s s</string>
+    <string name="notif_line_mock_off">Phone GPS in use</string>
+    <string name="notif_line_waiting">Waiting for the dish…</string>
+    <string name="notif_line_dish_down">Dish not answering · no position for %1$s s</string>
+    <string name="notif_line_no_fix">No dish position for %1$s s</string>
+    <!-- %1$s: age in seconds, %2$s: accuracy in metres -->
+    <string name="notif_line_fix">Dish position %1$s s old · ±%2$s m</string>
+    <string name="notif_line_apps_ok">apps ✓</string>
+    <string name="notif_line_apps_bad">apps ✗ (open the app)</string>
+    <string name="notif_line_recording">recording</string>
+    <string name="notif_action_mock_on">Mock on</string>
+    <string name="notif_action_mock_off">Mock off</string>
+    <string name="notif_action_record">Record</string>
+    <string name="notif_action_record_stop">Stop recording</string>
+    <string name="notif_action_stop_all">Stop</string>
+    <string name="tile_label">Mock GPS</string>
+    <string name="tile_off">Off</string>
+
+    <!-- Setup: Google Location Accuracy -->
+    <string name="setup_google_accuracy_title">Google Location Accuracy off</string>
+    <string name="setup_google_accuracy_why">The phone is on the dish\'s Wi-Fi, which moves with the car. Google\'s Wi-Fi positioning places that network wherever it was seen before, so with Google Location Accuracy on, Google\'s location can stick to that place. Turn it off: Location → Location services → Google Location Accuracy.</string>
+    <string name="setup_google_accuracy_unknown">Cannot be read while the mock replaces the network location; switch the mock off to check.</string>
+    <!-- Dish restarts -->
+    <string name="reboot_title">Dish restarted</string>
+    <string name="reboot_back">back</string>
+    <string name="reboot_ago">%1$s ago</string>
+    <string name="reboot_offline">without position</string>
+    <string name="reboot_why">why</string>
+    <string name="reboot_codes">dish\'s code</string>
+    <string name="reboot_software">software</string>
+    <string name="reboot_update_not_installed">A software update was waiting, but the version did not change.</string>
+    <string name="reboot_count">restarts seen</string>
+    <string name="reboot_cause_update_installed">Installed software update %1$s</string>
+    <string name="reboot_cause_update_installed_by_star_nav">Installed software update %1$s (restart sent from Star Nav)</string>
+    <string name="reboot_cause_star_nav">Restart sent from Star Nav</string>
+    <string name="reboot_cause_update">Restart to install a software update</string>
+    <string name="reboot_cause_requested">Restart requested by a user or an app</string>
+    <string name="reboot_cause_power">Power cut</string>
+    <string name="reboot_cause_auto_off">Automatic power-off</string>
+    <string name="reboot_cause_overheat">Overheating</string>
+    <string name="reboot_cause_no_network">No Starlink network for too long</string>
+    <string name="reboot_cause_fault">Internal fault</string>
+    <string name="reboot_cause_factory_reset">Factory reset</string>
+    <string name="reboot_cause_config">New settings applied</string>
+    <string name="reboot_cause_other">Other reason</string>
+    <string name="reboot_cause_not_reported">The dish did not report a reason</string>
+    <string name="notif_reboot_title">Starlink dish restarted</string>
+    <string name="notif_reboot_text">%1$s. No dish position for %2$s.</string>
+    <string name="dish_update">software update</string>
+    <string name="dish_update_waiting">waiting for a restart</string>
+    <string name="dish_update_waiting_at">waiting for a restart, planned %1$s</string>
+    <string name="dish_update_none">none waiting</string>
+    <string name="dish_update_fetching">downloading</string>
+    <string name="dish_update_installing">installing</string>
+    <string name="dish_update_disabled">updates off</string>
+    <string name="dish_update_failed">failed</string>
+    <string name="dish_restarts">restarts</string>
+    <string name="dish_restarts_value">%1$s · last %2$s ago: %3$s</string>
+    <string name="dish_restarts_none">none seen</string>
+    <string name="home_update_soon">The dish will restart at %1$s to install a downloaded software update: a minute or two without its position.</string>
+    <string name="report_lane_reboot">Dish restarting</string>
+    <string name="report_readout_reboot">dish restarting</string>
+    <string name="report_reboots">dish restarts</string>
+    <string name="report_reboots_title">Dish restarts</string>
+    <string name="report_reboot_at">back at %1$s</string>
+    <string name="report_reboot_offline">%1$s without position</string>
+    <string name="report_dish_up_at_start">The dish had been on for %1$s when the recording started.</string>
+    <!-- Maps -->
+    <string name="map_layer_off">Plain</string>
+    <string name="map_layer_regular">Map</string>
+    <string name="map_layer_satellite">Satellite</string>
+    <string name="map_full_screen">Full screen</string>
+    <string name="map_close">Close</string>
+    <string name="map_tiles_hint">Map tiles come from %1$s, which sees the area on screen.</string>
+    <string name="map_provider_regular">OpenFreeMap (OpenStreetMap data)</string>
+    <string name="map_provider_satellite">EOX (Sentinel-2 imagery from 2017, 10 m per pixel)</string>
+    <!-- Live map -->
+    <string name="live_waiting">Waiting for positions…</string>
+    <string name="live_mock_hides">While the mock is on, the phone\'s GPS, network and fused positions are the mock\'s own, so they are not shown.</string>
+    <string name="live_src_served">What apps get</string>
+    <string name="live_src_dish_auto">Dish Auto</string>
+    <string name="live_src_dish_starlink">Dish Starlink-only</string>
+    <string name="live_src_dish_gps">Dish GPS</string>
+    <string name="live_src_phone_gps">Phone GPS</string>
+    <string name="live_src_phone_network">Network (cell towers, Wi-Fi)</string>
+    <string name="live_src_phone_fused">Android fused</string>
+    <string name="live_src_gms_fused">Google fused</string>
+    <string name="live_short_served">apps</string>
+    <string name="live_short_dish_auto">dish</string>
+    <string name="live_short_dish_starlink">Starlink</string>
+    <string name="live_short_dish_gps">dish GPS</string>
+    <string name="live_short_phone_gps">phone</string>
+    <string name="live_short_phone_network">network</string>
+    <string name="live_short_phone_fused">fused</string>
+    <string name="live_short_gms_fused">Google</string>
+    <string name="live_unit_m">%1$s m</string>
+    <string name="live_unit_km">%1$s km</string>
+    <string name="live_speed">%1$s km/h</string>
+    <string name="live_age">%1$s s old</string>
+    <string name="live_delta">%1$s from what apps get</string>
+    <string name="live_dish_heading">dish heading</string>
+    <string name="live_dish_heading_value">%1$s° (mount offset %2$s°)</string>
+    <string name="live_dish_gnss">dish GNSS</string>
+    <string name="live_phone_gnss">phone GNSS</string>
+    <string name="live_phone_sats">%1$s used / %2$s seen</string>
+    <string name="live_agc">AGC %1$s dB</string>
+    <string name="live_agc_jammed">AGC %1$s dB: interference</string>
+    <string name="live_cutoff">dish position</string>
+    <string name="live_cutoff_value">cut off for %1$s s</string>
+    <string name="notif_line_watching">Position page open</string>
+    <!-- Network fallback -->
+    <string name="home_fallback">When the dish gives no position, use the phone\'s network location (cell towers, Wi-Fi)</string>
+    <string name="home_fallback_hint">After 5 s without a dish position, apps get Android\'s own network position (cell towers and Wi-Fi) until the dish answers again. Coarse (tens of meters in towns, often hundreds on highways); needs Google Location Accuracy on.</string>
+    <string name="home_fallback_auto_only">Only in Auto mode: Raw and Starlink only serve the dish alone.</string>
+    <string name="home_line_fallback">Network fallback ±%1$s m · no dish position for %2$s s</string>
+    <string name="home_line_fallback_waiting">No dish position for %1$s s: waiting for a network position</string>
+    <string name="home_line_fallback_off">No dish position for %1$s s, and Android\'s network location is off (Google Location Accuracy)</string>
+    <string name="notif_line_fallback">Network fallback ±%1$s m</string>
+    <string name="notif_line_fallback_waiting">No dish position, waiting for network</string>
+    <string name="setup_google_accuracy_on_title">Google Location Accuracy on (network fallback)</string>
+    <string name="setup_google_accuracy_on_why">The network fallback passes on Android\'s network location, which comes from Google\'s cell tower and Wi-Fi positioning and needs Google Location Accuracy on: Location → Location services → Google Location Accuracy. It is used only while the dish gives no position. Google may place the dish\'s moving Wi-Fi where it was seen before, so expect it to be coarse. With the fallback off, Google Location Accuracy is better off.</string>
+    <string name="report_lane_fallback">Network fallback</string>
+    <string name="report_readout_fallback">network fallback</string>
+    <string name="report_fallback">network fallback served</string>
+    <!-- Inertial correction (Auto mode) -->
+    <string name="home_inertial">Inertial correction (phone motion sensors and dish heading)</string>
+    <string name="home_inertial_hint">Holds the car on its track when the dish position drifts off to the side of the road, and carries the position on from the motion sensors while the dish gives none, less accurate with every second (nothing is served once its accuracy passes about 300 m or its sideways uncertainty about 50 m, whichever comes first; on a winding road that can be within half a minute). Keep the phone in a fixed mount: it learns how the phone sits in the first minute of driving. Switch off to compare with the plain dish fix.</string>
+    <string name="home_inertial_off_hint">Off: Auto serves the dish fix moved forward by its age, as before, and nothing while the dish gives no position (the network fallback aside).</string>
+    <string name="home_fallback_hint_inertial">After 5 s without a dish position Android\'s own network position (cell towers, Wi-Fi) is let through and goes into the inertial correction as a weak input; it is used only when it is better than the dead reckoning. Needs Google Location Accuracy on.</string>
+    <string name="home_line_inertial_tracking">Auto, corrected · ±%1$s m</string>
+    <string name="home_line_inertial_sideways">Dish position shifted %1$s m sideways: held on motion · ±%2$s m</string>
+    <string name="home_line_inertial_dr">Dead reckoning for %1$s s · ±%2$s m</string>
+    <string name="home_line_inertial_network">Dead reckoning with network positions for %1$s s · ±%2$s m</string>
+    <string name="home_line_inertial_stopped">No dish position for %1$s s: dead reckoning too uncertain, nothing served</string>
+    <string name="home_line_cutoff_inertial">Dish position cut off: %1$s · dead reckoning %2$s s · ±%3$s m</string>
+    <string name="notif_line_inertial_tracking">Corrected ±%1$s m</string>
+    <string name="notif_line_inertial_sideways">Dish %1$s m to the side · held on motion · ±%2$s m</string>
+    <string name="notif_line_inertial_dr">Dead reckoning %1$s s · ±%2$s m</string>
+    <string name="notif_line_inertial_network">Dead reckoning + network %1$s s · ±%2$s m</string>
+    <string name="notif_line_inertial_stopped">No position for %1$s s (dead reckoning too uncertain)</string>
+    <string name="home_line_inertial_starting">Auto, correction starting: dish position · ±%1$s m</string>
+    <string name="home_line_inertial_no_mount">Auto, dish position: the sideways correction waits for the mount offset · ±%1$s m</string>
+    <string name="home_line_cutoff_inertial_stopped">Dish position cut off: %1$s · %2$s s · dead reckoning too uncertain, nothing served</string>
+    <string name="notif_line_inertial_starting">Dish position ±%1$s m · correction starting</string>
+    <string name="notif_line_inertial_no_mount">Dish position ±%1$s m · mount offset not learned yet</string>
+    <string name="inertial_accuracy_not_served">Filter accuracy (not served)</string>
+    <string name="inertial_errors">Filter errors</string>
+    <string name="inertial_errors_value">%1$d · last: %2$s</string>
+    <string name="notif_cutoff_text_inertial">The dish refuses location: %1$s. The position continues from the phone\'s motion sensors and the dish heading until it answers again, less accurate with every second (about 30 s on past drives).</string>
+    <string name="status_cutoff_hint_inertial">The dish refuses location for every source while it is disabled; status keeps answering. Meanwhile the inertial correction carries the position on from the phone\'s motion sensors and the dish heading. On past drives this lasted about 30 s and came after a minute or more at 75–81 km/h.</string>
+    <string name="inertial_title">Inertial correction</string>
+    <string name="inertial_correction">Correction</string>
+    <string name="inertial_correction_off">off (Auto serves the dish fix)</string>
+    <string name="inertial_correction_serving">on, serving apps</string>
+    <string name="inertial_correction_not_serving">on, not serving (mock off or not Auto)</string>
+    <string name="inertial_not_running">The filter runs while the service is on (mock, recording or the Position page open).</string>
+    <string name="inertial_state">State</string>
+    <string name="inertial_state_value">%1$s · %2$s s</string>
+    <string name="inertial_state_tracking">following the dish</string>
+    <string name="inertial_state_sideways">dish held off to the side</string>
+    <string name="inertial_state_dr">dead reckoning</string>
+    <string name="inertial_state_network">dead reckoning + network</string>
+    <string name="inertial_state_none">nothing to serve</string>
+    <string name="inertial_accuracy">Accuracy told to apps</string>
+    <string name="inertial_sideways">Dish sideways offset</string>
+    <string name="inertial_sideways_right">%1$s m to the right</string>
+    <string name="inertial_sideways_left">%1$s m to the left</string>
+    <string name="inertial_imu">Phone IMU</string>
+    <string name="inertial_imu_none">no samples</string>
+    <string name="inertial_imu_warming">learning gravity</string>
+    <string name="inertial_imu_handling">phone moved in its mount</string>
+    <string name="inertial_imu_gyro">gyro in use</string>
+    <string name="inertial_imu_forward">gyro and forward accel in use</string>
+    <string name="inertial_forward_axis">Forward axis</string>
+    <string name="inertial_forward_axis_ready">learned</string>
+    <string name="inertial_forward_axis_learning">learning</string>
+    <string name="inertial_mount">Mount offset</string>
+    <string name="inertial_mount_none">not learned yet</string>
+    <string name="inertial_mount_learned_now">%1$s (learned on this drive)</string>
+    <string name="inertial_mount_manual">%1$s (manual)</string>
+    <string name="inertial_mount_learned_at">%1$s (learned %2$s)</string>
+    <string name="inertial_counts">Side holds · suspects</string>
+    <string name="inertial_rejects">Rejected dish fixes</string>
+    <string name="mock_from_fix">from the dish fix</string>
+    <string name="inertial_dead_reckoning">Dead reckoning</string>
+    <string name="inertial_resets">Filter resets</string>
+    <string name="inertial_hint">The filter runs on the dish position and heading and the phone\'s motion sensors, on the phone only. Side holds: times the dish position was held to be off to the side; suspects: what a more sensitive detector would have held (for tuning); rejects: dish fixes too far from the filter. Its events go into the session log.</string>
+    <string name="config_mount_auto">Learned</string>
+    <string name="config_mount_manual">Manual</string>
+    <string name="config_mount_learned">Learned value</string>
+    <string name="config_mount_learned_value">%1$s · %2$s</string>
+    <string name="config_mount_not_learned">not learned yet</string>
+    <string name="config_mount_use_learned">Use the learned value</string>
+    <string name="config_mount_in_use">In use now</string>
+    <string name="live_short_served_inertial">apps · %1$s</string>
+    <string name="live_inertial">inertial filter</string>
+    <string name="live_inertial_imu">IMU: %1$s</string>
+    <string name="live_inertial_short_tracking">corrected</string>
+    <string name="live_inertial_short_sideways">held</string>
+    <string name="live_inertial_short_dr">dead reckoning</string>
+    <string name="live_inertial_short_network">network-aided</string>
+    <string name="live_inertial_short_none">stopped</string>
+    <string name="live_dish_heading_no_mount">%1$s° (mount offset not learned yet)</string>
+    <string name="report_lane_dead_reckoning">Inertial dead reckoning</string>
+    <string name="report_lane_sideways">AUTO held off to the side</string>
+    <string name="report_readout_filter_error">filter %1$s m</string>
+    <string name="report_readout_dead_reckoning">dead reckoning</string>
+    <string name="report_readout_sideways">AUTO held sideways</string>
+    <string name="report_typical_error_inertial">typical error, inertial (p50)</string>
+    <string name="report_inertial_title">Inertial correction (replayed)</string>
+    <string name="report_inertial_error">served error</string>
+    <string name="report_inertial_today">without it, same moments</string>
+    <string name="report_inertial_dr">dead-reckoned</string>
+    <string name="report_inertial_push_stopped">of it nothing pushed</string>
+    <string name="report_inertial_dr_error">error while dead reckoning</string>
+    <string name="report_inertial_dr_error_value">%1$s · p95 %2$s · within the told accuracy %3$s</string>
+    <string name="report_inertial_sideways">held off to the side</string>
+    <string name="report_error_p50_p95_max">%1$s · p95 %2$s · max %3$s</string>
+    <string name="report_inertial_sideways_value">%1$d× · %2$s · max %3$s</string>
+    <string name="report_inertial_suspects">watch-only suspects</string>
+    <string name="report_inertial_rejects">gate rejects · events</string>
+    <string name="report_inertial_mount">mount offset in use</string>
+    <string name="report_inertial_mount_none">not learned</string>
+    <string name="report_inertial_hint">What Auto serves with the inertial correction on, replayed over this session from its recorded dish answers, motion sensors and network positions. The errors need the phone\'s own GNSS, so a drive with the mock off.</string>
+
+
+    <!-- Dish tab strings: start -->
+
+    <!-- Dish tab: sub-tabs, shared parts -->
+    <string name="dish_tab_overview">Overview</string>
+    <string name="dish_tab_history">History</string>
+    <string name="dish_tab_sky">Sky</string>
+    <string name="dish_tab_controls">Controls</string>
+    <string name="dish_tab_router">Router</string>
+    <string name="dish_tab_probe">Probe</string>
+    <string name="dish_waiting">Waiting for the dish…</string>
+    <string name="dish_problem_title">Dish</string>
+    <string name="router_problem_title">Router</string>
+    <string name="dish_unreachable">The dish does not answer.</string>
+    <string name="router_unreachable">The router does not answer.</string>
+    <string name="dish_unreachable_hint">Check that the phone is on the Starlink Wi-Fi and that the address under Starlink &gt; Connection is right (%1$s).</string>
+    <string name="dish_ago">%1$s ago</string>
+    <string name="chart_now">now</string>
+    <string name="common_yes">yes</string>
+    <string name="common_no">no</string>
+
+    <!-- Units (numbers are formatted in code and passed as text) -->
+    <string name="unit_ms">%1$s ms</string>
+    <string name="unit_mbps">%1$s Mbit/s</string>
+    <string name="unit_percent">%1$s%%</string>
+    <string name="unit_s">%1$s s</string>
+    <string name="unit_hz">%1$s Hz</string>
+    <string name="unit_kmh">%1$s km/h</string>
+    <string name="unit_mps">%1$s m/s</string>
+    <string name="unit_db">%1$s dB</string>
+    <string name="unit_w">%1$s W</string>
+    <string name="unit_gb">%1$s GB</string>
+    <string name="unit_mb">%1$s MB</string>
+    <string name="unit_kb">%1$s kB</string>
+    <string name="unit_b">%1$s B</string>
+
+    <!-- Compass points -->
+    <string name="compass_n">N</string>
+    <string name="compass_ne">NE</string>
+    <string name="compass_e">E</string>
+    <string name="compass_se">SE</string>
+    <string name="compass_s">S</string>
+    <string name="compass_sw">SW</string>
+    <string name="compass_w">W</string>
+    <string name="compass_nw">NW</string>
+
+    <!-- Confirmation dialog -->
+    <string name="confirm_type_word">Type %1$s to confirm:</string>
+    <string name="confirm_word_reset">RESET</string>
+
+    <!-- Last outcome of a command, in plain words -->
+    <string name="outcome_ok_dish">Done: the dish accepted it.</string>
+    <string name="outcome_ok_router">Done: the router accepted it.</string>
+    <string name="outcome_unimplemented_dish">The dish does not implement this.</string>
+    <string name="outcome_unimplemented_router">The router does not implement this.</string>
+    <string name="outcome_denied_dish">Refused by the dish: permission denied. The Starlink app, logged in, can change this.</string>
+    <string name="outcome_denied_router">Refused by the router: permission denied. The Starlink app, logged in, can change this.</string>
+    <string name="outcome_unauth_dish">Refused by the dish: it wants a login. The Starlink app, logged in, can do this.</string>
+    <string name="outcome_unauth_router">Refused by the router: it wants a login. The Starlink app, logged in, can do this.</string>
+    <string name="outcome_policy_dish">Refused for now: the dish is disabled (for example moving too fast for the plan).</string>
+    <string name="outcome_policy_router">Refused for now by the router because of a policy.</string>
+    <string name="outcome_plan_dish">Not included in your Starlink plan.</string>
+    <string name="outcome_plan_router">Not included in your Starlink plan.</string>
+    <string name="outcome_unreachable_dish">Not sent: the dish could not be reached.</string>
+    <string name="outcome_unreachable_router">Not sent: the router could not be reached.</string>
+    <string name="outcome_no_answer_dish">Sent, but the dish did not answer (it may be restarting). Check before sending it again.</string>
+    <string name="outcome_no_answer_router">Sent, but the router did not answer (it may be restarting). Check before sending it again.</string>
+    <string name="outcome_other_dish">The dish answered with an error.</string>
+    <string name="outcome_other_router">The router answered with an error.</string>
+
+    <!-- Dish state, alerts, events (plain words for the dish codes) -->
+    <string name="dish_state_connected">Connected</string>
+    <string name="dish_state_searching">Searching for satellites</string>
+    <string name="dish_state_booting">Starting up</string>
+    <string name="dish_state_stowed">Stowed</string>
+    <string name="dish_state_sleeping">Sleeping (sleep schedule)</string>
+    <string name="dish_state_thermal">Shut down: too hot</string>
+    <string name="dish_state_obstructed">Blocked by an obstruction</string>
+    <string name="dish_state_rf_inhibited">Radio switched off (RF inhibit)</string>
+    <string name="dish_state_busy">Busy (motors or cable test)</string>
+    <string name="dish_state_unknown">Unknown</string>
+    <string name="severity_warning">Warning</string>
+    <string name="severity_caution">Caution</string>
+    <string name="severity_advisory">Note</string>
+    <string name="alert_motors_stuck">The motors are stuck</string>
+    <string name="alert_thermal_shutdown">Shut down because it is too hot</string>
+    <string name="alert_thermal_throttle">Too hot: the dish slows down to cool off</string>
+    <string name="alert_unexpected_location">The dish is not where it was set up (unexpected location)</string>
+    <string name="alert_mast_not_near_vertical">The mast is not near vertical</string>
+    <string name="alert_slow_ethernet_speeds">Slow Ethernet link</string>
+    <string name="alert_slow_ethernet_speeds_100">Ethernet link at 100 Mbit/s only</string>
+    <string name="alert_install_pending">A software update is waiting for a restart</string>
+    <string name="alert_is_heating">Heating to melt snow or ice</string>
+    <string name="alert_power_supply_thermal_throttle">The power supply is too hot and slowing down</string>
+    <string name="alert_is_power_save_idle">Idle: the sleep schedule is on</string>
+    <string name="alert_dbf_telem_stale">Internal beamformer telemetry is stale</string>
+    <string name="alert_low_motor_current">Motor current is low</string>
+    <string name="alert_lower_signal_than_predicted">The signal is weaker than predicted</string>
+    <string name="alert_obstruction_map_reset">The obstruction map was reset</string>
+    <string name="alert_dish_water_detected">Water detected in the dish</string>
+    <string name="alert_router_water_detected">Water detected in the router</string>
+    <string name="alert_upsu_router_port_slow">The router port of the power supply is slow</string>
+    <string name="alert_no_ethernet_link">No Ethernet link</string>
+    <string name="alert_obstructed">The signal is blocked by an obstruction right now</string>
+    <string name="alert_hardware_self_test_failed">The start-up hardware self-test failed</string>
+    <string name="alert_overage_rate_limited">Speed limited after the data allowance ran out</string>
+    <string name="outage_unknown">Unknown cause</string>
+    <string name="outage_booting">Dish starting up</string>
+    <string name="outage_stowed">Dish stowed</string>
+    <string name="outage_thermal_shutdown">Shut down: too hot</string>
+    <string name="outage_no_schedule">No satellite schedule</string>
+    <string name="outage_no_sats">No satellites in view</string>
+    <string name="outage_obstructed">Blocked by an obstruction</string>
+    <string name="outage_no_downlink">No data from the satellite</string>
+    <string name="outage_no_pings">Network not answering</string>
+    <string name="outage_actuator_activity">Motors moving</string>
+    <string name="outage_cable_test">Cable test</string>
+    <string name="outage_sleeping">Sleeping (sleep schedule)</string>
+    <string name="outage_sky_search">Searching the sky for satellites</string>
+    <string name="outage_inhibit_rf">Radio switched off (RF inhibit)</string>
+    <string name="outage_moving_not_allowed">Moving where this is not allowed</string>
+    <string name="outage_other">Cause %1$s</string>
+    <string name="event_unknown">Unknown event</string>
+    <string name="event_high_downlink_packet_loss">High packet loss</string>
+    <string name="event_rain_snr_low">Weak signal for a long time (rain?)</string>
+    <string name="event_eth_no_link">No Ethernet link</string>
+    <string name="event_eth_slow_link">Slow Ethernet link</string>
+    <string name="event_eth_slow_link_100">Ethernet link at 100 Mbit/s only</string>
+    <string name="event_user_reported_issue">A problem reported by the user</string>
+    <string name="event_other">Router or Wi-Fi event: %1$s</string>
+    <string name="init_attitude_initialization">Orientation worked out</string>
+    <string name="init_burst_detected">First satellite burst heard</string>
+    <string name="init_ekf_converged">Position filter settled</string>
+    <string name="init_first_cplane">First contact with the control plane</string>
+    <string name="init_first_pop_ping">First answer from the internet gateway (POP)</string>
+    <string name="init_gps_valid">GNSS position valid</string>
+    <string name="init_initial_network_entry">Joined the Starlink network</string>
+    <string name="init_network_schedule">Satellite schedule received</string>
+    <string name="init_rf_ready">Radio ready</string>
+    <string name="init_stable_connection">Stable connection</string>
+    <string name="limit_none">none</string>
+    <string name="limit_policy">limited by the plan</string>
+    <string name="limit_user">limited by your own setting</string>
+    <string name="limit_overage">limited: data allowance used up</string>
+    <string name="limit_low_speed">limited by the low-speed policy</string>
+    <string name="mobility_stationary">Stationary</string>
+    <string name="mobility_nomadic">Nomadic</string>
+    <string name="mobility_mobile">Mobile</string>
+    <string name="attitude_reset">reset</string>
+    <string name="attitude_unconverged">not settled yet</string>
+    <string name="attitude_converged">settled</string>
+    <string name="attitude_faulted">faulted</string>
+    <string name="attitude_invalid">invalid</string>
+    <string name="selftest_passed">passed</string>
+    <string name="selftest_failed">failed</string>
+    <string name="selftest_none">no result</string>
+    <string name="power_source_usbc">USB-C</string>
+    <string name="power_source_battery">battery</string>
+    <string name="power_source_usbc_battery">USB-C and battery</string>
+    <string name="disablement_outside_home_region">outside the home region</string>
+
+    <!-- Overview -->
+    <string name="ov_state_title">State</string>
+    <string name="ov_state">state</string>
+    <string name="ov_hardware">hardware</string>
+    <string name="ov_country">region</string>
+    <string name="ov_ready">ready stages</string>
+    <string name="ov_not_ready">not ready yet</string>
+    <string name="ov_cady_hint">The cady clock stage does not exist on this hardware, so it is not listed; a Mini always reports it as not ready.</string>
+    <string name="ov_stow_requested">stow requested</string>
+    <string name="ov_alerts_title">Alerts</string>
+    <string name="ov_alerts_none">No alerts.</string>
+    <string name="ov_self_test">hardware self-test</string>
+    <string name="ov_self_test_codes">failed parts</string>
+    <string name="ov_connection_title">Connection now</string>
+    <string name="ov_latency">latency</string>
+    <string name="ov_drop">packets lost</string>
+    <string name="ov_download">download</string>
+    <string name="ov_upload">upload</string>
+    <string name="ov_signal">signal quality</string>
+    <string name="ov_snr">signal against noise</string>
+    <string name="ov_snr_ok">above the noise floor</string>
+    <string name="ov_snr_low">at or below the noise floor</string>
+    <string name="ov_power">power draw</string>
+    <string name="ov_router_power">router power</string>
+    <string name="ov_ethernet">Ethernet link</string>
+    <string name="ov_update_title">Software and update</string>
+    <string name="ov_update_state">update</string>
+    <string name="ov_update_progress">progress</string>
+    <string name="ov_update_hour">restart hour for updates</string>
+    <string name="ov_update_hour_value">%1$s:00</string>
+    <string name="ov_update_waiting_hint">The update is downloaded and installs when the dish restarts: at the planned time, or now. A restart takes a minute or two.</string>
+    <string name="ov_install_now">Install now (restart)</string>
+    <string name="ov_install_title">Install the update now?</string>
+    <string name="ov_install_text">The dish restarts to install the waiting update. It is offline for a minute or two, with no position from it meanwhile: in Auto with the inertial correction the mock GPS carries on from the phone\'s motion sensors for a short while, less accurate every second, otherwise it stops at once (in Auto the network fallback may still pass on Android\'s network position). The app notes this as a restart it sent.</string>
+    <string name="ov_install_confirm">Restart and install</string>
+    <string name="ov_obstruction_title">Obstructions</string>
+    <string name="ov_not_reported">The dish does not report this.</string>
+    <string name="ov_obstructed_share">share of time blocked</string>
+    <string name="ov_obstructed_now">blocked now</string>
+    <string name="ov_obstruction_window">measured over</string>
+    <string name="ov_prolonged_duration">a long blockage lasts</string>
+    <string name="ov_prolonged_interval">a long blockage every</string>
+    <string name="ov_patches">sky patches measured</string>
+    <string name="ov_obstruction_hint">In a moving car these numbers describe the places the dish has been, not the current view.</string>
+    <string name="ov_gnss_title">Satellite navigation (GNSS)</string>
+    <string name="ov_no_sats_after_ttff">no satellites after the first fix</string>
+    <string name="ov_gnss_inhibit">GNSS use</string>
+    <string name="ov_gnss_allowed">allowed</string>
+    <string name="ov_gnss_inhibited">switched off (inhibited)</string>
+    <string name="ov_orientation_title">Orientation</string>
+    <string name="ov_attitude_value">%1$s ±%2$s°</string>
+    <string name="ov_boresight">pointing (azimuth / elevation)</string>
+    <string name="ov_boresight_wanted">best view would be</string>
+    <string name="ov_orientation_hint">Azimuth is counted from north (0° = north, 90° = east); elevation 90° is straight up. The dish wants to sit level and face the sky; tilt means little while driving.</string>
+    <string name="ov_startup_title">Start-up of this power-on</string>
+    <string name="ov_startup_none">The dish did not report its start-up times.</string>
+    <string name="ov_startup_total">settled after</string>
+    <string name="ov_startup_not_reached">Not reached yet: %1$s.</string>
+    <string name="ov_startup_hint">Counted from the moment the dish powered on: how long each stage took this time.</string>
+    <string name="ov_plan_title">Plan and limits</string>
+    <string name="ov_not_disabled">none</string>
+    <string name="ov_limit_down">download limit</string>
+    <string name="ov_limit_up">upload limit</string>
+    <string name="ov_metered">treated as metered</string>
+    <string name="ov_battery_title">Battery</string>
+    <string name="ov_battery_charge">charge</string>
+    <string name="ov_battery_charging">charging</string>
+    <string name="ov_battery_source">power from</string>
+
+    <!-- Debug data export -->
+    <string name="dbg_title">Debug data</string>
+    <string name="dbg_hint">Saves what the dish and the router answer right now as one JSON file for support, and opens the share sheet. It only reads: nothing is changed. Wi-Fi passwords and keys are never in it, and neither is any position.</string>
+    <string name="dbg_include_ids">include identifiers</string>
+    <string name="dbg_ids_off">Device ids, network names (SSIDs), client names, MAC addresses and public IP addresses are left out. The private addresses of your local network (the dish\'s and the router\'s, such as 192.168.100.1) stay in.</string>
+    <string name="dbg_ids_on">Device ids, network names, client names and addresses are included: share the file only with people you trust.</string>
+    <string name="dbg_export">Export debug data</string>
+    <string name="dbg_running">Reading the dish and the router…</string>
+    <string name="dbg_share_title">Share debug data</string>
+    <string name="dbg_done">Saved (%1$s).</string>
+    <string name="dbg_failed">Could not export: %1$s</string>
+
+    <!-- History -->
+    <string name="hist_hint">The last 15 minutes, one sample per second. Red bands are outages.</string>
+    <string name="hist_latency">Latency</string>
+    <string name="hist_drop">Packets lost</string>
+    <string name="hist_download">Download</string>
+    <string name="hist_upload">Upload</string>
+    <string name="hist_power">Power draw</string>
+    <string name="hist_no_power">This dish reports no power history.</string>
+    <string name="hist_no_data">no data</string>
+    <string name="hist_readout">now %1$s · average %2$s · highest %3$s</string>
+    <string name="hist_outages_title">Outages</string>
+    <string name="hist_outages_none">No outages in the last 15 minutes.</string>
+    <string name="hist_outages_total">total</string>
+    <string name="hist_showing_latest">Showing the latest %1$s of %2$s.</string>
+    <string name="hist_events_title">Event log</string>
+    <string name="hist_events_none">No events.</string>
+
+    <!-- Sky -->
+    <string name="sky_map_title">Obstruction map</string>
+    <string name="sky_map_description">Obstruction map of the sky, %1$s percent of the observed sky is blocked</string>
+    <string name="sky_clear">clear</string>
+    <string name="sky_reduced">weaker</string>
+    <string name="sky_blocked">blocked</string>
+    <string name="sky_map_hint">The middle is straight up; the edge is low over the horizon, north at the top. Gray is sky the dish has not seen.</string>
+    <string name="sky_approximate">This map is in the dish\'s own frame: north is worked out from the way the dish points, so directions are approximate.</string>
+    <string name="sky_moving_hint">In a moving car the map shows places the dish has been; it fills in over time and is best read when parked.</string>
+    <string name="sky_numbers_title">Numbers</string>
+    <string name="sky_blocked_share">blocked, of the observed sky</string>
+    <string name="sky_reduced_share">weaker signal</string>
+    <string name="sky_clear_share">clear</string>
+    <string name="sky_observed">observed cells</string>
+    <string name="sky_observed_value">%1$s of %2$s</string>
+    <string name="sky_largest_patch">largest blocked patch</string>
+    <plurals name="sky_largest_patch_value">
+        <item quantity="one">%1$s cell, %2$s%% of the observed</item>
+        <item quantity="other">%1$s cells, %2$s%% of the observed</item>
+    </plurals>
+    <string name="sky_fetched">map fetched</string>
+    <string name="sky_data_covers">obstruction data covers</string>
+    <string name="sky_no_data">The dish has not observed any sky yet.</string>
+    <string name="sky_sectors_title">By direction</string>
+    <string name="sky_sectors_hint">Share of each 45° wedge that is blocked; the north wedge covers 337.5° to 22.5°.</string>
+    <string name="sky_clear_title">Clear obstruction map</string>
+    <string name="sky_clear_text">Erases the dish\'s picture of what blocks the sky; it starts again from nothing and learns from now on.</string>
+    <string name="sky_clear_button">Clear the map…</string>
+    <string name="sky_clear_confirm">The dish forgets everything it learned about obstructions. The numbers here are incomplete until it has looked at the sky again, which takes a while. This cannot be undone.</string>
+
+    <!-- Controls -->
+    <string name="controls_intro">Each command asks first and says what will happen. A control the dish does not implement, or refuses, is greyed out with its answer.</string>
+    <string name="controls_now">now</string>
+    <string name="controls_apply">Apply…</string>
+    <string name="controls_ok">OK</string>
+    <string name="controls_unavailable">Not available: %1$s</string>
+    <string name="controls_hours">Hours</string>
+    <string name="controls_minutes">Minutes</string>
+    <string name="controls_reboot_title">Restart the dish</string>
+    <string name="controls_reboot_text">Restarts the dish. It comes back in a minute or two.</string>
+    <string name="controls_reboot_button">Restart…</string>
+    <string name="controls_reboot_confirm">The dish restarts now and is offline for a minute or two, with no position from it meanwhile: in Auto with the inertial correction the mock GPS carries on from the phone\'s motion sensors for a short while, less accurate every second, otherwise it stops at once (in Auto the network fallback may still pass on Android\'s network position). A waiting software update is installed. The app notes this restart as sent from here.</string>
+    <string name="controls_sleep_title">Sleep schedule</string>
+    <string name="controls_sleep_text">A daily window in which the dish sleeps: no internet and no snow melting. Its Wi-Fi may go off too, and with it Star Nav\'s link to the dish (not yet checked on a Mini): look after the first night. Times are your phone\'s local time.</string>
+    <string name="controls_sleep_none">never set</string>
+    <string name="controls_sleep_off">off</string>
+    <string name="controls_sleep_on">on, %1$s to %2$s</string>
+    <string name="controls_sleep_enabled">Sleep schedule on</string>
+    <string name="controls_sleep_start">Start (local time)</string>
+    <string name="controls_sleep_length">Length</string>
+    <string name="controls_sleep_invalid">The length must be from 1 minute to 24 hours.</string>
+    <string name="controls_sleep_confirm_on">Every day from %1$s to %2$s (%3$s) the dish sleeps: no internet, no snow melting, and no position from it. The dish counts in UTC: the window starts at %4$s UTC and lasts %5$s minutes.</string>
+    <string name="controls_sleep_confirm_off">The sleep schedule is switched off; the dish stays awake all day.</string>
+    <string name="controls_snow_title">Snow melt</string>
+    <string name="controls_snow_text">How the dish heats itself to melt snow and ice.</string>
+    <string name="controls_snow_auto">Auto</string>
+    <string name="controls_snow_on">Always on</string>
+    <string name="controls_snow_off">Always off</string>
+    <string name="controls_snow_confirm_auto">The dish decides by itself when to heat.</string>
+    <string name="controls_snow_confirm_on">The dish heats all the time. This uses much more power, which matters on a car\'s battery.</string>
+    <string name="controls_snow_confirm_off">The dish never heats: snow and ice stay on it and can cut the signal.</string>
+    <string name="controls_update_title">Update window and deferral</string>
+    <string name="controls_update_text">When the dish may restart to install a software update, and whether it may put an update off for up to three days.</string>
+    <string name="controls_update_now">restart at hour %1$s, deferral: %2$s</string>
+    <string name="controls_update_hour">Restart hour 0–23 (now %1$s)</string>
+    <string name="controls_update_hour_invalid">The hour must be from 0 to 23.</string>
+    <string name="controls_update_deferral">Allow putting an update off for 3 days</string>
+    <string name="controls_update_clock_hint">Which time zone the dish uses for this hour is not confirmed; the figure is shown as the dish reports it. A car dish that is off at night may never reach a 03:00 window: use Install now on the Overview then.</string>
+    <string name="controls_update_confirm">The dish will use these update settings. It does not restart now.</string>
+    <string name="controls_location_title">Location on the local network</string>
+    <string name="controls_location_text">Lets apps on the Starlink Wi-Fi, such as this one, ask the dish for its position. Your Starlink plan can still refuse position requests.</string>
+    <string name="controls_location_allowed">allowed</string>
+    <string name="controls_location_blocked">not allowed</string>
+    <string name="controls_location_allow_button">Allow…</string>
+    <string name="controls_location_block_button">Stop allowing…</string>
+    <string name="controls_location_allow_confirm">The dish will answer position requests on the local network. It is not verified that a dish accepts this from a phone on its Wi-Fi: it may need the Starlink app, signed in, to turn it on once. The dish\'s answer is shown here.</string>
+    <string name="controls_location_block_confirm">The dish stops answering position requests on the local network: this app gets no position from it until you allow it again.</string>
+    <string name="controls_gnss_title">Dish GNSS</string>
+    <string name="controls_gnss_text">Switches off the dish\'s own satellite navigation receiver. It switches itself back on when the dish restarts. Useful to test whether the dish keeps a position without GNSS.</string>
+    <string name="controls_gnss_on">in use</string>
+    <string name="controls_gnss_off">switched off (inhibited)</string>
+    <string name="controls_gnss_inhibit_button">Switch off GNSS…</string>
+    <string name="controls_gnss_allow_button">Switch GNSS on…</string>
+    <string name="controls_gnss_inhibit_confirm">The dish stops using GNSS until it restarts. Its position may become less exact, stop, or come only from Starlink\'s own measurements: watch the Overview. This is a test; switch it back on when done.</string>
+    <string name="controls_gnss_allow_confirm">The dish uses GNSS again.</string>
+    <string name="controls_rf_title">Dish radio</string>
+    <string name="controls_rf_text">Switches the dish\'s radio to the satellites off. Its Wi-Fi stays up, but there is no internet through it while the radio is off.</string>
+    <string name="controls_rf_on">on</string>
+    <string name="controls_rf_off">switched off (RF inhibit)</string>
+    <string name="controls_rf_inhibit_button">Switch the radio off…</string>
+    <string name="controls_rf_allow_button">Switch the radio on…</string>
+    <string name="controls_rf_inhibit_confirm">The dish stops talking to the satellites: no internet through it until you switch the radio on again. Position data may stop too.</string>
+    <string name="controls_rf_allow_confirm">The radio is switched on and the dish looks for satellites again.</string>
+    <string name="controls_stow_title">Stow and unstow</string>
+    <string name="controls_stow_none">This dish has no motors, so it cannot be stowed or unstowed.</string>
+    <string name="controls_stow_text">Folds the dish flat or raises it again.</string>
+    <string name="controls_stow_stowed">stowed</string>
+    <string name="controls_stow_unstowed">raised</string>
+    <string name="controls_stow_button">Stow…</string>
+    <string name="controls_unstow_button">Unstow…</string>
+    <string name="controls_stow_confirm">The dish moves to its stowed position and is offline until it is raised again.</string>
+    <string name="controls_unstow_confirm">The dish raises itself and looks for satellites.</string>
+    <string name="controls_check_title">Check for an update</string>
+    <string name="controls_check_text">Asks the dish to look for a new software version.</string>
+    <string name="controls_check_button">Check…</string>
+    <string name="controls_check_confirm">The dish looks for a new software version. A found update downloads in the background and waits for a restart; nothing restarts now.</string>
+    <string name="controls_reset_title">Reset the dish to factory settings</string>
+    <string name="controls_reset_text">Erases the dish\'s settings (sleep schedule, snow melt, update window, …) and restarts it.</string>
+    <string name="controls_reset_button">Reset…</string>
+    <string name="controls_reset_confirm">All the dish\'s settings are erased and it restarts. It is offline for a minute or two: no position from it meanwhile. You may have to set it up again in the Starlink app. This cannot be undone.</string>
+    <string name="controls_forget_title">Greyed-out controls</string>
+    <string name="controls_forget_text">A control stays gray from the dish\'s last answer. After a firmware update or an account change, forget the answers and try again.</string>
+    <string name="controls_forget_button">Forget what the dish refused</string>
+
+    <!-- Router address, Settings and probe -->
+    <string name="router_address_title">Router address</string>
+    <string name="router_address">address</string>
+    <string name="router_address_none">none found</string>
+    <string name="router_looking">Looking for the router…</string>
+    <string name="err_no_router_address">no router address: not on the Starlink Wi-Fi, and none typed under Starlink &gt; Connection</string>
+    <string name="router_address_source">taken from</string>
+    <string name="router_source_manual">typed under Connection</string>
+    <string name="router_source_gateway">the Wi-Fi network\'s gateway</string>
+    <string name="router_source_none">no Wi-Fi gateway and nothing typed</string>
+    <string name="router_address_hint">The router is the Starlink Mini\'s built-in one. Its address follows the Wi-Fi network\'s gateway; type one under Starlink &gt; Connection to override it (for example 192.168.1.1).</string>
+    <string name="probe_router_skipped">The router was not probed: the phone is not on the Starlink Wi-Fi and no router address is typed under Connection.</string>
+    <string name="config_router_title">Router</string>
+    <string name="config_router_address">Router address (host or host:port)</string>
+    <string name="config_router_gateway">Wi-Fi gateway now</string>
+    <string name="config_router_hint">Leave empty to use the Wi-Fi network\'s gateway. The router answers on port 9001 (gRPC-Web), then 9000.</string>
+    <!-- Dish tab strings: end -->
+
+    <!-- Router tab strings: start -->
+    <string name="rsec_status">Status</string>
+    <string name="rsec_devices">Devices</string>
+    <string name="rsec_wifi">Wi-Fi</string>
+    <string name="rsec_history">History</string>
+    <string name="rsec_controls">Controls</string>
+    <string name="common_dismiss">Dismiss</string>
+    <string name="confirm_word_change">CHANGE</string>
+    <string name="confirm_word_bypass">BYPASS</string>
+    <string name="rs_state_title">Router</string>
+    <string name="rs_wan">link to the dish</string>
+    <string name="rs_wan_up">connected</string>
+    <string name="rs_wan_down">no link</string>
+    <string name="rs_wan_v4">WAN IPv4</string>
+    <string name="rs_wan_v6">IPv6</string>
+    <string name="rs_public_ip">public IPv4</string>
+    <string name="rs_ip_changed">address changed</string>
+    <string name="rs_built_in">built into the dish</string>
+    <string name="rs_devices">devices online</string>
+    <string name="rs_setup">first setup</string>
+    <string name="rs_setup_pending">not finished</string>
+    <string name="rs_bypass">bypass mode</string>
+    <string name="rs_bypass_on">ON: the Wi-Fi is off</string>
+    <string name="rs_dhcp">addresses</string>
+    <string name="rs_dhcp_full">none left for new devices</string>
+    <string name="rs_pings_title">Pings from the router</string>
+    <string name="rs_ping_internet">internet</string>
+    <string name="rs_ping_pop">satellite network (POP)</string>
+    <string name="rs_ping_pop_v6">satellite network, IPv6</string>
+    <string name="rs_ping_dish">dish</string>
+    <string name="rs_ping_value">%1$s · lost %2$s (5 min: %3$s)</string>
+    <string name="rs_pings_hint">Round trip of the router\'s own pings, and the share lost now and over the last 5 minutes. A dash means no answer.</string>
+    <string name="rs_bands_title">Wi-Fi channel load</string>
+    <string name="rs_band_value">%1$s busy, %2$s of it other networks</string>
+    <string name="rs_bands_hint">Share of time the channel was busy. A high share from other networks means crowded air, which slows everything on that band.</string>
+    <string name="rs_alerts_title">Router alerts</string>
+    <string name="rs_alerts_none">No router alerts</string>
+    <string name="rs_update_title">Router software</string>
+    <string name="rs_update_running">running version</string>
+    <string name="rs_update_new">new version</string>
+    <string name="rs_update_restart_hint">The update is installed; the router restarts itself later, and its Wi-Fi drops for a minute or two.</string>
+    <string name="rs_update_hint">Under Controls you can ask the router to check for an update.</string>
+    <string name="ralert_thermal_throttle">The router is too hot and slows down</string>
+    <string name="ralert_install_pending">A router update is waiting to be installed</string>
+    <string name="ralert_freshly_fused">First start of a new router</string>
+    <string name="ralert_lan_slow_10">A cable on the router runs at only 10 Mbit/s</string>
+    <string name="ralert_lan_slow_100">A cable on the router runs at only 100 Mbit/s</string>
+    <string name="ralert_wan_poor">The cable to the dish connects poorly</string>
+    <string name="ralert_mesh_topology">The mesh keeps rearranging itself</string>
+    <string name="ralert_mesh_backhaul">The link between mesh routers is unreliable</string>
+    <string name="ralert_radius">The login server of the secured Wi-Fi is not running</string>
+    <string name="ralert_switch_error">The router\'s Ethernet switch reports an error</string>
+    <string name="ralert_poe_unreachable">The dish is powered through the cable but does not answer</string>
+    <string name="ralert_poe_fuse">The fuse of the dish power line is blown</string>
+    <string name="ralert_poe_overcurrent">Too much current on the dish power line</string>
+    <string name="ralert_poe_off_current">The dish power line is off but current still flows</string>
+    <string name="ralert_poe_overvoltage">Input voltage is too high</string>
+    <string name="ralert_poe_undervoltage">Input voltage is too low</string>
+    <string name="ralert_cable_drops">Many pings are lost on the cable to the dish</string>
+    <string name="ralert_sandbox">Sandboxing of devices is switched off</string>
+    <string name="ralert_overflight">Only the overflight sector of the sky is blocked</string>
+    <string name="ralert_offline_networks">Networks that work without internet are switched off</string>
+    <string name="ralert_wired_mesh">The wired mesh does not use the WAN port</string>
+    <string name="rupdate_not_run">No update check yet</string>
+    <string name="rupdate_looking">Looking for an update</string>
+    <string name="rupdate_downloading">Downloading the update</string>
+    <string name="rupdate_installing">Installing the update</string>
+    <string name="rupdate_current">Up to date</string>
+    <string name="rupdate_restart_pending">Installed, restart pending</string>
+    <string name="rupdate_failed">Update failed (%1$s)</string>
+    <string name="rupdate_other">Update state: %1$s</string>
+    <string name="revent_factory_reset">The router was reset to factory settings</string>
+    <string name="revent_reboot">The router restarted</string>
+    <string name="revent_power_cycle">The router lost power and started again</string>
+    <string name="revent_config_update">The router\'s settings changed</string>
+    <string name="revent_software_update">The router\'s software was updated</string>
+    <string name="revent_thermal">The router slowed down: too hot</string>
+    <string name="revent_reboot_config">The router restarted to apply new settings</string>
+    <string name="revent_public_ip_change">The public IPv4 address changed</string>
+    <string name="revent_pop_v4_drop">Pings to the satellite network (IPv4) were lost</string>
+    <string name="revent_pop_v6_drop">Pings to the satellite network (IPv6) were lost</string>
+    <string name="revent_lan_loss">Packets were lost on a cable of the router</string>
+    <string name="revent_wan_loss">Packets were lost on the cable to the dish</string>
+    <string name="revent_dhcp_exhausted">No free addresses were left for new devices</string>
+    <string name="revent_max_clients">The maximum number of Wi-Fi devices was reached</string>
+    <string name="revent_dish_ping_drop">Pings to the dish were lost</string>
+    <string name="revent_client_reconnecting">%1$s keeps reconnecting</string>
+    <string name="revent_client_band">%1$s keeps switching Wi-Fi band</string>
+    <string name="revent_wan_down">The cable to the dish went down</string>
+    <string name="revent_unknown_client">A device</string>
+    <string name="rband_2">2.4 GHz</string>
+    <string name="rband_5">5 GHz</string>
+    <string name="rband_5_high">5 GHz (upper)</string>
+    <string name="rauth_open">open (no password)</string>
+    <string name="rauth_wpa2">WPA2</string>
+    <string name="rauth_wpa3">WPA3</string>
+    <string name="rauth_wpa2_wpa3">WPA2/WPA3</string>
+    <string name="rauth_radius">login server (RADIUS)</string>
+    <string name="rauth_open_encrypted">open, encrypted</string>
+    <string name="rauth_onboard_radius">built-in login server</string>
+    <string name="rauth_unknown">unknown</string>
+    <string name="rclient_link_cable">cable</string>
+    <string name="rclient_online">online</string>
+    <string name="rclient_paused">paused</string>
+    <string name="rclient_offline">offline</string>
+    <string name="rd_title">Devices on the router</string>
+    <string name="rd_summary">%1$s online, %2$s paused, %3$s offline</string>
+    <string name="rd_none">The router reported no devices.</string>
+    <string name="rd_hint">Tap a device for details, to rename it or to pause it.</string>
+    <string name="rd_this_phone">this phone</string>
+    <string name="rd_dbm">%1$s dBm</string>
+    <string name="rd_db">%1$s dB</string>
+    <string name="rd_rates">link %1$s / %2$s Mbit/s</string>
+    <string name="rd_rates_pair">%1$s / %2$s Mbit/s</string>
+    <string name="rd_usage">used ↓ %1$s ↑ %2$s</string>
+    <string name="rd_host_name">host name</string>
+    <string name="rd_mac">MAC address</string>
+    <string name="rd_connected_for">connected for</string>
+    <string name="rd_idle">idle for</string>
+    <string name="rd_snr">signal to noise</string>
+    <string name="rd_mode">Wi-Fi mode</string>
+    <string name="rd_throughput">speed now (rx / tx)</string>
+    <string name="rd_ping">ping (5 min)</string>
+    <string name="rd_ping_value">%1$s · lost %2$s</string>
+    <string name="rd_lease">address lease ends in</string>
+    <string name="rd_rx_tx_hint">rx and tx are as the router sees them: rx is what the router receives from the device.</string>
+    <string name="rd_pause_self">This is the phone you are holding. Pausing it would cut Star Nav off from the router and the dish, so it is not offered.</string>
+    <string name="rd_rename">Rename…</string>
+    <string name="rd_pause">Pause…</string>
+    <string name="rd_resume">Resume…</string>
+    <string name="rd_rename_title">Rename %1$s</string>
+    <string name="rd_rename_text">The name is stored in the router and shown in this list and in the Starlink app.</string>
+    <string name="rd_rename_field">Name</string>
+    <string name="rd_rename_button">Rename</string>
+    <string name="rd_pause_title">Pause %1$s</string>
+    <string name="rd_pause_text">The router stops giving this device network access until you resume it. If this is the phone you are holding, the router cuts it off and Star Nav loses the router and the dish.</string>
+    <string name="rd_resume_title">Resume %1$s</string>
+    <string name="rd_resume_text">The router lets this device back onto the network.</string>
+    <string name="rd_last_title">Last results</string>
+    <string name="rw_main_title">Wi-Fi network</string>
+    <string name="rw_guest_title">Guest network</string>
+    <string name="rw_none">The router reported no Wi-Fi networks.</string>
+    <string name="rw_isolation">devices cannot see each other</string>
+    <string name="rw_hidden_tag">hidden</string>
+    <string name="rw_off_tag">off</string>
+    <string name="rw_name">name</string>
+    <string name="rw_security">security</string>
+    <string name="rw_password">password</string>
+    <string name="rw_show">Show</string>
+    <string name="rw_hide">Hide</string>
+    <string name="rw_password_hint">The password is shown only while this screen is open, and Star Nav never stores or logs it.</string>
+    <string name="rw_apply">Apply</string>
+    <string name="rw_name_title">Wi-Fi name</string>
+    <string name="rw_name_text">The name of the router\'s network: one for both bands, or a different one for 2.4 and 5 GHz so a device can be told which band to use.</string>
+    <string name="rw_name_mode">names</string>
+    <string name="rw_name_one">one for all bands</string>
+    <string name="rw_name_split">one per band</string>
+    <string name="rw_name_button">Change name…</string>
+    <string name="rw_name_separate">Separate names for 2.4 and 5 GHz</string>
+    <string name="rw_name_field">Wi-Fi name</string>
+    <string name="rw_name_field_2">2.4 GHz name</string>
+    <string name="rw_name_field_5">5 GHz name</string>
+    <string name="rw_name_bytes">%1$s of %2$s bytes</string>
+    <string name="rw_name_invalid">A Wi-Fi name is 1 to 32 bytes (a Cyrillic letter takes two).</string>
+    <string name="rw_name_confirm">The Wi-Fi name becomes: %1$s\n\nEvery device on this Wi-Fi, including this phone, is disconnected and has to join again under the new name, in Android\'s Wi-Fi settings. Until the phone is back, Star Nav has no dish and no router, and the position feed stops.</string>
+    <string name="rw_pw_title">Wi-Fi password</string>
+    <string name="rw_pw_text">Sets a new password on every band of the router\'s network.</string>
+    <string name="rw_pw_open">The network is open: anyone in range can join it.</string>
+    <string name="rw_pw_button">Change password…</string>
+    <string name="rw_pw_field">New password</string>
+    <string name="rw_pw_rule">%1$s to %2$s characters: Latin letters, digits, spaces and the symbols of an English keyboard layout (no Cyrillic letters, which Android cannot use in a Wi-Fi password).</string>
+    <string name="rw_pw_confirm">The Wi-Fi password changes on every band. Every device on this Wi-Fi, including this phone, is disconnected and has to join again with the new password, in Android\'s Wi-Fi settings. Until the phone is back, Star Nav has no dish and no router. The password goes to the router and Star Nav does not store it.</string>
+    <string name="rw_hidden_title">Hidden network</string>
+    <string name="rw_hidden_text">A hidden network does not show its name in Wi-Fi lists; devices have to be given the name by hand.</string>
+    <string name="rw_hidden_now">hidden</string>
+    <string name="rw_visible_now">visible</string>
+    <string name="rw_hidden_hide_button">Hide the name…</string>
+    <string name="rw_hidden_show_button">Show the name…</string>
+    <string name="rw_hidden_hide_confirm">The router stops announcing its Wi-Fi name. Devices that already know the network usually keep working, but some drop and need the name typed in by hand. If this phone drops, Star Nav loses the dish and the router.</string>
+    <string name="rw_hidden_show_confirm">The router announces its Wi-Fi name again, so it shows up in Wi-Fi lists.</string>
+    <string name="rw_guest_card_title">Guest network</string>
+    <string name="rw_guest_text">A separate network for visitors, whose devices cannot see the others. Not every router accepts this from this app; the answer shows below.</string>
+    <string name="rw_guest_none">none</string>
+    <string name="rw_guest_add_button">Add guest network…</string>
+    <string name="rw_guest_remove_button">Remove guest network…</string>
+    <string name="rw_guest_name_field">Guest network name</string>
+    <string name="rw_guest_add_confirm">The router creates a guest network on 2.4 and 5 GHz, protected by the password you give; its devices cannot see each other. The main network is not touched.</string>
+    <string name="rw_guest_remove_confirm">The guest network is removed and its devices are disconnected. The main network is not touched.</string>
+    <string name="rnotice_title">After the change</string>
+    <string name="rnotice_join_again">The change went through. This phone may now be off the Wi-Fi: join the network again, under its new name or with its new password, in Android\'s Wi-Fi settings. Star Nav then finds the router again by itself.</string>
+    <string name="rnotice_may_drop">The change went through. The router may restart its Wi-Fi, so this phone may drop off it for a moment. If it does not come back by itself, join the network again in Android\'s Wi-Fi settings (a hidden network by typing its name). Star Nav then finds the router again by itself.</string>
+    <string name="rnotice_wifi_off">Bypass mode is on. The Mini\'s Wi-Fi is off, so this phone has lost the router and the dish, and Star Nav cannot reach them. Only the reset button on the Mini brings the Wi-Fi back.</string>
+    <string name="rnotice_no_config">Nothing was sent: the router\'s current Wi-Fi settings could not be read first, and a change has to start from them.</string>
+    <string name="rnotice_refused_locally">Nothing was sent: this change does not fit the router\'s current settings (for example, there is no such network).</string>
+    <string name="rnotice_open_wifi">Open Wi-Fi settings</string>
+    <string name="rc_intro">Controls of the router. Each one asks first and says what will happen. Changes that can cut this phone off the router say so: the phone reaches the dish through the router\'s Wi-Fi, so Star Nav has no position feed while it is cut off.</string>
+    <string name="rc_reboot_title">Restart the router</string>
+    <string name="rc_reboot_text">Restarts the router built into the dish.</string>
+    <string name="rc_reboot_button">Restart router…</string>
+    <string name="rc_reboot_confirm">The router restarts. Its Wi-Fi is gone for a minute or two, so this phone loses the router and the dish, and Star Nav has no position until the Wi-Fi is back. The phone normally joins it again by itself.</string>
+    <string name="rc_update_title">Check for a router update</string>
+    <string name="rc_update_text">Asks the router to look for new software now.</string>
+    <string name="rc_update_button">Check for update…</string>
+    <string name="rc_update_confirm">The router looks for a software update. If it finds one it may download it and restart itself later to install it, which takes its Wi-Fi away for a minute or two. The state shows under Status.</string>
+    <string name="rc_dns_title">DNS and content filter</string>
+    <string name="rc_dns_text">Which DNS servers the router gives to its devices. The filters use Cloudflare for Families: it blocks known malware sites, and optionally adult sites too.</string>
+    <string name="rc_dns_none">The router\'s own (no filter)</string>
+    <string name="rc_dns_malware">Block malware</string>
+    <string name="rc_dns_adult">Block malware and adult sites</string>
+    <string name="rc_dns_custom">My own servers</string>
+    <string name="rc_dns_custom_field">DNS servers</string>
+    <string name="rc_dns_custom_hint">IP addresses separated by commas or spaces, at most %1$s.</string>
+    <string name="rc_dns_secure">Encrypted DNS</string>
+    <string name="rc_dns_confirm">The router hands out these DNS servers: %1$s. Devices on its Wi-Fi briefly lose their connection while it applies them, and some keep the old servers until they reconnect.</string>
+    <string name="rc_lan_title">Router address (LAN subnet)</string>
+    <string name="rc_lan_text">The address of the router on its own network. Change it if it clashes with another network you connect to.</string>
+    <string name="rc_lan_field">Other address</string>
+    <string name="rc_lan_confirm">The router moves to %1$s. This phone leaves the Wi-Fi and has to join it again. Star Nav then finds the router at its new address by itself, unless you typed an address under Starlink &gt; Connection: change that one too. Until the phone is back, Star Nav has no dish and no router.</string>
+    <string name="rc_speed_title">Speed test</string>
+    <string name="rc_speed_text">The router measures the speed of the Starlink link.</string>
+    <string name="rc_speed_optin">I know it uses data</string>
+    <string name="rc_speed_button">Start speed test…</string>
+    <string name="rc_speed_confirm">The router moves data at full speed in both directions for about 10 seconds. On a fast link that is several hundred megabytes, and it counts against a limited or metered plan. The router runs the test against internet test servers, which see your connection; Star Nav asks it not to send the result to Starlink.</string>
+    <string name="rc_speed_running">Running…</string>
+    <string name="rc_speed_done">Finished.</string>
+    <string name="rc_speed_failed">The test ended with an error.</string>
+    <string name="rc_speed_line">%1$s: %2$s Mbit/s now · average %3$s · highest %4$s</string>
+    <string name="rc_speed_error">error</string>
+    <string name="rc_bypass_title">Bypass mode</string>
+    <string name="rc_bypass_text">Turns the Mini\'s own router off so another router can take over.</string>
+    <string name="rc_bypass_is_on">on</string>
+    <string name="rc_bypass_is_off">off</string>
+    <string name="rc_bypass_on_button">Turn on bypass mode…</string>
+    <string name="rc_bypass_leave_button">Leave bypass mode…</string>
+    <string name="rc_bypass_on_confirm">The Mini\'s Wi-Fi turns off. This phone loses the router and the dish, and Star Nav stops working: it needs the Mini\'s Wi-Fi. The Wi-Fi does not come back by itself and this app cannot bring it back. Only the reset button on the router does, and that resets the router\'s settings. You need another router on the dish\'s cable.</string>
+    <string name="rc_bypass_ack">I understand that only the reset button on the router undoes this</string>
+    <string name="rc_bypass_leave_confirm">The Mini\'s router starts again, with its Wi-Fi.</string>
+    <string name="rc_reset_title">Reset the router</string>
+    <string name="rc_reset_text">Wipes the router\'s settings: Wi-Fi name and password, paused devices, DNS, subnet and bypass mode.</string>
+    <string name="rc_reset_button">Reset router…</string>
+    <string name="rc_reset_confirm">The router goes back to factory settings and restarts: the Wi-Fi name returns to the default and the password is removed. This phone is disconnected and Star Nav loses the dish and the router until you join the network again. This cannot be undone.</string>
+    <string name="rc_forget_title">Forget what the router refused</string>
+    <string name="rc_forget_text">Some controls are greyed out because the router said it does not do them for this app. After a firmware or account change you can let them be tried again.</string>
+    <string name="rc_forget_button">Forget</string>
+    <string name="rh_hint">The last 15 minutes of the router\'s own pings. A gap is a sample it could not take.</string>
+    <string name="rh_latency">Internet ping latency</string>
+    <string name="rh_drop">Internet pings lost (mean of 15 s)</string>
+    <string name="rh_pop_v4">Pings lost to the satellite network, IPv4</string>
+    <string name="rh_pop_v6">Pings lost to the satellite network, IPv6</string>
+    <string name="rh_google_v4">Pings lost to Google, IPv4</string>
+    <string name="rh_google_v6">Pings lost to Google, IPv6</string>
+    <string name="rh_cloudflare_v4">Pings lost to Cloudflare, IPv4</string>
+    <string name="rh_cloudflare_v6">Pings lost to Cloudflare, IPv6</string>
+    <string name="rh_dns">Lookups lost at DNS server %1$s</string>
+    <string name="rh_events_title">Router events</string>
+    <string name="rh_events_none">No events recorded.</string>
+    <!-- Router tab strings: end -->
+
+    <!-- Pages after the UX refactor (2026-10-15): Position, Mock GPS, Starlink, Sessions, Settings -->
+    <string name="tab_position">Position</string>
+    <string name="tab_mock">Mock GPS</string>
+    <string name="tab_starlink">Starlink</string>
+    <!-- Mock GPS page. %1$s: the app name -->
+    <string name="mockp_what_title">What the mock GPS is</string>
+    <string name="mockp_what">%1$s can hand every app on the phone a different location than the phone\'s own GPS receiver gives: the one from your Starlink dish, corrected with the phone\'s motion sensors. It works through Android\'s mock location feature, so navigation, maps and any other app that asks for the location get it.</string>
+    <string name="mockp_why">Why: when the phone\'s GPS is jammed or spoofed, apps jump across the map or freeze. The dish has a position source of its own, so with the mock on apps follow the dish instead.</string>
+    <string name="mock_switch_title">Mock GPS</string>
+    <string name="mock_output_off">Switch the mock on to see what apps receive.</string>
+    <string name="setup_show_all">Show all steps</string>
+    <string name="setup_hide_done">Hide finished steps</string>
+    <!-- Starlink page -->
+    <string name="dish_tab_diagnostics">Diagnostics</string>
+    <string name="dish_tab_connection">Connection</string>
+    <string name="diag_service_off">The location service is not running, so these values stay empty. They fill in while the mock GPS or a recording is on, or while the Position page is open.</string>
+    <!-- Sessions: logging switched off -->
+    <string name="sessions_logging_off_title">Logging is off</string>
+    <string name="sessions_logging_off">Nothing is recorded, not even with the mock GPS on. Sessions already on the phone stay below: open, export or delete them. Switch logging on in Settings to record again.</string>
+    <string name="sessions_open_settings">Open Settings</string>
+    <string name="sessions_empty_logging_off">No sessions on the phone.</string>
+    <!-- Settings: logging, motion sensors, About -->
+    <string name="config_logging_title">Logging</string>
+    <string name="config_logging_switch">Record sessions (logging)</string>
+    <string name="config_logging_on_hint">Sessions are recorded when you start one on the Sessions page and, if you choose so there, whenever the mock GPS is on. They stay on the phone.</string>
+    <string name="config_logging_off_hint">Off: nothing is recorded at all, not from the Sessions page, the notification or the mock GPS. A recording in progress ends now. Alerts, the mock GPS and the delivery check work as before.</string>
+    <string name="config_imu_title">Motion sensors</string>
+    <string name="config_imu_hint">How often the phone\'s accelerometer and gyroscope are read, for recordings and for the inertial correction. A change applies the next time the sensors start (a new recording or switching the mock on).</string>
+    <string name="about_title">About</string>
+    <string name="about_license">License</string>
+    <string name="about_license_value" translatable="false">GPL-3.0</string>
+    <string name="about_source">Free and open source software. The source code is in the project\'s repository, linked from the page you installed the app from.</string>
+    <string name="about_privacy_title">Privacy</string>
+    <string name="about_privacy">No accounts, analytics, ads or crash reporting; nothing is sent to the developer. Recordings stay on the phone unless you export one. The app talks to your dish and router on the local network, and to map tile servers only after you pick a map background. \"Open in Google Maps\" hands the position to your maps app only when you tap it. Logging can be switched off completely above.</string>
+    <string name="about_privacy_link">Privacy policy</string>
+    <string name="about_source_link">Source code</string>
+    <!-- Project page; empty until the repository is published. The buttons show only when set. -->
+    <string name="about_source_url" translatable="false"></string>
+    <string name="about_privacy_url" translatable="false"></string>
+    <string name="about_disclaimer">Not affiliated with or endorsed by SpaceX. Starlink is a trademark of Space Exploration Technologies Corp.</string>
+    <!-- Position page -->
+    <string name="pos_all_sources">All sources</string>
+    <string name="pos_mark_starlink">Starlink</string>
+    <string name="pos_mark_gps">GPS</string>
+    <string name="pos_mark_gps_distrusted">GPS (distrusted)</string>
+    <string name="pos_center">Center</string>
+    <string name="pos_center_gps">Center on GPS</string>
+    <string name="pos_center_starlink">Center on Starlink</string>
+    <string name="pos_open_maps">Open in Google Maps</string>
+    <string name="pos_using_gps">Using the GPS position ±%1$s m: it agrees with Starlink.</string>
+    <string name="pos_using_gps_unverified">Using the GPS position ±%1$s m. It is not verified: there is no Starlink position to compare it with.</string>
+    <string name="pos_using_served">Using what apps get, the Starlink-based position ±%1$s m (the mock GPS is on).</string>
+    <string name="pos_using_starlink_distrusted">Using the Starlink position ±%1$s m: the GPS is distrusted.</string>
+    <string name="pos_using_starlink_nogps">Using the Starlink position ±%1$s m: the phone has no GPS fix.</string>
+    <string name="pos_using_starlink">Using the Starlink position ±%1$s m: the GPS could not be checked.</string>
+    <string name="pos_using_starlink_pending">Using the Starlink position ±%1$s m: the GPS is far from it and is being checked.</string>
+    <string name="pos_using_none">No position yet.</string>
+    <string name="pos_using_none_distrusted">No position to use: the GPS is distrusted and there is no Starlink position.</string>
+    <string name="pos_using_none_mocked">No position yet: the GPS fixes are mock fixes and there is no Starlink position to use instead.</string>
+    <string name="pos_copy_hint">Tap coordinates to copy them. \"Open in Google Maps\" hands that one position to your maps app; the app itself sends nothing.</string>
+    <string name="pos_copy_action">Copy the coordinates</string>
+    <string name="pos_copy_label">Position</string>
+    <string name="pos_label_gps">GPS position</string>
+    <string name="pos_label_starlink">Starlink position</string>
+    <string name="pos_maps_none">No app can show a position on a map.</string>
+    <string name="pos_field_accuracy">accuracy</string>
+    <string name="pos_field_age">age</string>
+    <string name="pos_field_source">source</string>
+    <string name="pos_field_satellites">satellites</string>
+    <string name="pos_field_heading">heading</string>
+    <string name="pos_starlink_title">Starlink</string>
+    <string name="pos_heading_raw">%1$s° (the dish\'s own)</string>
+    <string name="pos_dish_waiting">Waiting for the dish…</string>
+    <string name="pos_dish_ok">OK</string>
+    <string name="pos_dish_corrected">Corrected by the inertial filter: the dish position was shifted %1$s m sideways</string>
+    <string name="pos_dish_cutoff_continues">The inertial filter carries the position on for apps meanwhile.</string>
+    <string name="pos_dish_no_fix">No position from the dish for %1$s s</string>
+    <string name="pos_dish_no_fix_yet">The dish has not given a position yet</string>
+    <string name="pos_dish_unreachable">The dish does not answer. Check the Wi-Fi and the dish address (Starlink, Connection).</string>
+    <string name="pos_dish_restarting">The dish is restarting: no position for a minute or two</string>
+    <string name="pos_dish_restarted">Restarted %1$s ago: %2$s</string>
+    <string name="pos_gps_title">GPS</string>
+    <string name="pos_gps_trusted">Trusted: it agrees with Starlink</string>
+    <string name="pos_gps_distrusted">Distrusted</string>
+    <string name="pos_gps_replaced">Replaced by the mock GPS</string>
+    <string name="pos_gps_replaced_hint">While the mock is on, apps get the Starlink-based position and this app sees the mock\'s fixes instead of the receiver\'s, so it cannot check the GPS. Satellites and signal here are still the receiver\'s.</string>
+    <string name="pos_gps_other_mock">The fixes are mock fixes: another app is mocking the location</string>
+    <string name="pos_gps_not_checked">Not checked: no Starlink position to compare it with</string>
+    <string name="pos_gps_no_permission">No location permission</string>
+    <string name="pos_gps_no_fix">No fix</string>
+    <string name="pos_gps_why_far">It is %1$s from the Starlink position (up to %2$s would agree), for %3$s s</string>
+    <string name="pos_gps_why_jump">It jumped %1$s in %2$s s</string>
+    <string name="pos_gps_why_frozen">It and the dish position are both more than %1$s from the Starlink-only position (GPS %2$s, dish %3$s)</string>
+    <string name="pos_gps_vs">vs Starlink</string>
+    <string name="pos_gps_vs_value">%1$s (limit %2$s)</string>
+    <string name="pos_gps_satellites">satellites</string>
+    <string name="pos_gps_signal">signal (C/N0)</string>
+    <string name="pos_gps_signal_value">%1$s dB-Hz</string>
+    <string name="pos_gps_interference">interference (AGC)</string>
+    <string name="pos_gps_agc_ok">none · AGC %1$s dB</string>
+
+    <!-- Starlink account sign-in: the opt-in way to switch on the dish's local-network location through Starlink's cloud -->
+    <string name="account_enable_button">Enable via my Starlink account</string>
+    <string name="account_enable_hint_refused">The dish refused the change from this phone. You can have Starlink switch it on instead, after you sign in to your own Starlink account on Starlink\'s page.</string>
+    <string name="account_reading_dish">Reading the dish\'s id…</string>
+    <string name="account_no_dish">The dish did not tell its id. Connect this phone to the dish\'s Wi-Fi and try again.</string>
+    <string name="account_consent_title">Enable through my Starlink account</string>
+    <string name="account_consent_1">Star Nav will open Starlink\'s own sign-in page inside this app. You sign in there with your Starlink account, once. Star Nav then uses that sign-in a single time to switch on \"location on the local network\" for your dish, and forgets it.</string>
+    <string name="account_consent_2">You type your password into Starlink\'s page, not into Star Nav: the app never receives it. The page runs inside this app, and an app that hosts a page could in principle read what is typed into it. Star Nav does not: it adds no script to the page and reads none of its fields, and its source code is public. If you would rather not, use the Starlink app instead.</string>
+    <string name="account_consent_3">This is the only time Star Nav talks to Starlink\'s servers, and only because you asked. It sends your sign-in cookies to starlink.com and one request that changes this dish\'s setting. The sign-in is kept in memory only and is deleted when this ends; nothing is saved on the phone.</string>
+    <string name="account_consent_4">Starlink publishes no interface for this. Star Nav uses the one Starlink\'s own website uses, so it may stop working at any time, and Starlink\'s terms may not allow other apps to use it. It is your own account and your own dish, and you use it at your own risk.</string>
+    <string name="account_consent_continue">Continue to Starlink sign-in</string>
+    <string name="account_signin_title">Starlink sign-in</string>
+    <string name="account_signin_hint">This is Starlink\'s own page. Only starlink.com pages open here; other links are blocked. Star Nav does not see what you type.</string>
+    <string name="account_signin_done">I have signed in</string>
+    <string name="account_signin_not_yet">No Starlink sign-in found yet. Finish signing in first, including the verification code.</string>
+    <string name="account_working">Switching it on through Starlink…</string>
+    <string name="account_checking">Asking the dish what it reports now…</string>
+    <string name="account_signed_in_as">Signed in as %1$s (shown now, not stored)</string>
+    <string name="account_result_ok">Starlink accepted the change.</string>
+    <string name="account_result_session">Starlink did not accept the sign-in (%1$s). Try again, and finish the sign-in including the verification code.</string>
+    <string name="account_result_offline">Starlink cannot reach your dish right now. The dish has to be online through the satellite link; try again in a minute.</string>
+    <string name="account_result_refused">Starlink refused the change (%1$s). Your plan or the dish may not allow it.</string>
+    <string name="account_result_noanswer">The connection ended without an answer, so the change may or may not have been made. The dish\'s own answer is below.</string>
+    <string name="account_result_other">Could not complete this: %1$s</string>
+    <string name="account_result_invalid">This dish\'s id is not one Starlink accepts.</string>
+    <string name="account_owner_mismatch">This dish was not found among the dishes of the account you signed in with. If the change did not work, you probably signed in with another account.</string>
+    <string name="account_reread_on">The dish now reports location on the local network as on.</string>
+    <string name="account_reread_not_yet">The dish does not report it as on yet. It can take a minute: check the Mock GPS page again soon.</string>
+    <string name="account_reread_unknown">The dish could not be asked just now. Check the Mock GPS page in a minute.</string>
+    <string name="account_close">Close</string>
+
+    <!-- Shared components (ui/Components.kt): the words a screen reader gets with a status icon, and the loading state -->
+    <string name="ui_status_ok">OK</string>
+    <string name="ui_status_warn">Warning</string>
+    <string name="ui_status_bad">Problem</string>
+    <string name="ui_status_neutral">No status</string>
+    <string name="ui_status_info">Information</string>
+    <string name="ui_loading">Loading…</string>
+</resources>

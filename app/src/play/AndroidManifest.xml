@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        Play services check that the Play Store is installed (GoogleApiAvailability) before the fused mock mode and the
+        Google Location Accuracy read. From Android 11 an app sees only the packages it declares here, unless the ROM makes
+        them force-queryable (stock GApps are; older custom GApps, e.g. MindTheGapps on LineageOS 18.1, leave the Store out:
+        every call returned SERVICE_INVALID, "requires the Google Play Store, but it is missing").
+    -->
+    <queries>
+        <package android:name="com.android.vending" />
+        <package android:name="com.google.android.gms" />
+    </queries>
+</manifest>

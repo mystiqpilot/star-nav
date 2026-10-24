@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Window theme: the light look. values-night/themes.xml has the dark one. `background` must
+      equal the Compose `background` role of the same look (ui/Theme.kt), or the first frame
+      flashes. The system splash screen uses it too. `windowLightNavigationBar` is Android 8.1 (API 27): values-v27/themes.xml
+      repeats this style with it.
+    -->
+    <style name="Theme.StarlinkNav" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+    <color name="background">#FFF9F9F7</color>
+    <!-- Launcher icon artwork: the same in both looks, so it is not in values-night. -->
+    <color name="icon_background">#FF0E2233</color>
+</resources>

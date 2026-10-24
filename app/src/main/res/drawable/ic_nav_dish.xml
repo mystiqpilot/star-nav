@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A flat dish on a mast, as in the launcher icon. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FF000000" android:pathData="M3,6.2 L18.6,3 L20.2,10.8 L4.6,14 Z" />
+    <path android:fillColor="#FF000000" android:pathData="M10.9,12.9 L13.1,12.45 L14.6,19 L17,19 L17,21 L7,21 L7,19 L12.3,19 Z" />
+</vector>

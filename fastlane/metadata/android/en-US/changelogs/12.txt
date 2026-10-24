@@ -1,0 +1,1 @@
+Enable the dish's "location on the local network" setting from the app — the setting that lets the dish share its position on your LAN, needed for everything Star Nav does. It is on the Mock GPS checklist and under Starlink > Controls, and the app shows whether it is on. (Whether a dish accepts this from the app without the Starlink app signed in is still being tested.)
