@@ -50,7 +50,7 @@
     <string name="mock_moved_ahead_value">%1$s м (вік позиції %2$s с)</string>
     <string name="mock_hint">Авто передає позицію антени через інерціальну корекцію (або, коли вона вимкнена, зсунуту вперед уздовж курсу на її вік). Поки фіктивний GPS увімкнено, власні GPS-позиції телефона та NMEA зупиняються; на Pixel 10 його сирі дані GNSS і далі надходять, але приблизно з половиною звичайних сигналів.</string>
     <string name="mock_developer_options">Параметри розробника</string>
-    <string name="mock_not_allowed">Не дозволено: виберіть %1$s у розділі «Параметри розробника» &gt; «Програма для фіктивного місцезнаходження»</string>
+    <string name="mock_not_allowed">Не дозволено: виберіть %1$s у розділі «Параметри розробника» &gt; «Вибрати додаток для фіктивних місцеположень»</string>
     <string name="mock_permission_revoked">дозвіл для фіктивного місцезнаходження відкликано: %1$s</string>
 
     <!-- Status: dish card -->
@@ -308,6 +308,7 @@
     <string name="setup_state_needed">Потрібно</string>
     <string name="setup_state_recommended">Бажано</string>
     <string name="setup_state_unknown">Ще не перевірено</string>
+    <string name="setup_state_hidden">Не перевіряється</string>
 
     <string name="setup_location_permission_title">Дозвіл на точне місцезнаходження</string>
     <string name="setup_location_permission_why">Дає змогу читати власний GNSS телефона (для порівняння з антеною та запису) і запускати службу місцезнаходження.</string>
@@ -315,9 +316,11 @@
     <string name="setup_location_on_title">Місцезнаходження ввімкнено</string>
     <string name="setup_location_on_why">Коли місцезнаходження вимкнено, Android не передає позицію жодній програмі — ні справжню, ні фіктивну.</string>
     <string name="setup_developer_title">Параметри розробника</string>
-    <string name="setup_developer_why">Потрібні, щоб вибрати програму для фіктивного місцезнаходження. Відкрийте «Про телефон» і сім разів торкніться «Номер збірки», потім поверніться.</string>
+    <string name="setup_developer_why">Потрібні, щоб вибрати програму для фіктивного місцезнаходження.</string>
+    <string name="setup_developer_how">Відкрийте «Про телефон» і сім разів торкніться «Номер збірки», потім поверніться.</string>
+    <string name="setup_developer_hidden">Android 17 не дає застосункам дізнатися, чи увімкнені параметри розробника, тож цей крок стане «Готово», щойно %1$s буде програмою для фіктивного місцезнаходження. Якщо в налаштуваннях немає «Параметри розробника» (у розділі «Система»), відкрийте «Про телефон» і сім разів торкніться «Номер збірки».</string>
     <string name="setup_mock_app_title">%1$s — програма для фіктивного місцезнаходження</string>
-    <string name="setup_mock_app_why">У «Параметрах розробника» знайдіть «Програма для фіктивного місцезнаходження» і виберіть %1$s. Лише тоді вона може замінити GPS телефона.</string>
+    <string name="setup_mock_app_why">Кнопка відкриває «Параметри розробника», на більшості телефонів одразу на пункті «Вибрати додаток для фіктивних місцеположень»: торкніться його й виберіть %1$s. Лише тоді вона може замінити GPS телефона.</string>
     <string name="setup_dish_wifi_title">Телефон у Wi-Fi антени</string>
     <string name="setup_dish_wifi_why">Антена відповідає лише у своїй мережі (192.168.100.1).</string>
     <string name="setup_dish_wifi_no_dish">Wi-Fi підключено, але антена не відповідає: це мережа антени? Перевірте адресу антени в «Starlink» → «З\'єднання».</string>
@@ -343,6 +346,7 @@
     <string name="setup_action_location_settings">Налаштування місцезнаходження</string>
     <string name="setup_action_about_phone">Про телефон</string>
     <string name="setup_action_developer_options">Параметри розробника</string>
+    <string name="setup_action_mock_app">Вибрати додаток для фіктивних місцеположень</string>
     <string name="setup_action_wifi">Вибрати Wi-Fi</string>
     <string name="setup_action_allow_on_dish">Увімкнути на антені</string>
     <string name="setup_action_starlink_app">Застосунок Starlink</string>

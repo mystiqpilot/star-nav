@@ -117,15 +117,22 @@ fun SetupChecklist() {
                         }
                     }
                     SetupItem.DEVELOPER_OPTIONS -> {
+                        val hidden = check.detail == Detail.DeveloperOptionsHidden
                         Hint(stringResource(R.string.setup_developer_why))
+                        if (hidden) {
+                            Hint(stringResource(R.string.setup_developer_hidden, appName))
+                        } else if (check.state != CheckState.OK) {
+                            Hint(stringResource(R.string.setup_developer_how))
+                        }
                         if (check.state != CheckState.OK) ActionRow {
                             PrimaryButton(stringResource(R.string.setup_action_about_phone), onClick = { open(ctx, Intent(Settings.ACTION_DEVICE_INFO_SETTINGS)) })
+                            if (hidden) SecondaryButton(stringResource(R.string.setup_action_developer_options), onClick = { open(ctx, SetupChecks.mockLocationAppSettings()) })
                         }
                     }
                     SetupItem.MOCK_APP -> {
                         Hint(stringResource(R.string.setup_mock_app_why, appName))
                         if (check.state != CheckState.OK) ActionRow {
-                            PrimaryButton(stringResource(R.string.setup_action_developer_options), onClick = { open(ctx, Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)) })
+                            PrimaryButton(stringResource(R.string.setup_action_mock_app), onClick = { open(ctx, SetupChecks.mockLocationAppSettings()) })
                         }
                     }
                     SetupItem.DISH_WIFI -> {
@@ -252,7 +259,7 @@ private fun SetupCard(check: SetupCheck, content: @Composable () -> Unit) {
         CheckState.OK -> Status.OK to R.string.setup_state_ok
         CheckState.NEEDED -> Status.BAD to R.string.setup_state_needed
         CheckState.RECOMMENDED -> Status.WARN to R.string.setup_state_recommended
-        CheckState.UNKNOWN -> Status.NEUTRAL to R.string.setup_state_unknown
+        CheckState.UNKNOWN -> Status.NEUTRAL to if (check.detail == Detail.DeveloperOptionsHidden) R.string.setup_state_hidden else R.string.setup_state_unknown
     }
     Section(title(check.item), trailing = { StatusPill(status, stringResource(label)) }) {
         content()

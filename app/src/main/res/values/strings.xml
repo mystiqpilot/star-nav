@@ -326,6 +326,7 @@
     <string name="setup_state_needed">Needed</string>
     <string name="setup_state_recommended">Recommended</string>
     <string name="setup_state_unknown">Not checked yet</string>
+    <string name="setup_state_hidden">Can\'t be checked</string>
 
     <string name="setup_location_permission_title">Precise location permission</string>
     <string name="setup_location_permission_why">Lets the app read the phone\'s own GNSS (to compare with the dish and to record) and run the location service.</string>
@@ -333,9 +334,11 @@
     <string name="setup_location_on_title">Location turned on</string>
     <string name="setup_location_on_why">With location off, Android hands no position to any app, mocked or not.</string>
     <string name="setup_developer_title">Developer options</string>
-    <string name="setup_developer_why">Needed to choose a mock location app. Open \"About phone\" and tap \"Build number\" seven times, then come back.</string>
+    <string name="setup_developer_why">Needed to choose a mock location app.</string>
+    <string name="setup_developer_how">Open \"About phone\" and tap \"Build number\" seven times, then come back.</string>
+    <string name="setup_developer_hidden">Android 17 does not let apps see whether Developer options are on, so this step turns Done once %1$s is the mock location app. If Settings has no \"Developer options\" (under System), open \"About phone\" and tap \"Build number\" seven times.</string>
     <string name="setup_mock_app_title">%1$s is the mock location app</string>
-    <string name="setup_mock_app_why">In Developer options, find \"Select mock location app\" and choose %1$s. Only then may it replace the phone\'s GPS.</string>
+    <string name="setup_mock_app_why">The button opens Developer options, on most phones right at \"Select mock location app\": tap it and choose %1$s. Only then may it replace the phone\'s GPS.</string>
     <string name="setup_dish_wifi_title">Phone on the dish\'s Wi-Fi</string>
     <string name="setup_dish_wifi_why">The dish answers only on its own network (192.168.100.1).</string>
     <string name="setup_dish_wifi_no_dish">Connected to Wi-Fi, but the dish does not answer: is it the dish\'s network? Check the dish address under Starlink &gt; Connection.</string>
@@ -362,6 +365,7 @@
     <string name="setup_action_location_settings">Location settings</string>
     <string name="setup_action_about_phone">About phone</string>
     <string name="setup_action_developer_options">Developer options</string>
+    <string name="setup_action_mock_app">Select mock location app</string>
     <string name="setup_action_wifi">Choose Wi-Fi</string>
     <string name="setup_action_allow_on_dish">Enable on the dish</string>
     <string name="setup_action_starlink_app">Starlink app</string>

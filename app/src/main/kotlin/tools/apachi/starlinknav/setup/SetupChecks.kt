@@ -5,10 +5,12 @@ import android.app.ActivityManager
 import android.app.AppOpsManager
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.os.Build
+import android.os.Bundle
 import android.os.PowerManager
 import android.os.Process
 import android.os.SystemClock
@@ -50,6 +52,8 @@ sealed interface Detail {
     data object PermissionDenied : Detail
     data object AlertsChannelOff : Detail
     data object BackgroundRestricted : Detail
+    /** Android 17 reads Developer options as off to every app whatever they are: the state cannot be checked. */
+    data object DeveloperOptionsHidden : Detail
     data object WifiButNoDish : Detail
     /** What the Setup row for the dish's local-network location says: the reading it was derived from. */
     data class DishLocation(val reading: LocalLocationReading, val reachable: Boolean) : Detail
@@ -83,8 +87,16 @@ object SetupChecks {
         val fine = granted(ctx, Manifest.permission.ACCESS_FINE_LOCATION)
         put(SetupItem.LOCATION_PERMISSION, fine)
         put(SetupItem.LOCATION_ON, locationEnabled(ctx))
-        put(SetupItem.DEVELOPER_OPTIONS, Settings.Global.getInt(ctx.contentResolver, Settings.Global.DEVELOPMENT_SETTINGS_ENABLED, 0) == 1)
-        put(SetupItem.MOCK_APP, isMockApp(ctx))
+        // The step exists only to reach "Select mock location app", so that choice made means it is done. Since Android 17
+        // QPR1 the setting reads 0 for every app whatever its state: 0 is "cannot be checked" there, not "off".
+        val mockApp = isMockApp(ctx)
+        val developer = mockApp || Settings.Global.getInt(ctx.contentResolver, Settings.Global.DEVELOPMENT_SETTINGS_ENABLED, 0) == 1
+        if (!developer && developerOptionsHidden) {
+            out[SetupItem.DEVELOPER_OPTIONS] = SetupCheck(SetupItem.DEVELOPER_OPTIONS, CheckState.UNKNOWN, Detail.DeveloperOptionsHidden)
+        } else {
+            put(SetupItem.DEVELOPER_OPTIONS, developer)
+        }
+        put(SetupItem.MOCK_APP, mockApp)
         val nm = ctx.getSystemService(NotificationManager::class.java)
         val notifOk = (!notificationPermissionNeeded || granted(ctx, Manifest.permission.POST_NOTIFICATIONS)) && nm.areNotificationsEnabled()
         val alertsOn = nm.getNotificationChannel(App.CHANNEL_ALERTS)?.importance != NotificationManager.IMPORTANCE_NONE
@@ -95,6 +107,23 @@ object SetupChecks {
         put(SetupItem.BATTERY, pm.isIgnoringBatteryOptimizations(ctx.packageName) && !restricted, if (restricted) Detail.BackgroundRestricted else null)
         return out
     }
+
+    /** Android 17 (API 37) hides whether Developer options are on (`DEVELOPMENT_SETTINGS_ENABLED` reads 0 for apps). */
+    val developerOptionsHidden: Boolean get() = Build.VERSION.SDK_INT >= 37
+
+    /**
+     * Developer options opened at "Select mock location app": the Settings app scrolls to and highlights the preference
+     * named in `:settings:fragment_args_key` (as for its own search results; AOSP's key is "mock_location_app"). A Settings
+     * app without that just opens Developer options.
+     */
+    fun mockLocationAppSettings(): Intent {
+        val key = "mock_location_app"
+        return Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)
+            .putExtra(FRAGMENT_ARG_KEY, key)
+            .putExtra(":settings:show_fragment_args", Bundle().apply { putString(FRAGMENT_ARG_KEY, key) })
+    }
+
+    private const val FRAGMENT_ARG_KEY = ":settings:fragment_args_key"
 
     /**
      * Notifications need a runtime permission only from Android 13 (API 33). Before it they are allowed unless the user

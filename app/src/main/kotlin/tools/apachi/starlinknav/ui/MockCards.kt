@@ -1,7 +1,6 @@
 package tools.apachi.starlinknav.ui
 
 import android.content.Intent
-import android.provider.Settings as AndroidSettings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
@@ -15,6 +14,7 @@ import tools.apachi.starlinknav.service.InertialUi
 import tools.apachi.starlinknav.service.MountSource
 import tools.apachi.starlinknav.service.DeliveryUi
 import tools.apachi.starlinknav.service.MockUi
+import tools.apachi.starlinknav.setup.SetupChecks
 
 /**
  * What the mock has pushed and what apps receive (the Mock GPS page): count and age, the source of the last push, how far
@@ -50,7 +50,7 @@ fun MockOutputCard(mock: MockUi, now: Long) {
         Hint(stringResource(R.string.mock_hint))
         ActionRow {
             SecondaryButton(stringResource(R.string.mock_developer_options), onClick = {
-                ctx.startActivity(Intent(AndroidSettings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                ctx.startActivity(SetupChecks.mockLocationAppSettings().addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             })
         }
     }

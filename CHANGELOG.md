@@ -6,6 +6,17 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+- Mock GPS > "How to enable it": on Android 17 the Developer options step stayed "Needed" after they were switched on,
+  because Android 17 no longer lets apps see that setting. The step now turns Done once Star Nav is the mock location
+  app (which can only be chosen in Developer options) and until then says it can't be checked, with buttons to About
+  phone and to Developer options.
+- The "tap Build number seven times" hint is no longer shown on a step that is already done.
+
+### Changed
+- The "Select mock location app" button (step "Star Nav is the mock location app") and the Developer options button on
+  the Mock GPS page open Developer options right at "Select mock location app" where the phone's Settings app supports it.
+
 ## [0.5.5] - 2026-10-24
 
 ### Fixed
