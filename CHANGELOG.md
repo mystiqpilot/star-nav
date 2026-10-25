@@ -6,6 +6,8 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.5.6] - 2026-10-26
+
 ### Fixed
 - Mock GPS > "How to enable it": on Android 17 the Developer options step stayed "Needed" after they were switched on,
   because Android 17 no longer lets apps see that setting. The step now turns Done once Star Nav is the mock location
