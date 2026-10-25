@@ -1,7 +1,7 @@
 name: Release
 
-# Push a tag v<versionName> (v0.5.5); CHANGELOG.md needs a "## [<versionName>]" section, which
-# becomes the release text. A tag with a "-" (v0.6.0-rc1) makes a pre-release. Needs repository
+# Push a tag v<versionName> (v0.5.5); CHANGELOG.md and CHANGELOG.uk.md need a "## [<versionName>]"
+# section each, which become the release text. A tag with a "-" (v0.6.0-rc1) makes a pre-release. Needs repository
 # secrets: STARNAV_KEYSTORE_BASE64 (the release keystore, base64), STARNAV_STORE_PASSWORD,
 # STARNAV_KEY_ALIAS, STARNAV_KEY_PASSWORD.
 on:
@@ -26,6 +26,7 @@ jobs:
           v="${GITHUB_REF_NAME#v}"
           app="$(sed -n 's/^ *versionName = "\(.*\)"$/\1/p' app/build.gradle.kts)"
           test "$v" = "$app" || { echo "tag $GITHUB_REF_NAME, but versionName is $app"; exit 1; }
+          .github/release-notes.sh "$v" - > /dev/null  # both changelogs have the version's section
           echo "VERSION=$v" >> "$GITHUB_ENV"
       - uses: actions/setup-java@v6
         with:

@@ -1,4 +1,4 @@
-When GNSS is jammed or spoofed, a phone's GPS freezes, drifts or jumps to another continent, and every navigation app follows it. A Starlink dish on the car roof keeps knowing where it is. Star Nav reads the dish's position over its local network and serves it to all apps on the phone as Android's GPS, using Android's mock location provider.
+When GNSS is jammed or spoofed, a phone's GPS freezes, drifts or jumps to another continent, and every navigation app follows it. A Starlink dish on the car roof keeps knowing where it is. Star Nav reads the dish's position over its local network and serves it to all apps on the phone as Android's GPS, using Android's mock location provider. Emergency services can use it in their vehicles to keep navigating while GPS is spoofed.
 
 What it does
 • Position page: the dish's position and the phone's GPS side by side on a map, each with its state in plain words and a warning when the GPS looks spoofed; one tap centers the map and one opens the position in Google Maps (only when you tap).

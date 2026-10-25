@@ -8,6 +8,7 @@ When GNSS is jammed or spoofed, a phone's GPS freezes, drifts or jumps to anothe
 continent, and every navigation app follows it. A Starlink dish on the car roof keeps
 knowing where it is. Star Nav reads the dish's position over its local network and serves
 it to all apps on the phone as Android's GPS, using Android's mock location provider.
+Emergency services can use it in their vehicles to keep navigating while GPS is spoofed.
 
 Star Nav is an independent open-source project. It is not affiliated with, endorsed by or
 supported by SpaceX. Starlink is a trademark of Space Exploration Technologies Corp.
