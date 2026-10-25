@@ -92,7 +92,7 @@ fun SetupChecklist() {
             // A plain "N of M" and nothing more: no streaks, no praise.
             LinearProgressIndicator(progress = { done / required.size.toFloat() }, modifier = Modifier.fillMaxWidth())
             if (allDone) {
-                Hint(stringResource(R.string.setup_all_done))
+                Hint(stringResource(if (mock.enabled) R.string.setup_all_done_on else R.string.setup_all_done))
                 ActionRow { SecondaryButton(stringResource(if (showAll) R.string.setup_hide_done else R.string.setup_show_all), onClick = { showAll = !showAll }) }
             }
         }

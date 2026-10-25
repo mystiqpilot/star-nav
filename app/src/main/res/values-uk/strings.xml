@@ -304,6 +304,7 @@
         <item quantity="other">Виконано %1$d з %2$d обов\'язкового кроку</item>
     </plurals>
     <string name="setup_all_done">Усе обов\'язкове налаштовано. Увімкніть фіктивний GPS вище.</string>
+    <string name="setup_all_done_on">Усе обов\'язкове налаштовано, і фіктивний GPS увімкнено.</string>
     <string name="setup_state_ok">Готово</string>
     <string name="setup_state_needed">Потрібно</string>
     <string name="setup_state_recommended">Бажано</string>
@@ -1315,7 +1316,7 @@
     <string name="about_privacy">Без облікових записів, аналітики, реклами й звітів про збої; розробнику нічого не надсилається. Записи лишаються на смартфоні, поки ви самі не експортуєте один із них. Програма спілкується з вашою антеною й роутером у локальній мережі, а з серверами тайлів мапи — лише після того, як ви оберете тло мапи. Кнопка «Відкрити в Google Maps» передає позицію вашій програмі карт лише тоді, коли ви її натиснули. Запис сесій можна повністю вимкнути вище.</string>
     <string name="about_privacy_link">Політика конфіденційності</string>
     <string name="about_source_link">Вихідний код</string>
-    <string name="about_disclaimer">Не пов\'язано зі SpaceX і не схвалено нею. Starlink — торговельна марка Space Exploration Technologies Corp.</string>
+    <string name="about_disclaimer">Неофіційний застосунок: не пов\'язаний зі SpaceX, не схвалений і не спонсорований нею. Starlink — торговельна марка Space Exploration Technologies Corp.</string>
     <string name="pos_all_sources">Усі джерела</string>
     <string name="pos_mark_starlink">Starlink</string>
     <string name="pos_mark_gps">GPS</string>

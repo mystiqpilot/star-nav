@@ -1,6 +1,6 @@
 # Privacy policy — Star Nav
 
-Last updated: 2026-10-19
+Last updated: 2026-10-26
 
 Star Nav is an open-source Android app that serves the position of a Starlink dish to
 the phone as its GPS. This policy covers every build of the app (GitHub, Google Play,
@@ -136,6 +136,21 @@ The router's data (its status, the devices on its Wi-Fi with their names and add
 Commands you send to the dish or router (restart, sleep schedule, GNSS and radio switches, Wi-Fi name and password, pausing a device, DNS, and so
 on) go to those devices on your local network and nowhere else; while a recording runs they are
 logged in it like any other dish call, with router answers stripped of secrets.
+
+## Google Play data safety
+
+The Data safety section of the Google Play listing declares what leaves the phone, as described above:
+
+- **Approximate location: collected and shared, optional.** Only when you pick a map background: the tile
+  servers (OpenFreeMap, EOX) learn the area on screen. Purpose: app functionality. Not with "Plain".
+- **Device or other IDs and User IDs: collected, processed ephemerally, optional, not shared.** Only during the
+  optional Starlink account sign-in: the dish's id and your Starlink session go to Starlink, at your request,
+  after a consent screen, and nothing is kept. Purpose: app functionality.
+- Nothing else. Precise location, recordings, sensor data and the dish's and router's answers are processed
+  and stored on the phone only; exports go only where you send them.
+- All data that leaves the phone is encrypted in transit (HTTPS). The developer receives and keeps no data,
+  so there is nothing to ask the developer to delete; recordings on the phone are deleted from the Sessions
+  page or by uninstalling the app.
 
 ## Permissions
 

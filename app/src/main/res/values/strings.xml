@@ -322,6 +322,7 @@
         <item quantity="other">%1$d of %2$d required steps done</item>
     </plurals>
     <string name="setup_all_done">Everything required is set. Switch the mock on above.</string>
+    <string name="setup_all_done_on">Everything required is set, and the mock is on.</string>
     <string name="setup_state_ok">Done</string>
     <string name="setup_state_needed">Needed</string>
     <string name="setup_state_recommended">Recommended</string>
@@ -1341,9 +1342,9 @@
     <string name="about_privacy_link">Privacy policy</string>
     <string name="about_source_link">Source code</string>
     <!-- Project page; empty until the repository is published. The buttons show only when set. -->
-    <string name="about_source_url" translatable="false"></string>
-    <string name="about_privacy_url" translatable="false"></string>
-    <string name="about_disclaimer">Not affiliated with or endorsed by SpaceX. Starlink is a trademark of Space Exploration Technologies Corp.</string>
+    <string name="about_source_url" translatable="false">https://github.com/mystiqpilot/star-nav</string>
+    <string name="about_privacy_url" translatable="false">https://github.com/mystiqpilot/star-nav/blob/main/PRIVACY.md</string>
+    <string name="about_disclaimer">An unofficial app: not affiliated with, endorsed or sponsored by SpaceX. Starlink is a trademark of Space Exploration Technologies Corp.</string>
     <!-- Position page -->
     <string name="pos_all_sources">All sources</string>
     <string name="pos_mark_starlink">Starlink</string>

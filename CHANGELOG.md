@@ -12,6 +12,8 @@ All notable changes to this project are listed here. The format follows
   app (which can only be chosen in Developer options) and until then says it can't be checked, with buttons to About
   phone and to Developer options.
 - The "tap Build number seven times" hint is no longer shown on a step that is already done.
+- "How to enable it" no longer says "Switch the mock on above" when the mock is already on.
+- Settings > About shows its "Privacy policy" and "Source code" buttons (the links were empty, so both were hidden).
 
 ### Changed
 - The "Select mock location app" button (step "Star Nav is the mock location app") and the Developer options button on

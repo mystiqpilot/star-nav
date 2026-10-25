@@ -22,6 +22,6 @@ Privacy
 No accounts, analytics, ads or crash reporting. The app talks to the dish and router on your local network, and to map tile servers only when you pick a map background. Nothing leaves the phone unless you export a part of a recording or Debug data yourself.
 
 Safety
-Use it as an aid, not as your only means of navigation, and do not operate the app while driving.
+Use it as an aid, not as your only means of navigation: it is not a certified navigation or safety system, and the dish's position can be wrong. Do not operate the app while driving.
 
-Star Nav is free and open source (GPL-3.0). It is not affiliated with or endorsed by SpaceX. Starlink is a trademark of Space Exploration Technologies Corp.
+Star Nav is an unofficial, free and open-source app (GPL-3.0). It is not affiliated with, endorsed or sponsored by SpaceX. Starlink is a trademark of Space Exploration Technologies Corp.
