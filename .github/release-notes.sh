@@ -7,11 +7,18 @@ v="$1"
 cert="$2"
 repo="${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY:?GITHUB_REPOSITORY not set}"
 
+# GitHub shows every newline of a release text as a line break, so the section's hard-wrapped
+# lines are joined: a line that does not start a heading, list item or table row continues the one before.
 notes="$(awk -v head="## [$v]" '
   index($0, head) == 1 { on = 1; next }
   on && /^## \[/ { exit }
   on { print }
-' CHANGELOG.md | sed '/./,$!d')"
+' CHANGELOG.md | sed '/./,$!d' | awk '
+  /^[[:space:]]*$/ { if (buf != "") print buf; print ""; buf = ""; next }
+  buf != "" && !/^[[:space:]]*([#|>]|[-*+] |[0-9]+\. )/ && buf !~ /^#/ { sub(/^[[:space:]]+/, ""); buf = buf " " $0; next }
+  { if (buf != "") print buf; buf = $0 }
+  END { if (buf != "") print buf }
+')"
 test -n "$notes" || { echo "CHANGELOG.md has no [$v] section" >&2; exit 1; }
 
 cat <<EOF
@@ -27,8 +34,7 @@ Star Nav $v for Android 8.0 and newer. What the app does and how to set it up: [
 | \`*-universal.apk\` | any phone, if unsure (larger download) |
 | \`*-x86_64.apk\` | emulators and x86 devices |
 
-Every file is signed with the same key. A build from another source (Google Play, F-Droid, your own) has
-another key: to switch, export the sessions you want to keep, uninstall, then install this one.
+Every file is signed with the same key. A build from another source (Google Play, F-Droid, your own) has another key: to switch, export the sessions you want to keep, uninstall, then install this one.
 
 ## What's new in $v
 
