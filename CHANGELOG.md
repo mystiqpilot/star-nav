@@ -16,6 +16,10 @@ All notable changes to this project are listed here. The format follows
 ### Changed
 - The "Select mock location app" button (step "Star Nav is the mock location app") and the Developer options button on
   the Mock GPS page open Developer options right at "Select mock location app" where the phone's Settings app supports it.
+- A setup step with more than one button numbers them in the order to try them ("1. Allow", "2. App settings"; on the
+  dish's local-network location: 1. on the dish, 2. via the Starlink account, 3. in the Starlink app). On Android 17 the
+  Developer options step says what each of its two buttons is for.
+- Ukrainian texts say «смартфон» instead of «телефон», except where they quote Android's own screens («Про телефон»).
 
 ## [0.5.5] - 2026-10-24
 

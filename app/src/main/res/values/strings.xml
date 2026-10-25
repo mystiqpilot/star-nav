@@ -336,7 +336,7 @@
     <string name="setup_developer_title">Developer options</string>
     <string name="setup_developer_why">Needed to choose a mock location app.</string>
     <string name="setup_developer_how">Open \"About phone\" and tap \"Build number\" seven times, then come back.</string>
-    <string name="setup_developer_hidden">Android 17 does not let apps see whether Developer options are on, so this step turns Done once %1$s is the mock location app. If Settings has no \"Developer options\" (under System), open \"About phone\" and tap \"Build number\" seven times.</string>
+    <string name="setup_developer_hidden">Android 17 does not let apps see whether Developer options are on, so this step turns Done once %1$s is the mock location app. 1: if Settings has no \"Developer options\" (under System), open \"About phone\" and tap \"Build number\" seven times. 2: open Developer options and choose %1$s under \"Select mock location app\".</string>
     <string name="setup_mock_app_title">%1$s is the mock location app</string>
     <string name="setup_mock_app_why">The button opens Developer options, on most phones right at \"Select mock location app\": tap it and choose %1$s. Only then may it replace the phone\'s GPS.</string>
     <string name="setup_dish_wifi_title">Phone on the dish\'s Wi-Fi</string>
@@ -365,6 +365,7 @@
     <string name="setup_action_location_settings">Location settings</string>
     <string name="setup_action_about_phone">About phone</string>
     <string name="setup_action_developer_options">Developer options</string>
+    <string name="setup_step_button">%1$s. %2$s</string>
     <string name="setup_action_mock_app">Select mock location app</string>
     <string name="setup_action_wifi">Choose Wi-Fi</string>
     <string name="setup_action_allow_on_dish">Enable on the dish</string>

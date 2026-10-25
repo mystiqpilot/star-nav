@@ -45,6 +45,7 @@ import tools.apachi.starlinknav.ui.Space
 import tools.apachi.starlinknav.ui.StateView
 import tools.apachi.starlinknav.ui.Status
 import tools.apachi.starlinknav.ui.StatusLine
+import tools.apachi.starlinknav.ui.stepLabel
 import tools.apachi.starlinknav.ui.UiState
 import tools.apachi.starlinknav.ui.TAG_LOCAL_LOCATION
 
@@ -57,17 +58,19 @@ import tools.apachi.starlinknav.ui.TAG_LOCAL_LOCATION
 
 /**
  * The entry point: "Enable via my Starlink account". [emphasized] when the dish has just refused the change over the local
- * network. A tap only reads the dish's id over the LAN and opens the consent screen; nothing goes to Starlink yet.
+ * network; [step] numbers it among the buttons of a setup step. A tap only reads the dish's id over the LAN and opens the
+ * consent screen; nothing goes to Starlink yet.
  */
 @Composable
-fun AccountEnableButton(emphasized: Boolean, enabled: Boolean = true) {
+fun AccountEnableButton(emphasized: Boolean, enabled: Boolean = true, step: Int? = null) {
     val ctx = LocalContext.current
     val busy by StarlinkAccountManager.ui.collectAsStateWithLifecycle()
     val on = enabled && busy.stage == AccountStage.IDLE
+    val label = if (step != null) stepLabel(step, R.string.account_enable_button) else stringResource(R.string.account_enable_button)
     if (emphasized) {
-        PrimaryButton(stringResource(R.string.account_enable_button), { StarlinkAccountManager.open(ctx) }, enabled = on)
+        PrimaryButton(label, { StarlinkAccountManager.open(ctx) }, enabled = on)
     } else {
-        SecondaryButton(stringResource(R.string.account_enable_button), { StarlinkAccountManager.open(ctx) }, enabled = on)
+        SecondaryButton(label, { StarlinkAccountManager.open(ctx) }, enabled = on)
     }
 }
 

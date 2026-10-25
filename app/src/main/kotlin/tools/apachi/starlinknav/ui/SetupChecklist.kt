@@ -9,6 +9,7 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -103,10 +104,10 @@ fun SetupChecklist() {
                         if (check.state != CheckState.OK) {
                             if (askedPermission) Hint(stringResource(R.string.setup_location_permission_denied))
                             ActionRow {
-                                PrimaryButton(stringResource(R.string.setup_action_allow), onClick = {
+                                PrimaryButton(stepLabel(1, R.string.setup_action_allow), onClick = {
                                     permissions.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
                                 })
-                                SecondaryButton(stringResource(R.string.setup_action_app_settings), onClick = { open(ctx, appDetails(ctx)) })
+                                SecondaryButton(stepLabel(2, R.string.setup_action_app_settings), onClick = { open(ctx, appDetails(ctx)) })
                             }
                         }
                     }
@@ -125,8 +126,9 @@ fun SetupChecklist() {
                             Hint(stringResource(R.string.setup_developer_how))
                         }
                         if (check.state != CheckState.OK) ActionRow {
-                            PrimaryButton(stringResource(R.string.setup_action_about_phone), onClick = { open(ctx, Intent(Settings.ACTION_DEVICE_INFO_SETTINGS)) })
-                            if (hidden) SecondaryButton(stringResource(R.string.setup_action_developer_options), onClick = { open(ctx, SetupChecks.mockLocationAppSettings()) })
+                            // One button is just the step; two are numbered in the order to do them.
+                            PrimaryButton(if (hidden) stepLabel(1, R.string.setup_action_about_phone) else stringResource(R.string.setup_action_about_phone), onClick = { open(ctx, Intent(Settings.ACTION_DEVICE_INFO_SETTINGS)) })
+                            if (hidden) SecondaryButton(stepLabel(2, R.string.setup_action_developer_options), onClick = { open(ctx, SetupChecks.mockLocationAppSettings()) })
                         }
                     }
                     SetupItem.MOCK_APP -> {
@@ -231,7 +233,7 @@ private fun DishLocationRow(check: SetupCheck, appName: String) {
     val canAsk = detail?.reachable == true && reading?.planRestricted != true && check.state != CheckState.OK
     if (canAsk) {
         ActionRow {
-            PrimaryButton(stringResource(R.string.setup_action_allow_on_dish), enabled = blocked == null && !sender.busy, onClick = {
+            PrimaryButton(stepLabel(1, R.string.setup_action_allow_on_dish), enabled = blocked == null && !sender.busy, onClick = {
                 sender.send(DeviceCall.of(DishCallKind.ALLOW_LOCAL_LOCATION), TAG_LOCAL_LOCATION) { result ->
                     scope.launch {
                         SetupState.dish.value = SetupChecks.dish(ctx)
@@ -243,10 +245,11 @@ private fun DishLocationRow(check: SetupCheck, appName: String) {
                     }
                 }
             })
+            // Not a step: it lets step 1 be tried again after a refusal.
             if (blocked != null) SecondaryButton(stringResource(R.string.setup_action_try_again), onClick = { CapabilityStore.forgetDish() })
-            SecondaryButton(stringResource(R.string.setup_action_starlink_app), onClick = { openStarlinkApp(ctx) })
             // The opt-in way through the user's own Starlink account; the main way once the dish has refused the LAN write.
-            AccountEnableButton(emphasized = blocked != null)
+            AccountEnableButton(emphasized = blocked != null, step = 2)
+            SecondaryButton(stepLabel(3, R.string.setup_action_starlink_app), onClick = { openStarlinkApp(ctx) })
         }
         if (blocked != null) Hint(stringResource(R.string.account_enable_hint_refused))
     }
@@ -265,6 +268,10 @@ private fun SetupCard(check: SetupCheck, content: @Composable () -> Unit) {
         content()
     }
 }
+
+/** A button of a step with several buttons: its label after its number in the order to do them ("2. App settings"). */
+@Composable
+internal fun stepLabel(step: Int, @StringRes label: Int): String = stringResource(R.string.setup_step_button, step.toString(), stringResource(label))
 
 @Composable
 private fun title(item: SetupItem): String {

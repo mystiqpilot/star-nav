@@ -48,7 +48,7 @@
     <string name="mock_source">джерело</string>
     <string name="mock_moved_ahead">зсув уперед</string>
     <string name="mock_moved_ahead_value">%1$s м (вік позиції %2$s с)</string>
-    <string name="mock_hint">Авто передає позицію антени через інерціальну корекцію (або, коли вона вимкнена, зсунуту вперед уздовж курсу на її вік). Поки фіктивний GPS увімкнено, власні GPS-позиції телефона та NMEA зупиняються; на Pixel 10 його сирі дані GNSS і далі надходять, але приблизно з половиною звичайних сигналів.</string>
+    <string name="mock_hint">Авто передає позицію антени через інерціальну корекцію (або, коли вона вимкнена, зсунуту вперед уздовж курсу на її вік). Поки фіктивний GPS увімкнено, власні GPS-позиції смартфона та NMEA зупиняються; на Pixel 10 його сирі дані GNSS і далі надходять, але приблизно з половиною звичайних сигналів.</string>
     <string name="mock_developer_options">Параметри розробника</string>
     <string name="mock_not_allowed">Не дозволено: виберіть %1$s у розділі «Параметри розробника» &gt; «Вибрати додаток для фіктивних місцеположень»</string>
     <string name="mock_permission_revoked">дозвіл для фіктивного місцезнаходження відкликано: %1$s</string>
@@ -99,7 +99,7 @@
     <string name="dish_fix_age">вік позиції при отриманні</string>
 
     <!-- Status: phone cards -->
-    <string name="phone_title">GNSS телефона</string>
+    <string name="phone_title">GNSS смартфона</string>
     <string name="phone_no_fix">Справжньої GPS-позиції ще немає.</string>
     <string name="phone_fix">позиція</string>
     <string name="phone_accuracy">точність</string>
@@ -113,7 +113,7 @@
     <string name="phone_chipset">чипсет</string>
     <string name="phone_rates_gps">частоти gps/mock/net</string>
     <string name="phone_rates_gnss">частоти status/meas/nmea/nav</string>
-    <string name="phone_sensors_title">Датчики телефона</string>
+    <string name="phone_sensors_title">Датчики смартфона</string>
     <string name="phone_sensors_not_recording">Запис не ведеться.</string>
 
     <!-- Probe -->
@@ -150,8 +150,8 @@
     <string name="sessions_back">‹ Сесії</string>
     <string name="sessions_mode_accuracy">Точність</string>
     <string name="sessions_mode_sources">Джерела</string>
-    <string name="sessions_map_hint">● ○ початок і кінець вікна експорту; червоні штрихи: відсічка позиції антени; крапки: немає позиції антени (трек телефона).</string>
-    <string name="sessions_legend_phone_gps">━ GPS телефона</string>
+    <string name="sessions_map_hint">● ○ початок і кінець вікна експорту; червоні штрихи: відсічка позиції антени; крапки: немає позиції антени (трек смартфона).</string>
+    <string name="sessions_legend_phone_gps">━ GPS смартфона</string>
     <string name="sessions_legend_start">● початок</string>
     <string name="sessions_legend_end">● кінець</string>
     <string name="sessions_start_at">початок %1$s</string>
@@ -169,7 +169,7 @@
     <string name="sessions_export_failed">Не вдалося експортувати: %1$s</string>
     <string name="sessions_along_drive">Уздовж поїздки</string>
     <string name="sessions_info_title">Сесія</string>
-    <string name="sessions_phone">телефон</string>
+    <string name="sessions_phone">смартфон</string>
     <string name="sessions_dish_firmware">прошивка антени</string>
     <string name="sessions_app">програма</string>
     <string name="sessions_delete_title">Видалити сесію?</string>
@@ -185,24 +185,24 @@
     <!-- Accuracy report: map, legend, charts -->
     <string name="report_building">Будується звіт про точність…</string>
     <string name="report_legend_no_reference">немає еталона</string>
-    <string name="report_legend_conflict">розбіжність телефона й антени &gt; 1 км</string>
+    <string name="report_legend_conflict">розбіжність смартфона й антени &gt; 1 км</string>
     <string name="report_cutoff">відсічка</string>
-    <string name="report_legend_hint_reference">Колір: відстань між виданою позицією (позиція антени, зсунута вперед на її вік) і власним GNSS телефона в той самий момент; частка часу руху.</string>
-    <string name="report_legend_hint_no_reference">У цій сесії немає еталона з GNSS телефона (фіктивний GPS був увімкнений, тож телефон не давав справжніх позицій): кольори не можуть показати похибку.</string>
+    <string name="report_legend_hint_reference">Колір: відстань між виданою позицією (позиція антени, зсунута вперед на її вік) і власним GNSS смартфона в той самий момент; частка часу руху.</string>
+    <string name="report_legend_hint_no_reference">У цій сесії немає еталона з GNSS смартфона (фіктивний GPS був увімкнений, тож смартфон не давав справжніх позицій): кольори не можуть показати похибку.</string>
     <string name="report_lane_cutoff">Відсічка позиції антени</string>
-    <string name="report_lane_interference">Завади GNSS телефона</string>
+    <string name="report_lane_interference">Завади GNSS смартфона</string>
     <string name="report_lane_dish_gnss">GNSS антени: &lt; 10 супутників</string>
     <string name="report_lane_mock">Фіктивний GPS увімкнено</string>
     <string name="report_lane_unreachable">Антена недоступна</string>
-    <string name="report_lane_conflict">Розбіжність телефона й антени &gt; 1 км</string>
+    <string name="report_lane_conflict">Розбіжність смартфона й антени &gt; 1 км</string>
     <string name="report_chart_speed">Швидкість, km/h</string>
     <string name="report_chart_error">Похибка виданої позиції, m</string>
-    <string name="report_legend_phone_gnss">━ GNSS телефона</string>
+    <string name="report_legend_phone_gnss">━ GNSS смартфона</string>
     <string name="report_map_cutoff">Відсічка %1$s с · %2$s</string>
     <string name="report_readout_hint">Торкніться графіка або проведіть по ньому, щоб побачити момент; на карті він позначений.</string>
     <string name="report_readout_no_fix">немає позиції антени</string>
     <string name="report_readout_dish_speed">антена %1$s км/год</string>
-    <string name="report_readout_conflict">розбіжність телефона й антени %1$s км</string>
+    <string name="report_readout_conflict">розбіжність смартфона й антени %1$s км</string>
     <string name="report_readout_error">похибка %1$s м (%2$s)</string>
     <string name="report_readout_interference">завади</string>
 
@@ -212,7 +212,7 @@
     <string name="report_within_10">у межах 10 м</string>
     <string name="report_worst">найгірша</string>
     <string name="report_unmoved_fix">позиція без зсуву (програма ≤ 0.1.3)</string>
-    <string name="report_phone_ref_accuracy">точність еталона телефона</string>
+    <string name="report_phone_ref_accuracy">точність еталона смартфона</string>
     <string name="report_error">похибка</string>
     <string name="report_not_measurable">не вимірюється (фіктивний GPS)</string>
     <string name="report_conflict_value">%1$s с (спуфінг?)</string>
@@ -226,7 +226,7 @@
     <string name="report_cutoffs_title">Відсічки</string>
     <string name="report_cutoff_at">на %1$s</string>
     <string name="report_cutoff_open_value">%1$s с (триває)</string>
-    <string name="report_cutoff_detail">%1$s; антена %2$s до (макс. %3$s за хвилину до), %4$s після; телефон %5$s → %6$s; за цей час проїхано %7$s</string>
+    <string name="report_cutoff_detail">%1$s; антена %2$s до (макс. %3$s за хвилину до), %4$s після; смартфон %5$s → %6$s; за цей час проїхано %7$s</string>
 
     <!-- Accuracy classes of the served position error (no-break spaces keep a number with its unit) -->
     <string name="accuracy_class_0">&lt;&#160;5&#160;m</string>
@@ -240,7 +240,7 @@
     <string name="config_theme_system">Системна</string>
     <string name="config_theme_light">Світла</string>
     <string name="config_theme_dark">Темна</string>
-    <string name="config_theme_system_light_hint">В Android 8 і 9 немає власної темної теми системи, тому «Системна» на цьому телефоні означає світлу.</string>
+    <string name="config_theme_system_light_hint">В Android 8 і 9 немає власної темної теми системи, тому «Системна» на цьому смартфоні означає світлу.</string>
     <string name="config_dish_title">Антена</string>
     <string name="config_dish_address">Адреса антени (host або host:port)</string>
     <string name="config_transport">Транспорт</string>
@@ -248,14 +248,14 @@
     <string name="config_transport_hint">gRPC-Web працює через порт 9201 (як застосунок Starlink), gRPC — через 9200; «авто» спершу пробує gRPC-Web.</string>
     <string name="config_bind_wifi">Прив’язати до мережі Wi-Fi</string>
     <string name="config_bind_wifi_hint">Тримає трафік антени в мережі Wi-Fi Starlink Mini, навіть коли Android спрямовує решту трафіку через мобільну мережу.</string>
-    <string name="wifi_binding_vpn_refused">VPN на цьому телефоні (Tailscale, робочий VPN) не дає застосункам вибирати мережу Wi-Fi, тож до антени й роутера звертаються через мережу за замовчуванням. Це працює, поки VPN не перехоплює локальні адреси. Якщо вони не відповідають, дозвольте доступ до локальної мережі в застосунку VPN, виключіть цей застосунок із VPN або вимкніть VPN.</string>
+    <string name="wifi_binding_vpn_refused">VPN на цьому смартфоні (Tailscale, робочий VPN) не дає застосункам вибирати мережу Wi-Fi, тож до антени й роутера звертаються через мережу за замовчуванням. Це працює, поки VPN не перехоплює локальні адреси. Якщо вони не відповідають, дозвольте доступ до локальної мережі в застосунку VPN, виключіть цей застосунок із VPN або вимкніть VPN.</string>
     <string name="config_mount_title">Кріплення</string>
     <string name="config_yaw_offset">Зсув рискання антени відносно напрямку «вперед» авто, °</string>
     <string name="config_mount_hint">Кут між курсом антени й напрямком «вперед» авто (близько −177°, коли антена дивиться назад); використовується для курсу авто на сторінці «Позиція» та інерціальною корекцією. Вивчений: вимірюється під час прямолінійного руху швидше приблизно 22 км/год і постійно уточнюється. Вручну: ваше значення використовується від початку; корекція все одно замінить його, якщо поїздка покаже значення, відмінне більш ніж на 5°. Зміна перезапускає фільтр.</string>
     <string name="config_imu_rate">Частота IMU, Гц (10–200)</string>
     <string name="config_retention_days">Зберігати сесії, днів</string>
     <string name="config_storage_cap">Ліміт сховища, MB</string>
-    <string name="config_recording_hint">Сесії, старші за термін зберігання, і найстаріші понад ліміт видаляються, коли програма запускається, відкривається сторінка «Сесії», вимикається запис сесій і починається новий запис. Журнали залишають телефон лише через експорт.</string>
+    <string name="config_recording_hint">Сесії, старші за термін зберігання, і найстаріші понад ліміт видаляються, коли програма запускається, відкривається сторінка «Сесії», вимикається запис сесій і починається новий запис. Журнали залишають смартфон лише через експорт.</string>
     <string name="config_version">%1$s %2$s (збірка %3$d)</string>
 
     <!-- Notifications -->
@@ -311,21 +311,21 @@
     <string name="setup_state_hidden">Не перевіряється</string>
 
     <string name="setup_location_permission_title">Дозвіл на точне місцезнаходження</string>
-    <string name="setup_location_permission_why">Дає змогу читати власний GNSS телефона (для порівняння з антеною та запису) і запускати службу місцезнаходження.</string>
+    <string name="setup_location_permission_why">Дає змогу читати власний GNSS смартфона (для порівняння з антеною та запису) і запускати службу місцезнаходження.</string>
     <string name="setup_location_permission_denied">Android більше не показує запит: дозвольте «Місцезнаходження → Точне» в налаштуваннях програми.</string>
     <string name="setup_location_on_title">Місцезнаходження ввімкнено</string>
     <string name="setup_location_on_why">Коли місцезнаходження вимкнено, Android не передає позицію жодній програмі — ні справжню, ні фіктивну.</string>
     <string name="setup_developer_title">Параметри розробника</string>
     <string name="setup_developer_why">Потрібні, щоб вибрати програму для фіктивного місцезнаходження.</string>
     <string name="setup_developer_how">Відкрийте «Про телефон» і сім разів торкніться «Номер збірки», потім поверніться.</string>
-    <string name="setup_developer_hidden">Android 17 не дає застосункам дізнатися, чи увімкнені параметри розробника, тож цей крок стане «Готово», щойно %1$s буде програмою для фіктивного місцезнаходження. Якщо в налаштуваннях немає «Параметри розробника» (у розділі «Система»), відкрийте «Про телефон» і сім разів торкніться «Номер збірки».</string>
+    <string name="setup_developer_hidden">Android 17 не дає застосункам дізнатися, чи увімкнені параметри розробника, тож цей крок стане «Готово», щойно %1$s буде програмою для фіктивного місцезнаходження. 1: якщо в налаштуваннях немає «Параметри розробника» (у розділі «Система»), відкрийте «Про телефон» і сім разів торкніться «Номер збірки». 2: відкрийте «Параметри розробника» і виберіть %1$s у пункті «Вибрати додаток для фіктивних місцеположень».</string>
     <string name="setup_mock_app_title">%1$s — програма для фіктивного місцезнаходження</string>
-    <string name="setup_mock_app_why">Кнопка відкриває «Параметри розробника», на більшості телефонів одразу на пункті «Вибрати додаток для фіктивних місцеположень»: торкніться його й виберіть %1$s. Лише тоді вона може замінити GPS телефона.</string>
-    <string name="setup_dish_wifi_title">Телефон у Wi-Fi антени</string>
+    <string name="setup_mock_app_why">Кнопка відкриває «Параметри розробника», на більшості смартфонів одразу на пункті «Вибрати додаток для фіктивних місцеположень»: торкніться його й виберіть %1$s. Лише тоді вона може замінити GPS смартфона.</string>
+    <string name="setup_dish_wifi_title">Смартфон у Wi-Fi антени</string>
     <string name="setup_dish_wifi_why">Антена відповідає лише у своїй мережі (192.168.100.1).</string>
     <string name="setup_dish_wifi_no_dish">Wi-Fi підключено, але антена не відповідає: це мережа антени? Перевірте адресу антени в «Starlink» → «З\'єднання».</string>
     <string name="setup_dish_location_title">Антена ділиться місцезнаходженням у локальній мережі</string>
-    <string name="setup_dish_location_why">Антена відповідає на запити місцезнаходження з локальної мережі, лише якщо це дозволено. %1$s може попросити антену це ввімкнути, але не перевірено, що антена приймає це від телефону в її Wi-Fi: можливо, це потрібно один раз ввімкнути в застосунку Starlink із входом в обліковий запис (у його розширених налаштуваннях).</string>
+    <string name="setup_dish_location_why">Антена відповідає на запити місцезнаходження з локальної мережі, лише якщо це дозволено. %1$s може попросити антену це ввімкнути, але не перевірено, що антена приймає це від смартфону в її Wi-Fi: можливо, це потрібно один раз ввімкнути в застосунку Starlink із входом в обліковий запис (у його розширених налаштуваннях).</string>
     <string name="setup_dish_location_disabled">Антена зараз вимкнена (наприклад, рух занадто швидкий для тарифу), тож перевірити неможливо.</string>
     <string name="setup_notifications_title">Сповіщення</string>
     <string name="setup_notifications_why">Для сповіщення про запис і спливного попередження, коли антена відсікає позицію.</string>
@@ -346,6 +346,7 @@
     <string name="setup_action_location_settings">Налаштування місцезнаходження</string>
     <string name="setup_action_about_phone">Про телефон</string>
     <string name="setup_action_developer_options">Параметри розробника</string>
+    <string name="setup_step_button">%1$s. %2$s</string>
     <string name="setup_action_mock_app">Вибрати додаток для фіктивних місцеположень</string>
     <string name="setup_action_wifi">Вибрати Wi-Fi</string>
     <string name="setup_action_allow_on_dish">Увімкнути на антені</string>
@@ -380,9 +381,9 @@
     </plurals>
     <string name="home_setup_missing_hint">Без них фіктивний GPS не працюватиме.</string>
     <string name="home_open_setup">Налаштувати фіктивний GPS</string>
-    <string name="home_mock_subtitle">Замінити GPS телефона для всіх програм позицією антени</string>
+    <string name="home_mock_subtitle">Замінити GPS смартфона для всіх програм позицією антени</string>
     <string name="home_needs_location">Спершу дозвольте точне місцезнаходження (сторінка «Імітація», «Як це ввімкнути»).</string>
-    <string name="home_line_off">Вимкнено: програми використовують власний GPS телефона.</string>
+    <string name="home_line_off">Вимкнено: програми використовують власний GPS смартфона.</string>
     <string name="home_line_cutoff">Відсічка позиції антени: %1$s · %2$s с</string>
     <string name="home_line_waiting">Очікуємо антену…</string>
     <string name="home_line_dish_down">Антена не відповідає: немає нової позиції %1$s с</string>
@@ -392,14 +393,14 @@
     <string name="home_mode_title">Що видає фіктивний GPS</string>
     <string name="home_record_drive">Записувати цю поїздку</string>
     <string name="home_record_with_mock">Записувати, коли фіктивний GPS увімкнено</string>
-    <string name="home_record_hint">Записи лишаються на телефоні; відкрийте запис нижче, щоб поділитися його частиною. Вони допомагають знаходити й виправляти проблеми з точністю.</string>
+    <string name="home_record_hint">Записи лишаються на смартфоні; відкрийте запис нижче, щоб поділитися його частиною. Вони допомагають знаходити й виправляти проблеми з точністю.</string>
 
     <!-- Mock modes -->
     <string name="mode_auto">Авто</string>
     <string name="mode_raw">Сирий</string>
     <string name="mode_starlink">Лише Starlink</string>
     <string name="mode_auto_title">Авто (рекомендовано)</string>
-    <string name="mode_auto_description">Найкраща позиція від застосунку: позиція антени, скоригована за датчиками руху телефона й курсом антени, яка також веде позицію далі, коли антена її не дає. З вимкненою інерціальною корекцією: позиція антени, зсунута вперед на її вік.</string>
+    <string name="mode_auto_description">Найкраща позиція від застосунку: позиція антени, скоригована за датчиками руху смартфона й курсом антени, яка також веде позицію далі, коли антена її не дає. З вимкненою інерціальною корекцією: позиція антени, зсунута вперед на її вік.</string>
     <string name="mode_raw_title">Сирий: лише позиціювання Starlink</string>
     <string name="mode_raw_description">Позиція антени точно така, як її повідомляє антена; нічого не додано і не змішано.</string>
     <string name="mode_starlink_title">Лише Starlink (без GNSS)</string>
@@ -409,7 +410,7 @@
     <string name="notif_title_mock_on">Фіктивний GPS увімкнено · %1$s</string>
     <string name="notif_title_mock_off">Фіктивний GPS вимкнено</string>
     <string name="notif_line_cutoff">Відсічка позиції антени · %1$s с</string>
-    <string name="notif_line_mock_off">Працює GPS телефона</string>
+    <string name="notif_line_mock_off">Працює GPS смартфона</string>
     <string name="notif_line_waiting">Очікуємо антену…</string>
     <string name="notif_line_dish_down">Антена не відповідає · без позиції %1$s с</string>
     <string name="notif_line_no_fix">Немає позиції антени %1$s с</string>
@@ -427,7 +428,7 @@
 
     <!-- Setup: Google Location Accuracy -->
     <string name="setup_google_accuracy_title">Точність геолокації Google вимкнено</string>
-    <string name="setup_google_accuracy_why">Телефон під\'єднаний до Wi-Fi антени, яка їде разом з авто. Позиціювання Google за Wi-Fi ставить цю мережу туди, де її бачили раніше, тож з увімкненою «Точністю геолокації Google» місцезнаходження Google може «прилипати» до того місця. Вимкніть її: Місцезнаходження → Служби геолокації → Точність геолокації Google.</string>
+    <string name="setup_google_accuracy_why">Смартфон під\'єднаний до Wi-Fi антени, яка їде разом з авто. Позиціювання Google за Wi-Fi ставить цю мережу туди, де її бачили раніше, тож з увімкненою «Точністю геолокації Google» місцезнаходження Google може «прилипати» до того місця. Вимкніть її: Місцезнаходження → Служби геолокації → Точність геолокації Google.</string>
     <string name="setup_google_accuracy_unknown">Не можна прочитати, поки фіктивний GPS замінює мережеве місцезнаходження; вимкніть його, щоб перевірити.</string>
     <!-- Dish restarts -->
     <string name="reboot_title">Антена перезапустилася</string>
@@ -485,12 +486,12 @@
     <string name="map_provider_satellite">EOX (знімки Sentinel-2 за 2017 рік, 10 м на піксель)</string>
     <!-- Live map -->
     <string name="live_waiting">Очікування позицій…</string>
-    <string name="live_mock_hides">Поки фіктивний GPS увімкнено, позиції GPS, мережі та злитого провайдера телефона — це його власні, тож вони не показуються.</string>
+    <string name="live_mock_hides">Поки фіктивний GPS увімкнено, позиції GPS, мережі та злитого провайдера смартфона — це його власні, тож вони не показуються.</string>
     <string name="live_src_served">Що отримують застосунки</string>
     <string name="live_src_dish_auto">Антена (Авто)</string>
     <string name="live_src_dish_starlink">Антена, лише Starlink</string>
     <string name="live_src_dish_gps">GPS антени</string>
-    <string name="live_src_phone_gps">GPS телефона</string>
+    <string name="live_src_phone_gps">GPS смартфона</string>
     <string name="live_src_phone_network">Мережа (вишки, Wi-Fi)</string>
     <string name="live_src_phone_fused">Злите Android</string>
     <string name="live_src_gms_fused">Злите Google</string>
@@ -498,7 +499,7 @@
     <string name="live_short_dish_auto">антена</string>
     <string name="live_short_dish_starlink">Starlink</string>
     <string name="live_short_dish_gps">GPS антени</string>
-    <string name="live_short_phone_gps">телефон</string>
+    <string name="live_short_phone_gps">смартфон</string>
     <string name="live_short_phone_network">мережа</string>
     <string name="live_short_phone_fused">злите</string>
     <string name="live_short_gms_fused">Google</string>
@@ -510,7 +511,7 @@
     <string name="live_dish_heading">курс за антеною</string>
     <string name="live_dish_heading_value">%1$s° (зсув кріплення %2$s°)</string>
     <string name="live_dish_gnss">GNSS антени</string>
-    <string name="live_phone_gnss">GNSS телефона</string>
+    <string name="live_phone_gnss">GNSS смартфона</string>
     <string name="live_phone_sats">%1$s у розв\'язку / %2$s видно</string>
     <string name="live_agc">AGC %1$s дБ</string>
     <string name="live_agc_jammed">AGC %1$s дБ: завади</string>
@@ -518,7 +519,7 @@
     <string name="live_cutoff_value">відсічка вже %1$s с</string>
     <string name="notif_line_watching">відкрито сторінку «Позиція»</string>
     <!-- Network fallback -->
-    <string name="home_fallback">Коли антена не дає позиції, брати мережеве місцезнаходження телефона (вишки, Wi-Fi)</string>
+    <string name="home_fallback">Коли антена не дає позиції, брати мережеве місцезнаходження смартфона (вишки, Wi-Fi)</string>
     <string name="home_fallback_hint">Через 5 с без позиції антени застосунки отримують власне мережеве місцезнаходження Android (мобільні вишки та Wi-Fi), доки антена не відповість знову. Грубо (десятки метрів у містах, часто сотні на трасі); потрібна увімкнена «Точність геолокації Google».</string>
     <string name="home_fallback_auto_only">Лише в режимі Авто: Сирий і Лише Starlink віддають тільки позицію антени.</string>
     <string name="home_line_fallback">Резерв від мережі ±%1$s м · немає позиції антени %2$s с</string>
@@ -532,8 +533,8 @@
     <string name="report_readout_fallback">резерв від мережі</string>
     <string name="report_fallback">працював резерв від мережі</string>
     <!-- Inertial correction (Auto mode) -->
-    <string name="home_inertial">Інерціальна корекція (датчики руху телефона й курс антени)</string>
-    <string name="home_inertial_hint">Тримає авто на його траєкторії, коли позиція антени зсувається вбік від дороги, і веде позицію далі за датчиками руху, поки антена її не дає, з кожною секундою менш точно (нічого не видається, щойно точність перевищить приблизно 300 м або бічна невизначеність приблизно 50 м, що настане раніше; на звивистій дорозі це буває вже за пів хвилини). Тримайте телефон у нерухомому кріпленні: у першу хвилину руху корекція вивчає, як він стоїть. Вимкніть, щоб порівняти з простою позицією антени.</string>
+    <string name="home_inertial">Інерціальна корекція (датчики руху смартфона й курс антени)</string>
+    <string name="home_inertial_hint">Тримає авто на його траєкторії, коли позиція антени зсувається вбік від дороги, і веде позицію далі за датчиками руху, поки антена її не дає, з кожною секундою менш точно (нічого не видається, щойно точність перевищить приблизно 300 м або бічна невизначеність приблизно 50 м, що настане раніше; на звивистій дорозі це буває вже за пів хвилини). Тримайте смартфон у нерухомому кріпленні: у першу хвилину руху корекція вивчає, як він стоїть. Вимкніть, щоб порівняти з простою позицією антени.</string>
     <string name="home_inertial_off_hint">Вимкнено: Авто видає позицію антени, зсунуту вперед на її вік, як раніше, і нічого, поки антена не дає позиції (крім резерву від мережі).</string>
     <string name="home_fallback_hint_inertial">Через 5 с без позиції антени пропускається власне мережеве місцезнаходження Android (вишки, Wi-Fi) і йде в інерціальну корекцію як слабкий вхід; воно використовується лише тоді, коли точніше за числення шляху. Потрібна увімкнена «Точність геолокації Google».</string>
     <string name="home_line_inertial_tracking">Авто, з корекцією · ±%1$s м</string>
@@ -555,8 +556,8 @@
     <string name="inertial_accuracy_not_served">Точність фільтра (не видається)</string>
     <string name="inertial_errors">Помилки фільтра</string>
     <string name="inertial_errors_value">%1$d · остання: %2$s</string>
-    <string name="notif_cutoff_text_inertial">Антена відмовляє у видачі позиції: %1$s. Позиція ведеться далі за датчиками руху телефона й курсом антени, доки антена знову не відповість, з кожною секундою менш точно (близько 30 с у попередніх поїздках).</string>
-    <string name="status_cutoff_hint_inertial">Поки антена вимкнена, вона відмовляє у видачі позиції для всіх джерел; статус при цьому відповідає. Тим часом інерціальна корекція веде позицію далі за датчиками руху телефона й курсом антени. У попередніх поїздках це тривало близько 30 с і починалося після хвилини чи більше на швидкості 75–81 км/год.</string>
+    <string name="notif_cutoff_text_inertial">Антена відмовляє у видачі позиції: %1$s. Позиція ведеться далі за датчиками руху смартфона й курсом антени, доки антена знову не відповість, з кожною секундою менш точно (близько 30 с у попередніх поїздках).</string>
+    <string name="status_cutoff_hint_inertial">Поки антена вимкнена, вона відмовляє у видачі позиції для всіх джерел; статус при цьому відповідає. Тим часом інерціальна корекція веде позицію далі за датчиками руху смартфона й курсом антени. У попередніх поїздках це тривало близько 30 с і починалося після хвилини чи більше на швидкості 75–81 км/год.</string>
     <string name="inertial_title">Інерціальна корекція</string>
     <string name="inertial_correction">Корекція</string>
     <string name="inertial_correction_off">вимкнена (Авто видає позицію антени)</string>
@@ -574,10 +575,10 @@
     <string name="inertial_sideways">Зсув антени вбік</string>
     <string name="inertial_sideways_right">%1$s м праворуч</string>
     <string name="inertial_sideways_left">%1$s м ліворуч</string>
-    <string name="inertial_imu">IMU телефона</string>
+    <string name="inertial_imu">IMU смартфона</string>
     <string name="inertial_imu_none">немає даних</string>
     <string name="inertial_imu_warming">вивчає напрям гравітації</string>
-    <string name="inertial_imu_handling">телефон зрушили в кріпленні</string>
+    <string name="inertial_imu_handling">смартфон зрушили в кріпленні</string>
     <string name="inertial_imu_gyro">використовується гіроскоп</string>
     <string name="inertial_imu_forward">використовуються гіроскоп і прискорення вперед</string>
     <string name="inertial_forward_axis">Вісь «вперед»</string>
@@ -593,7 +594,7 @@
     <string name="mock_from_fix">від позиції антени</string>
     <string name="inertial_dead_reckoning">Числення шляху</string>
     <string name="inertial_resets">Перезапуски фільтра</string>
-    <string name="inertial_hint">Фільтр працює на позиції й курсі антени та датчиках руху телефона, лише на телефоні. Утримання вбік: скільки разів позицію антени вважали зсунутою вбік; підозри: що утримав би чутливіший детектор (для налаштування); відхилення: позиції антени, надто далекі від фільтра. Його події йдуть у журнал сесії.</string>
+    <string name="inertial_hint">Фільтр працює на позиції й курсі антени та датчиках руху смартфона, лише на смартфоні. Утримання вбік: скільки разів позицію антени вважали зсунутою вбік; підозри: що утримав би чутливіший детектор (для налаштування); відхилення: позиції антени, надто далекі від фільтра. Його події йдуть у журнал сесії.</string>
     <string name="config_mount_auto">Вивчений</string>
     <string name="config_mount_manual">Вручну</string>
     <string name="config_mount_learned">Вивчене значення</string>
@@ -630,7 +631,7 @@
     <string name="report_inertial_rejects">відхилення воротами · події</string>
     <string name="report_inertial_mount">зсув кріплення</string>
     <string name="report_inertial_mount_none">не вивчений</string>
-    <string name="report_inertial_hint">Що Авто видає з увімкненою інерціальною корекцією, відтворене для цієї сесії із записаних відповідей антени, датчиків руху та мережевих позицій. Похибки потребують власного GNSS телефона, тобто поїздки з вимкненим фіктивним GPS.</string>
+    <string name="report_inertial_hint">Що Авто видає з увімкненою інерціальною корекцією, відтворене для цієї сесії із записаних відповідей антени, датчиків руху та мережевих позицій. Похибки потребують власного GNSS смартфона, тобто поїздки з вимкненим фіктивним GPS.</string>
 
 
     <!-- Dish tab strings: start -->
@@ -647,7 +648,7 @@
     <string name="router_problem_title">Роутер</string>
     <string name="dish_unreachable">Антена не відповідає.</string>
     <string name="router_unreachable">Роутер не відповідає.</string>
-    <string name="dish_unreachable_hint">Перевірте, що телефон підключений до Wi-Fi Starlink і що адреса в «Starlink» → «З\'єднання» правильна (%1$s).</string>
+    <string name="dish_unreachable_hint">Перевірте, що смартфон підключений до Wi-Fi Starlink і що адреса в «Starlink» → «З\'єднання» правильна (%1$s).</string>
     <string name="dish_ago">%1$s тому</string>
     <string name="chart_now">зараз</string>
     <string name="common_yes">так</string>
@@ -826,7 +827,7 @@
     <string name="ov_update_waiting_hint">Оновлення завантажено, і воно встановиться під час перезапуску антени: у запланований час або зараз. Перезапуск триває хвилину-дві.</string>
     <string name="ov_install_now">Встановити зараз (перезапуск)</string>
     <string name="ov_install_title">Встановити оновлення зараз?</string>
-    <string name="ov_install_text">Антена перезапуститься, щоб встановити оновлення, яке чекає. Вона буде вимкнена хвилину-дві, без позиції від неї: в Авто з інерціальною корекцією фіктивний GPS ще недовго веде позицію за датчиками руху телефона, з кожною секундою менш точно, інакше він зупиняється одразу (в Авто резервне мережеве місцезнаходження Android ще може передаватися). Застосунок позначить це як перезапуск, надісланий ним.</string>
+    <string name="ov_install_text">Антена перезапуститься, щоб встановити оновлення, яке чекає. Вона буде вимкнена хвилину-дві, без позиції від неї: в Авто з інерціальною корекцією фіктивний GPS ще недовго веде позицію за датчиками руху смартфона, з кожною секундою менш точно, інакше він зупиняється одразу (в Авто резервне мережеве місцезнаходження Android ще може передаватися). Застосунок позначить це як перезапуск, надісланий ним.</string>
     <string name="ov_install_confirm">Перезапустити й встановити</string>
     <string name="ov_obstruction_title">Перешкоди</string>
     <string name="ov_not_reported">Антена цього не повідомляє.</string>
@@ -934,9 +935,9 @@
     <string name="controls_reboot_title">Перезапуск антени</string>
     <string name="controls_reboot_text">Перезапускає антену. Вона повертається за хвилину-дві.</string>
     <string name="controls_reboot_button">Перезапустити…</string>
-    <string name="controls_reboot_confirm">Антена перезапуститься зараз і буде вимкнена хвилину-дві, без позиції від неї: в Авто з інерціальною корекцією фіктивний GPS ще недовго веде позицію за датчиками руху телефона, з кожною секундою менш точно, інакше він зупиняється одразу (в Авто резервне мережеве місцезнаходження Android ще може передаватися). Оновлення ПЗ, що чекає, буде встановлено. Застосунок позначить цей перезапуск як надісланий звідси.</string>
+    <string name="controls_reboot_confirm">Антена перезапуститься зараз і буде вимкнена хвилину-дві, без позиції від неї: в Авто з інерціальною корекцією фіктивний GPS ще недовго веде позицію за датчиками руху смартфона, з кожною секундою менш точно, інакше він зупиняється одразу (в Авто резервне мережеве місцезнаходження Android ще може передаватися). Оновлення ПЗ, що чекає, буде встановлено. Застосунок позначить цей перезапуск як надісланий звідси.</string>
     <string name="controls_sleep_title">Графік сну</string>
-    <string name="controls_sleep_text">Щоденний проміжок, коли антена спить: без інтернету й без танення снігу. Її Wi-Fi теж може вимкнутися, а з ним і зв\'язок Star Nav з антеною (на Mini ще не перевірено): перевірте після першої ночі. Час — місцевий час телефона.</string>
+    <string name="controls_sleep_text">Щоденний проміжок, коли антена спить: без інтернету й без танення снігу. Її Wi-Fi теж може вимкнутися, а з ним і зв\'язок Star Nav з антеною (на Mini ще не перевірено): перевірте після першої ночі. Час — місцевий час смартфона.</string>
     <string name="controls_sleep_none">не задано</string>
     <string name="controls_sleep_off">вимкнено</string>
     <string name="controls_sleep_on">увімкнено, %1$s – %2$s</string>
@@ -968,7 +969,7 @@
     <string name="controls_location_blocked">не дозволено</string>
     <string name="controls_location_allow_button">Дозволити…</string>
     <string name="controls_location_block_button">Заборонити…</string>
-    <string name="controls_location_allow_confirm">Антена відповідатиме на запити позиції в локальній мережі. Не перевірено, що антена приймає це від телефону в її Wi-Fi: можливо, це потрібно один раз ввімкнути в застосунку Starlink із входом в обліковий запис. Відповідь антени буде показано тут.</string>
+    <string name="controls_location_allow_confirm">Антена відповідатиме на запити позиції в локальній мережі. Не перевірено, що антена приймає це від смартфону в її Wi-Fi: можливо, це потрібно один раз ввімкнути в застосунку Starlink із входом в обліковий запис. Відповідь антени буде показано тут.</string>
     <string name="controls_location_block_confirm">Антена перестане відповідати на запити позиції в локальній мережі: цей застосунок не отримуватиме від неї позицію, доки ви знову не дозволите.</string>
     <string name="controls_gnss_title">GNSS антени</string>
     <string name="controls_gnss_text">Вимикає власний приймач супутникової навігації антени. Він сам вмикається після перезапуску антени. Корисно, щоб перевірити, чи зберігає антена позицію без GNSS.</string>
@@ -1012,13 +1013,13 @@
     <string name="router_address">адреса</string>
     <string name="router_address_none">не знайдено</string>
     <string name="router_looking">Пошук роутера…</string>
-    <string name="err_no_router_address">адреси роутера немає: телефон не в Wi-Fi Starlink, і в «Starlink» → «З\'єднання» її не введено</string>
+    <string name="err_no_router_address">адреси роутера немає: смартфон не в Wi-Fi Starlink, і в «Starlink» → «З\'єднання» її не введено</string>
     <string name="router_address_source">джерело</string>
     <string name="router_source_manual">введена в «З\'єднанні»</string>
     <string name="router_source_gateway">шлюз мережі Wi-Fi</string>
     <string name="router_source_none">немає шлюзу Wi-Fi і нічого не введено</string>
     <string name="router_address_hint">Роутер — це вбудований роутер Starlink Mini. Його адреса береться зі шлюзу мережі Wi-Fi; щоб замінити її, введіть свою в «Starlink» → «З\'єднання» (наприклад, 192.168.1.1).</string>
-    <string name="probe_router_skipped">Роутер не опитано: телефон не в Wi-Fi Starlink і в «З\'єднанні» не введено адресу роутера.</string>
+    <string name="probe_router_skipped">Роутер не опитано: смартфон не в Wi-Fi Starlink і в «З\'єднанні» не введено адресу роутера.</string>
     <string name="config_router_title">Роутер</string>
     <string name="config_router_address">Адреса роутера (хост або хост:порт)</string>
     <string name="config_router_gateway">Шлюз Wi-Fi зараз</string>
@@ -1134,7 +1135,7 @@
     <string name="rd_summary">%1$s у мережі, %2$s призупинено, %3$s не в мережі</string>
     <string name="rd_none">Роутер не повідомив про пристрої.</string>
     <string name="rd_hint">Торкніться пристрою, щоб побачити подробиці, перейменувати або призупинити його.</string>
-    <string name="rd_this_phone">цей телефон</string>
+    <string name="rd_this_phone">цей смартфон</string>
     <string name="rd_dbm">%1$s дБм</string>
     <string name="rd_db">%1$s дБ</string>
     <string name="rd_rates">канал %1$s / %2$s Мбіт/с</string>
@@ -1151,7 +1152,7 @@
     <string name="rd_ping_value">%1$s · втрачено %2$s</string>
     <string name="rd_lease">оренда адреси закінчиться через</string>
     <string name="rd_rx_tx_hint">rx і tx — з погляду роутера: rx — це те, що роутер отримує від пристрою.</string>
-    <string name="rd_pause_self">Це телефон, який ви тримаєте. Його призупинення відрізало б Star Nav від роутера й антени, тому цього не пропонується.</string>
+    <string name="rd_pause_self">Це смартфон, який ви тримаєте. Його призупинення відрізало б Star Nav від роутера й антени, тому цього не пропонується.</string>
     <string name="rd_rename">Перейменувати…</string>
     <string name="rd_pause">Призупинити…</string>
     <string name="rd_resume">Відновити…</string>
@@ -1160,7 +1161,7 @@
     <string name="rd_rename_field">Ім\'я</string>
     <string name="rd_rename_button">Перейменувати</string>
     <string name="rd_pause_title">Призупинити %1$s</string>
-    <string name="rd_pause_text">Роутер перестане пускати цей пристрій у мережу, доки ви його не відновите. Якщо це телефон, який ви тримаєте, роутер його відріже, і Star Nav втратить роутер та антену.</string>
+    <string name="rd_pause_text">Роутер перестане пускати цей пристрій у мережу, доки ви його не відновите. Якщо це смартфон, який ви тримаєте, роутер його відріже, і Star Nav втратить роутер та антену.</string>
     <string name="rd_resume_title">Відновити %1$s</string>
     <string name="rd_resume_text">Роутер знову пустить цей пристрій у мережу.</string>
     <string name="rd_last_title">Останні результати</string>
@@ -1189,21 +1190,21 @@
     <string name="rw_name_field_5">Ім\'я для 5 ГГц</string>
     <string name="rw_name_bytes">%1$s із %2$s байт</string>
     <string name="rw_name_invalid">Ім\'я Wi-Fi — від 1 до 32 байт (кирилична літера займає два).</string>
-    <string name="rw_name_confirm">Ім\'я Wi-Fi стане: %1$s\n\nУсі пристрої в цій мережі, зокрема цей телефон, відключаться й мають приєднатися знову під новим іменем у налаштуваннях Wi-Fi Android. Поки телефон не повернеться, Star Nav не матиме ні антени, ні роутера, а позиція перестане надходити.</string>
+    <string name="rw_name_confirm">Ім\'я Wi-Fi стане: %1$s\n\nУсі пристрої в цій мережі, зокрема цей смартфон, відключаться й мають приєднатися знову під новим іменем у налаштуваннях Wi-Fi Android. Поки смартфон не повернеться, Star Nav не матиме ні антени, ні роутера, а позиція перестане надходити.</string>
     <string name="rw_pw_title">Пароль Wi-Fi</string>
     <string name="rw_pw_text">Встановлює новий пароль на всіх діапазонах мережі роутера.</string>
     <string name="rw_pw_open">Мережа відкрита: приєднатися може будь-хто поблизу.</string>
     <string name="rw_pw_button">Змінити пароль…</string>
     <string name="rw_pw_field">Новий пароль</string>
     <string name="rw_pw_rule">Від %1$s до %2$s символів: латинські літери, цифри, пробіли й символи англійської розкладки (без кириличних літер: Android не приймає їх у паролі Wi-Fi).</string>
-    <string name="rw_pw_confirm">Пароль Wi-Fi зміниться на всіх діапазонах. Усі пристрої в цій мережі, зокрема цей телефон, відключаться й мають приєднатися знову з новим паролем у налаштуваннях Wi-Fi Android. Поки телефон не повернеться, Star Nav не матиме ні антени, ні роутера. Пароль іде до роутера, і Star Nav його не зберігає.</string>
+    <string name="rw_pw_confirm">Пароль Wi-Fi зміниться на всіх діапазонах. Усі пристрої в цій мережі, зокрема цей смартфон, відключаться й мають приєднатися знову з новим паролем у налаштуваннях Wi-Fi Android. Поки смартфон не повернеться, Star Nav не матиме ні антени, ні роутера. Пароль іде до роутера, і Star Nav його не зберігає.</string>
     <string name="rw_hidden_title">Прихована мережа</string>
     <string name="rw_hidden_text">Прихована мережа не показує свого імені у списках Wi-Fi; ім\'я потрібно вводити вручну.</string>
     <string name="rw_hidden_now">прихована</string>
     <string name="rw_visible_now">видима</string>
     <string name="rw_hidden_hide_button">Приховати ім\'я…</string>
     <string name="rw_hidden_show_button">Показати ім\'я…</string>
-    <string name="rw_hidden_hide_confirm">Роутер перестане оголошувати ім\'я своєї мережі Wi-Fi. Пристрої, що вже знають мережу, зазвичай працюють далі, але деякі відключаться, і ім\'я доведеться ввести вручну. Якщо відключиться цей телефон, Star Nav втратить антену й роутер.</string>
+    <string name="rw_hidden_hide_confirm">Роутер перестане оголошувати ім\'я своєї мережі Wi-Fi. Пристрої, що вже знають мережу, зазвичай працюють далі, але деякі відключаться, і ім\'я доведеться ввести вручну. Якщо відключиться цей смартфон, Star Nav втратить антену й роутер.</string>
     <string name="rw_hidden_show_confirm">Роутер знову оголошуватиме ім\'я своєї мережі Wi-Fi, тож воно з\'явиться у списках Wi-Fi.</string>
     <string name="rw_guest_card_title">Гостьова мережа</string>
     <string name="rw_guest_text">Окрема мережа для гостей, пристрої якої не бачать решти. Не кожен роутер приймає це від цього застосунку; відповідь показано нижче.</string>
@@ -1214,17 +1215,17 @@
     <string name="rw_guest_add_confirm">Роутер створить гостьову мережу на 2,4 і 5 ГГц із вказаним паролем; її пристрої не бачитимуть один одного. Основну мережу не буде змінено.</string>
     <string name="rw_guest_remove_confirm">Гостьову мережу буде видалено, її пристрої відключаться. Основну мережу не буде змінено.</string>
     <string name="rnotice_title">Після зміни</string>
-    <string name="rnotice_join_again">Зміну виконано. Телефон міг відключитися від Wi-Fi: приєднайтеся до мережі знову, з новим іменем чи паролем, у налаштуваннях Wi-Fi Android. Тоді Star Nav сам знову знайде роутер.</string>
-    <string name="rnotice_may_drop">Зміну виконано. Роутер може перезапустити свій Wi-Fi, тож телефон може на мить відключитися. Якщо він сам не повернеться, приєднайтеся до мережі знову в налаштуваннях Wi-Fi Android (до прихованої мережі — ввівши її назву). Тоді Star Nav сам знову знайде роутер.</string>
-    <string name="rnotice_wifi_off">Режим bypass увімкнено. Wi-Fi Mini вимкнено, тож телефон утратив роутер і антену, і Star Nav не може до них дістатися. Повернути Wi-Fi може лише кнопка скидання на Mini.</string>
+    <string name="rnotice_join_again">Зміну виконано. Смартфон міг відключитися від Wi-Fi: приєднайтеся до мережі знову, з новим іменем чи паролем, у налаштуваннях Wi-Fi Android. Тоді Star Nav сам знову знайде роутер.</string>
+    <string name="rnotice_may_drop">Зміну виконано. Роутер може перезапустити свій Wi-Fi, тож смартфон може на мить відключитися. Якщо він сам не повернеться, приєднайтеся до мережі знову в налаштуваннях Wi-Fi Android (до прихованої мережі — ввівши її назву). Тоді Star Nav сам знову знайде роутер.</string>
+    <string name="rnotice_wifi_off">Режим bypass увімкнено. Wi-Fi Mini вимкнено, тож смартфон утратив роутер і антену, і Star Nav не може до них дістатися. Повернути Wi-Fi може лише кнопка скидання на Mini.</string>
     <string name="rnotice_no_config">Нічого не надіслано: спершу не вдалося прочитати поточні налаштування Wi-Fi роутера, а зміна має починатися з них.</string>
     <string name="rnotice_refused_locally">Нічого не надіслано: ця зміна не підходить до поточних налаштувань роутера (наприклад, такої мережі немає).</string>
     <string name="rnotice_open_wifi">Відкрити налаштування Wi-Fi</string>
-    <string name="rc_intro">Керування роутером. Кожна дія спершу питає й каже, що станеться. Зміни, які можуть відрізати цей телефон від роутера, про це попереджають: телефон бачить антену через Wi-Fi роутера, тож поки він відрізаний, Star Nav не отримує позицію.</string>
+    <string name="rc_intro">Керування роутером. Кожна дія спершу питає й каже, що станеться. Зміни, які можуть відрізати цей смартфон від роутера, про це попереджають: смартфон бачить антену через Wi-Fi роутера, тож поки він відрізаний, Star Nav не отримує позицію.</string>
     <string name="rc_reboot_title">Перезапуск роутера</string>
     <string name="rc_reboot_text">Перезапускає роутер, вбудований в антену.</string>
     <string name="rc_reboot_button">Перезапустити роутер…</string>
-    <string name="rc_reboot_confirm">Роутер перезапуститься. Його Wi-Fi зникне на хвилину-дві, тож телефон втратить роутер і антену, а Star Nav не матиме позиції, доки Wi-Fi не повернеться. Зазвичай телефон приєднується сам.</string>
+    <string name="rc_reboot_confirm">Роутер перезапуститься. Його Wi-Fi зникне на хвилину-дві, тож смартфон втратить роутер і антену, а Star Nav не матиме позиції, доки Wi-Fi не повернеться. Зазвичай смартфон приєднується сам.</string>
     <string name="rc_update_title">Перевірка оновлення роутера</string>
     <string name="rc_update_text">Просить роутер зараз пошукати нове ПЗ.</string>
     <string name="rc_update_button">Перевірити оновлення…</string>
@@ -1242,7 +1243,7 @@
     <string name="rc_lan_title">Адреса роутера (підмережа)</string>
     <string name="rc_lan_text">Адреса роутера в його власній мережі. Змініть її, якщо вона збігається з іншою мережею, до якої ви підключаєтесь.</string>
     <string name="rc_lan_field">Інша адреса</string>
-    <string name="rc_lan_confirm">Роутер переїде на адресу %1$s. Телефон відключиться від Wi-Fi і має приєднатися знову. Тоді Star Nav сам знайде роутер за новою адресою, якщо тільки ви не ввели адресу в «Starlink» → «З\'єднання»: змініть і її. Поки телефон не повернеться, Star Nav не матиме ні антени, ні роутера.</string>
+    <string name="rc_lan_confirm">Роутер переїде на адресу %1$s. Смартфон відключиться від Wi-Fi і має приєднатися знову. Тоді Star Nav сам знайде роутер за новою адресою, якщо тільки ви не ввели адресу в «Starlink» → «З\'єднання»: змініть і її. Поки смартфон не повернеться, Star Nav не матиме ні антени, ні роутера.</string>
     <string name="rc_speed_title">Перевірка швидкості</string>
     <string name="rc_speed_text">Роутер вимірює швидкість каналу Starlink.</string>
     <string name="rc_speed_optin">Я знаю, що це витрачає трафік</string>
@@ -1259,13 +1260,13 @@
     <string name="rc_bypass_is_off">вимкнено</string>
     <string name="rc_bypass_on_button">Увімкнути режим bypass…</string>
     <string name="rc_bypass_leave_button">Вийти з режиму bypass…</string>
-    <string name="rc_bypass_on_confirm">Wi-Fi Mini вимкнеться. Телефон втратить роутер і антену, і Star Nav перестане працювати: йому потрібен Wi-Fi Mini. Wi-Fi сам не повернеться, і цей застосунок не зможе його повернути. Це робить лише кнопка скидання на роутері, і вона скидає налаштування роутера. Вам потрібен інший роутер на кабелі антени.</string>
+    <string name="rc_bypass_on_confirm">Wi-Fi Mini вимкнеться. Смартфон втратить роутер і антену, і Star Nav перестане працювати: йому потрібен Wi-Fi Mini. Wi-Fi сам не повернеться, і цей застосунок не зможе його повернути. Це робить лише кнопка скидання на роутері, і вона скидає налаштування роутера. Вам потрібен інший роутер на кабелі антени.</string>
     <string name="rc_bypass_ack">Я розумію, що скасувати це можна лише кнопкою скидання на роутері</string>
     <string name="rc_bypass_leave_confirm">Роутер Mini знову запуститься разом зі своїм Wi-Fi.</string>
     <string name="rc_reset_title">Скидання роутера</string>
     <string name="rc_reset_text">Стирає налаштування роутера: ім\'я й пароль Wi-Fi, призупинені пристрої, DNS, підмережу та режим bypass.</string>
     <string name="rc_reset_button">Скинути роутер…</string>
-    <string name="rc_reset_confirm">Роутер повернеться до заводських налаштувань і перезапуститься: ім\'я Wi-Fi стане типовим, а пароль буде прибрано. Телефон відключиться, і Star Nav втратить антену та роутер, доки ви не приєднаєтеся до мережі знову. Це не можна скасувати.</string>
+    <string name="rc_reset_confirm">Роутер повернеться до заводських налаштувань і перезапуститься: ім\'я Wi-Fi стане типовим, а пароль буде прибрано. Смартфон відключиться, і Star Nav втратить антену та роутер, доки ви не приєднаєтеся до мережі знову. Це не можна скасувати.</string>
     <string name="rc_forget_title">Забути, у чому роутер відмовив</string>
     <string name="rc_forget_text">Деякі елементи сірі, бо роутер сказав, що не виконує їх для цього застосунку. Після зміни прошивки чи облікового запису можна дозволити спробувати знову.</string>
     <string name="rc_forget_button">Забути</string>
@@ -1288,8 +1289,8 @@
     <string name="tab_mock">Імітація</string>
     <string name="tab_starlink">Starlink</string>
     <string name="mockp_what_title">Що таке фіктивний GPS</string>
-    <string name="mockp_what">%1$s може віддавати всім програмам на телефоні інше місцезнаходження, ніж дає GPS-приймач телефона: те, що надходить від вашої антени Starlink, уточнене датчиками руху телефона. Це працює через фіктивне місцезнаходження Android, тож його отримують навігація, мапи й будь-яка програма, що запитує місцезнаходження.</string>
-    <string name="mockp_why">Навіщо: коли GPS телефона глушать або підміняють, програми стрибають по мапі або зависають. Антена має власне джерело позиції, тож з увімкненим фіктивним GPS програми слідують за антеною.</string>
+    <string name="mockp_what">%1$s може віддавати всім програмам на смартфоні інше місцезнаходження, ніж дає GPS-приймач смартфона: те, що надходить від вашої антени Starlink, уточнене датчиками руху смартфона. Це працює через фіктивне місцезнаходження Android, тож його отримують навігація, мапи й будь-яка програма, що запитує місцезнаходження.</string>
+    <string name="mockp_why">Навіщо: коли GPS смартфона глушать або підміняють, програми стрибають по мапі або зависають. Антена має власне джерело позиції, тож з увімкненим фіктивним GPS програми слідують за антеною.</string>
     <string name="mock_switch_title">Фіктивний GPS</string>
     <string name="mock_output_off">Увімкніть фіктивний GPS, щоб побачити, що отримують програми.</string>
     <string name="setup_show_all">Показати всі кроки</string>
@@ -1298,20 +1299,20 @@
     <string name="dish_tab_connection">З\'єднання</string>
     <string name="diag_service_off">Служба місцезнаходження не працює, тому ці значення порожні. Вони з\'являються, коли ввімкнено фіктивний GPS чи запис або відкрито сторінку «Позиція».</string>
     <string name="sessions_logging_off_title">Запис сесій вимкнено</string>
-    <string name="sessions_logging_off">Нічого не записується, навіть коли фіктивний GPS увімкнено. Сесії, що вже є на телефоні, лишаються нижче: їх можна відкрити, експортувати чи видалити. Щоб записувати знову, увімкніть запис сесій у Параметрах.</string>
+    <string name="sessions_logging_off">Нічого не записується, навіть коли фіктивний GPS увімкнено. Сесії, що вже є на смартфоні, лишаються нижче: їх можна відкрити, експортувати чи видалити. Щоб записувати знову, увімкніть запис сесій у Параметрах.</string>
     <string name="sessions_open_settings">Відкрити параметри</string>
-    <string name="sessions_empty_logging_off">На телефоні немає сесій.</string>
+    <string name="sessions_empty_logging_off">На смартфоні немає сесій.</string>
     <string name="config_logging_title">Журнал</string>
     <string name="config_logging_switch">Записувати сесії (журнал)</string>
-    <string name="config_logging_on_hint">Сесії записуються, коли ви починаєте запис на вкладці «Сесії» і, якщо ви так вирішите там, щоразу при ввімкненому фіктивному GPS. Вони лишаються на телефоні.</string>
+    <string name="config_logging_on_hint">Сесії записуються, коли ви починаєте запис на вкладці «Сесії» і, якщо ви так вирішите там, щоразу при ввімкненому фіктивному GPS. Вони лишаються на смартфоні.</string>
     <string name="config_logging_off_hint">Вимкнено: не записується нічого — ні з вкладки «Сесії», ні зі сповіщення, ні разом із фіктивним GPS. Запис, що триває, завершується одразу. Сповіщення, фіктивний GPS і перевірка доставки працюють як раніше.</string>
     <string name="config_imu_title">Датчики руху</string>
-    <string name="config_imu_hint">Як часто зчитуються акселерометр і гіроскоп телефона — для записів і для інерційної корекції. Зміна діє, коли датчики запускаються наступного разу (новий запис або ввімкнення фіктивного GPS).</string>
+    <string name="config_imu_hint">Як часто зчитуються акселерометр і гіроскоп смартфона — для записів і для інерційної корекції. Зміна діє, коли датчики запускаються наступного разу (новий запис або ввімкнення фіктивного GPS).</string>
     <string name="about_title">Про програму</string>
     <string name="about_license">Ліцензія</string>
     <string name="about_source">Вільне програмне забезпечення з відкритим кодом. Вихідний код — у репозиторії проєкту, посилання на нього є на сторінці, звідки ви встановили програму.</string>
     <string name="about_privacy_title">Конфіденційність</string>
-    <string name="about_privacy">Без облікових записів, аналітики, реклами й звітів про збої; розробнику нічого не надсилається. Записи лишаються на телефоні, поки ви самі не експортуєте один із них. Програма спілкується з вашою антеною й роутером у локальній мережі, а з серверами тайлів мапи — лише після того, як ви оберете тло мапи. Кнопка «Відкрити в Google Maps» передає позицію вашій програмі карт лише тоді, коли ви її натиснули. Запис сесій можна повністю вимкнути вище.</string>
+    <string name="about_privacy">Без облікових записів, аналітики, реклами й звітів про збої; розробнику нічого не надсилається. Записи лишаються на смартфоні, поки ви самі не експортуєте один із них. Програма спілкується з вашою антеною й роутером у локальній мережі, а з серверами тайлів мапи — лише після того, як ви оберете тло мапи. Кнопка «Відкрити в Google Maps» передає позицію вашій програмі карт лише тоді, коли ви її натиснули. Запис сесій можна повністю вимкнути вище.</string>
     <string name="about_privacy_link">Політика конфіденційності</string>
     <string name="about_source_link">Вихідний код</string>
     <string name="about_disclaimer">Не пов\'язано зі SpaceX і не схвалено нею. Starlink — торговельна марка Space Exploration Technologies Corp.</string>
@@ -1327,7 +1328,7 @@
     <string name="pos_using_gps_unverified">Використовується позиція GPS ±%1$s м. Її не перевірено: немає позиції Starlink для порівняння.</string>
     <string name="pos_using_served">Використовується те, що отримують програми: позиція на основі Starlink ±%1$s м (фіктивний GPS увімкнено).</string>
     <string name="pos_using_starlink_distrusted">Використовується позиція Starlink ±%1$s м: GPS не заслуговує довіри.</string>
-    <string name="pos_using_starlink_nogps">Використовується позиція Starlink ±%1$s м: телефон не має фіксації GPS.</string>
+    <string name="pos_using_starlink_nogps">Використовується позиція Starlink ±%1$s м: смартфон не має фіксації GPS.</string>
     <string name="pos_using_starlink">Використовується позиція Starlink ±%1$s м: GPS не вдалося перевірити.</string>
     <string name="pos_using_starlink_pending">Використовується позиція Starlink ±%1$s м: GPS далеко від неї, це перевіряється.</string>
     <string name="pos_using_none">Позиції ще немає.</string>
@@ -1377,13 +1378,13 @@
 
     <!-- Starlink account sign-in: the opt-in way to switch on the dish's local-network location through Starlink's cloud -->
     <string name="account_enable_button">Увімкнути через мій обліковий запис Starlink</string>
-    <string name="account_enable_hint_refused">Антена відмовила в зміні з цього телефона. Можна попросити Starlink увімкнути це замість неї: спершу ви входите у власний обліковий запис Starlink на сторінці Starlink.</string>
+    <string name="account_enable_hint_refused">Антена відмовила в зміні з цього смартфона. Можна попросити Starlink увімкнути це замість неї: спершу ви входите у власний обліковий запис Starlink на сторінці Starlink.</string>
     <string name="account_reading_dish">Зчитую ідентифікатор антени…</string>
-    <string name="account_no_dish">Антена не повідомила свій ідентифікатор. Підключіть телефон до Wi-Fi антени й повторіть.</string>
+    <string name="account_no_dish">Антена не повідомила свій ідентифікатор. Підключіть смартфон до Wi-Fi антени й повторіть.</string>
     <string name="account_consent_title">Увімкнути через мій обліковий запис Starlink</string>
     <string name="account_consent_1">Star Nav відкриє власну сторінку входу Starlink усередині цього застосунку. Ви входите там у свій обліковий запис Starlink один раз. Далі Star Nav використає цей вхід лише раз, щоб увімкнути «місцезнаходження в локальній мережі» для вашої антени, і забуде його.</string>
     <string name="account_consent_2">Пароль ви вводите на сторінці Starlink, а не в Star Nav: застосунок його ніколи не отримує. Сторінка працює всередині цього застосунку, а застосунок, що показує сторінку, у принципі може читати введене в неї. Star Nav цього не робить: він не додає до сторінки жодного скрипта й не читає її полів, а його вихідний код відкритий. Якщо не хочете, скористайтеся застосунком Starlink.</string>
-    <string name="account_consent_3">Це єдиний випадок, коли Star Nav звертається до серверів Starlink, і лише тому, що ви про це попросили. Він надсилає на starlink.com cookie вашого входу й один запит, що змінює налаштування цієї антени. Вхід зберігається лише в пам\'яті й видаляється після завершення; на телефоні нічого не зберігається.</string>
+    <string name="account_consent_3">Це єдиний випадок, коли Star Nav звертається до серверів Starlink, і лише тому, що ви про це попросили. Він надсилає на starlink.com cookie вашого входу й один запит, що змінює налаштування цієї антени. Вхід зберігається лише в пам\'яті й видаляється після завершення; на смартфоні нічого не зберігається.</string>
     <string name="account_consent_4">Starlink не публікує для цього жодного інтерфейсу. Star Nav користується тим, яким користується власний вебсайт Starlink, тому це може перестати працювати будь-коли, а умови Starlink можуть не дозволяти іншим застосункам цим користуватися. Це ваш власний обліковий запис і ваша власна антена, і ви користуєтеся цим на власний ризик.</string>
     <string name="account_consent_continue">Перейти до входу в Starlink</string>
     <string name="account_signin_title">Вхід у Starlink</string>
