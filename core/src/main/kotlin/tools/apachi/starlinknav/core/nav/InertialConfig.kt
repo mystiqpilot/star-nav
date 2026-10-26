@@ -57,7 +57,7 @@ data class InertialConfig(
     val zuptHs: Double = 0.5,
     val zuptGyroDeg: Double = 2.0,
     val defaultLatency: Double = 0.45,
-    val latMin: Double = 0.1,
+    val latMin: Double = 0.0,
     val latMax: Double = 1.2,
     // sideways detector (dish data only)
     val detMinSpeed: Double = 3.0,
@@ -153,6 +153,16 @@ data class InertialConfig(
     val reverseOffDeg: Double = 60.0,
     /** Minimum AUTO chord speed and dish speed for the reversing test, m/s. */
     val reverseMinChordSpeed: Double = 1.0,
+    /**
+     * A car does not reverse for [flipS] s at [flipSpeed] m/s or more: "reversing" that long and fast means the mount
+     * offset in use is 180° wrong (the dish was turned round since it was learned, 2026-10-26: both phones carried
+     * +180° from an earlier drive, the filter held "reversing" for the whole drive, dead reckoning stood still and the
+     * sideways holds ran 100 m beside the road). The offset is then flipped, the filter's heading with it, the
+     * corrected value is reported as learned, and reversing is re-decided from fresh chords.
+     */
+    val mountFlip: Boolean = true,
+    val flipSpeed: Double = 8.0,
+    val flipS: Double = 20.0,
     /** Network (cell/Wi-Fi) fixes as a weak position input while dead reckoning. */
     val network: Boolean = true,
     /** Floor of the network fix σ per axis (σ = accuracy / 1.51), m: drive 2's network fixes were 40-180 m off. */
@@ -272,7 +282,7 @@ data class InertialConfig(
             accFloorM = 0.0, accOpenOffset = false, noRawAfterReset = false, rawMaxAgeS = Double.POSITIVE_INFINITY,
             reverseHold = false, network = false, rebaseM = Double.POSITIVE_INFINITY,
             holdSig = false, returnRule = false, leakGuard = false,
-            mntLongChordS = 6.0, mntSeDeg = null, mntSkipReversing = false, gateHoldNeedsMount = false,
+            mntLongChordS = 6.0, mntSeDeg = null, mntSkipReversing = false, gateHoldNeedsMount = false, mountFlip = false,
         )
 
         /** CFG2 with the shipped detector (h = 9 m, hold 25 s): what `nav2.py` runs for the port comparison. */

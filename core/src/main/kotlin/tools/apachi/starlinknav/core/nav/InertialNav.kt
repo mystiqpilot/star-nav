@@ -94,6 +94,8 @@ class InertialNav(
     persistedMountDeg: Double? = storedMountDeg,
     /** Keep [fires] (desktop tools). Off by default: the app's filter runs for hours and would only grow the list. */
     recordFires: Boolean = false,
+    /** The phone's wall clock against GNSS time, fed by the owner (real GPS fixes, NMEA): the diagnostics fix age needs it. */
+    val clock: ReceiverClock = ReceiverClock(),
 ) {
     private var originNs: Long? = null
     private var lat0 = Double.NaN
@@ -300,7 +302,7 @@ class InertialNav(
                 val gps = resp?.dish_get_diagnostics?.location?.gps_time_s ?: return null
                 val t = rel(tNs)
                 advance(t, inclusive = true)
-                FixExtrapolator.fixAgeS(gps, wallMs)?.let(core::onDiag)
+                clock.fixAgeS(gps, wallMs)?.let(core::onDiag)
                 return null
             }
             DishCallKind.LOCATION_AUTO -> {

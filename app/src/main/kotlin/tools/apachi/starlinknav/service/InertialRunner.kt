@@ -11,6 +11,7 @@ import tools.apachi.starlinknav.core.nav.InertialConfig
 import tools.apachi.starlinknav.core.nav.InertialEstimate
 import tools.apachi.starlinknav.core.nav.InertialEvent
 import tools.apachi.starlinknav.core.nav.InertialNav
+import tools.apachi.starlinknav.core.nav.ReceiverClock
 import tools.apachi.starlinknav.core.nav.InertialState
 import java.util.concurrent.Executors
 import java.util.concurrent.RejectedExecutionException
@@ -36,6 +37,8 @@ import java.util.concurrent.TimeUnit
  * callbacks run on the inertial thread.
  */
 class InertialRunner(
+    /** The service's receiver clock (fix ages against GNSS time), shared by every filter made here. */
+    private val clock: ReceiverClock,
     /** The mount offset to start from (Settings' effective value), read whenever a filter is made. */
     private val startMount: () -> StartMount,
     private val serving: () -> Boolean,
@@ -106,6 +109,7 @@ class InertialRunner(
                 onEvent(e)
             },
             persistedMountDeg = start.persisted,
+            clock = clock,
         )
         lastEvalNs = 0L
         lastAutoNs = 0L

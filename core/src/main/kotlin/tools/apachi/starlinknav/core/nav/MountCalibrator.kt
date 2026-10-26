@@ -32,6 +32,23 @@ internal class MountCalibrator(
     var onLearned: (Double) -> Unit = {}
     private var reported: Double? = persisted
 
+    /**
+     * The value in use is 180° wrong (the car "reversed" for too long and too fast, [InertialConfig.mountFlip]): turn it
+     * round, forget the samples taken against the wrong value, and report the corrected value as learned so the app
+     * saves it.
+     */
+    fun flip(t: Double) {
+        val cur = value ?: return
+        val v = wrapDeg(cur + 180.0)
+        log(t, "mount_flipped", "from=%+.1f to=%+.1f".format(Locale.ROOT, cur, v))
+        value = v
+        learned = v
+        samples.clear()
+        lastSampleT = -1e9
+        reported = v
+        onLearned(v)
+    }
+
     class Fix(val tf: Double, val e: Double, val n: Double, val hs: Double)
     class Head(val t: Double, val hxU: Double)
 

@@ -91,6 +91,8 @@ internal class InertialCore(
     // port-side state
     var reversing = false
         private set
+    /** Seconds of AUTO chords at [InertialConfig.flipSpeed] or more while "reversing" (see [flipMount]). */
+    private var reverseFastS = 0.0
     private var reverseVotes = 0
     private var holdActive = false
     /** The held position is the position at this time (the last fix's receipt, or its fix time while reversing). */
@@ -398,10 +400,16 @@ internal class InertialCore(
                     reverseVotes = if (off > c.reverseOnDeg) reverseVotes + 1 else 0
                     if (!reversing && reverseVotes >= 2) {
                         reversing = true
+                        reverseFastS = 0.0
                         log(t, "reversing", "state=on chord_deg=%.0f".format(Locale.ROOT, off))
                     } else if (reversing && off < c.reverseOffDeg) {
                         reversing = false
+                        reverseFastS = 0.0
                         log(t, "reversing", "state=off chord_deg=%.0f".format(Locale.ROOT, off))
+                    } else if (reversing && c.mountFlip && off > c.reverseOnDeg && hsMean >= c.flipSpeed) {
+                        // a car does not reverse this fast for this long: the mount offset is 180° wrong
+                        reverseFastS += dt
+                        if (reverseFastS >= c.flipS) flipMount(t)
                     }
                 }
             }
@@ -456,6 +464,19 @@ internal class InertialCore(
         if (1.51 * sig >= acc68(ekf.p, 0.0, ekf.x)) return
         ekf.insert(Meas(tFix, emptyList(), decided = false, net = NetFix(e, n, sig * sig, tNow)))
         watchdog(tNow)
+    }
+
+    /**
+     * The mount offset in use is 180° wrong ([InertialConfig.mountFlip]): turn it and the filter's heading round, drop
+     * "reversing" (re-decided from the next chords) and give the detector and the calibrator a fresh start.
+     */
+    private fun flipMount(t: Double) {
+        mount.flip(t)
+        reversing = false
+        reverseVotes = 0
+        reverseFastS = 0.0
+        if (ekf.ok) ekf.flipHeading()
+        lastTrustBreak = t
     }
 
     private fun tryInit(t: Double, tf: Double, e: Double, n: Double, hs: Double, prev: MountCalibrator.Fix?) {

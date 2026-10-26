@@ -196,6 +196,37 @@ class InertialNavTest {
     }
 
     @Test
+    fun aMountOffsetStoredBackwardsIsFlippedInsteadOfReversingForever() {
+        // The dish was turned round since the offset was learned: the stored +3° is 180° from the real −177°. Straight
+        // at 15 m/s; AUTO gap (receipts) 70-85 s. 2026-10-26: without the flip the filter held "reversing" for the whole
+        // drive, so a cut-off left the served position standing while the car drove on (error = speed × time).
+        val synth = Synth(100.0, autoOk = { it < 70.0 || it >= 85.0 })
+        val ev = ArrayList<Triple<Double, String, String>>()
+        val all = synth.run(InertialConfig.SHIPPED, events = ev, storedMount = 3.0)
+        val on = ev.filter { it.second == "reversing" && it.third.startsWith("state=on") }
+        assertTrue(on.isNotEmpty(), "the wrong offset reads as reversing first: $ev")
+        val flip = ev.single { it.second == "mount_flipped" }
+        assertTrue(flip.first < 60.0, "flipped before the gap: $flip")
+        assertTrue(flip.third.startsWith("from=+3.0 to=-177.0"), flip.third)
+        assertTrue(ev.none { it.second == "reversing" && it.third.startsWith("state=on") && it.first > flip.first }, "no reversing after the flip: $ev")
+        assertTrue(ev.none { it.second == "mount_flipped" && it.first > flip.first }, "flipped once")
+        // the gap is dead-reckoned forward (from 2.5 s after the last fix), not held: 10 s in, the error is metres, not 150 m
+        val gap = all.filter { it.t in 73.0..85.0 }
+        assertTrue(gap.isNotEmpty())
+        for (s in gap) {
+            val o = assertNotNull(s.out, "served at ${s.t}")
+            assertTrue(o.state == InertialState.DEAD_RECKONING, "dead reckoning at ${s.t}: ${o.state}")
+            assertTrue(!o.reversing, "not reversing at ${s.t}")
+            assertTrue(s.err < 20.0, "driven on at ${s.t}: ${s.err} m")
+            assertTrue(s.err <= o.accuracyM, "honest at ${s.t}: error ${s.err} vs ${o.accuracyM}")
+        }
+        // the right stored offset never flips, and a real reversing manoeuvre (slow) does not either
+        val ev2 = ArrayList<Triple<Double, String, String>>()
+        synth.run(InertialConfig.SHIPPED, events = ev2)
+        assertTrue(ev2.none { it.second == "mount_flipped" || it.second == "reversing" }, "$ev2")
+    }
+
+    @Test
     fun stoppingThenDrivingOffInAGapTakesAutoBack() {
         // stopped from 25 s, AUTO lost at 30 s, the car drives off at 35-40 s (no forward axis learned, so the
         // filter cannot see it), AUTO back at 70 s some 300 m further on

@@ -60,6 +60,11 @@ class InertialReplay(
 
     fun add(rec: Record) {
         val t = rec.t_mono_ns
+        // the receiver clock (fix ages) as the app feeds it live: every real GPS fix and NMEA sentence as it came
+        rec.phone_location?.let { p ->
+            if (p.provider == "gps" && !p.is_mock && p.time_ms > 0 && p.elapsed_ns > 0) nav.clock.onGpsFix(p.time_ms, p.elapsed_ns, rec.t_wall_ms, t)
+        }
+        rec.nmea?.let { nav.clock.onNmea(it.sentence, rec.t_wall_ms) }
         rec.dish?.let { d ->
             val call = DishCallResult.fromRecord(d) ?: return@let
             val order = when (call.kind) {
@@ -129,7 +134,7 @@ class InertialReplay(
         val call = i.call
         if (call != null) {
             if (call.kind == DishCallKind.DIAGNOSTICS) {
-                call.response?.dish_get_diagnostics?.location?.gps_time_s?.let { FixExtrapolator.fixAgeS(it, i.wallMs) }?.let(today::onFixAge)
+                call.response?.dish_get_diagnostics?.location?.gps_time_s?.let { nav.clock.fixAgeS(it, i.wallMs) }?.let(today::onFixAge)
             }
             if (call.kind != DishCallKind.LOCATION_AUTO) {
                 nav.onDishCall(call, i.t, i.wallMs)

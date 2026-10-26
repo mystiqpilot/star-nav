@@ -41,8 +41,7 @@ class FixExtrapolator(
 
     /**
      * Median of the recent fix ages at receipt; the default before any were measured or when the
-     * median is implausible (the age is measured against the phone's wall clock, so a clock that
-     * is off would otherwise push the served position metres ahead or behind).
+     * median is implausible (see [FixLatency]).
      */
     val latencyS: Double get() = latency.value
 
@@ -79,14 +78,22 @@ class FixExtrapolator(
 
     companion object {
         const val DEFAULT_LATENCY_S = 0.45
-        /** 0.44-0.46 s on every 2026-10-14 drive. */
-        private val PLAUSIBLE_AGE_S = 0.1..1.2
+        /**
+         * 0.44-0.46 s on every 2026-10-14 drive (measured against a phone clock that was not checked); 0.03 s on
+         * 2026-10-26 (firmware 2026.10.05, against GNSS time), so a measured age may be about zero.
+         */
+        private val PLAUSIBLE_AGE_S = 0.0..1.2
         private const val GAP_NS = 3_000_000_000L
         private const val MIN_CHORD_M = 2.0
 
-        /** Age of a diagnostics fix at receipt, s; null when the dish gave no fix time. */
-        fun fixAgeS(gpsTimeS: Double, receivedWallMs: Long): Double? =
+        /**
+         * Age of a diagnostics fix at receipt, s; null when the dish gave no fix time. [receivedWallMs] must be on the GNSS
+         * time line ([ReceiverClock.gnssMs]): the phone's own wall clock is off by up to a second either way.
+         */
+        fun fixAgeS(gpsTimeS: Double, receivedWallMs: Double): Double? =
             gpsTimeS.takeIf { it > 0 }?.let { receivedWallMs / 1000.0 - (it + GPS_EPOCH_UNIX_S - GPS_LEAP_S) }
+
+        fun fixAgeS(gpsTimeS: Double, receivedWallMs: Long): Double? = fixAgeS(gpsTimeS, receivedWallMs.toDouble())
 
         private const val GPS_EPOCH_UNIX_S = 315_964_800.0
         /** GPS − UTC since 2017 (as [Geo.gpsSecondsToUnixMs]). */
@@ -96,11 +103,11 @@ class FixExtrapolator(
 
 /**
  * Latency of dish fixes at receipt: the median of the last 21 diagnostics fix ages, or [defaultS] before any
- * were measured or when the median is implausible (the age is measured against the phone's wall clock, so a
- * clock that is off would otherwise push the served position metres ahead or behind). Used by
- * [FixExtrapolator] and the inertial filter.
+ * were measured or when the median is implausible. The ages come from [ReceiverClock.fixAgeS] (GNSS time, not the
+ * phone's wall clock, which is off by up to a second either way and would push the served position metres ahead or
+ * behind). Used by [FixExtrapolator] and the inertial filter.
  */
-class FixLatency(private val defaultS: Double = FixExtrapolator.DEFAULT_LATENCY_S, private val plausible: ClosedFloatingPointRange<Double> = 0.1..1.2) {
+class FixLatency(private val defaultS: Double = FixExtrapolator.DEFAULT_LATENCY_S, private val plausible: ClosedFloatingPointRange<Double> = 0.0..1.2) {
     private val ages = ArrayDeque<Double>()
 
     fun add(ageS: Double) {

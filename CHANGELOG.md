@@ -6,6 +6,19 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+- The age of the dish's position (how long ago the dish computed the fix that just arrived) was measured against the
+  phone's clock, and a phone's clock is off GNSS time by up to a second either way (two phones on the same drive:
+  +0.67 s and −0.39 s). One app moved every served position 0.7 s × speed ahead of the car (17 m at 90 km/h), the other
+  measured a negative age and worked with a guessed one. The age is now measured against GNSS time taken from the
+  phone's own GNSS receiver (its fixes, or the NMEA stream while the mock replaces the fixes), and a fix that arrives
+  nearly fresh (0.03 s on firmware 2026.10.05) is taken as such.
+- A mount offset learned on an earlier drive and 180° wrong now (the dish was turned round) made the filter take every
+  drive for reversing: with the dish's position present apps still followed the dish, but in a cut-off the served
+  position stood still while the car drove on (90-270 m off within 7 s, then nothing), and the sideways holds ran
+  about 100 m beside the road. "Reversing" for 20 s at 29 km/h or more now flips the offset (and saves the corrected
+  value) instead.
+
 ## [0.5.6] - 2026-10-26
 
 ### Fixed

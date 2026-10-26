@@ -402,6 +402,12 @@ internal class Ekf(private val c: InertialConfig) {
         p = pp
     }
 
+    /** Turns the car heading round in the state and the whole ring (the mount offset was 180° wrong). */
+    fun flipHeading() {
+        x[3] = wrap(x[3] + Math.PI)
+        for (e in buf) e.x[3] = wrap(e.x[3] + Math.PI)
+    }
+
     /** Moves every stored position by the map [f] (re-centring the local plane). */
     fun remap(f: (Double, Double) -> Pair<Double, Double>) {
         fun mv(a: DoubleArray) {

@@ -127,12 +127,15 @@ class FixExtrapolatorTest {
     }
 
     @Test
-    fun aClockThatIsOffFallsBackToTheDefaultAge() {
+    fun anImplausibleAgeFallsBackToTheDefaultAndAFreshFixIsAccepted() {
         val x = FixExtrapolator()
-        repeat(5) { x.onFixAge(2.4) } // phone clock 2 s fast
+        repeat(5) { x.onFixAge(2.4) } // older than a dish solution can be when it arrives
         assertEquals(FixExtrapolator.DEFAULT_LATENCY_S, x.latencyS)
-        repeat(5) { x.onFixAge(0.02) }
-        assertEquals(FixExtrapolator.DEFAULT_LATENCY_S, x.latencyS)
+        // firmware 2026.10.05: the solution is ~0.03 s old at receipt (measured against GNSS time)
+        repeat(6) { x.onFixAge(0.03) }
+        assertEquals(0.03, x.latencyS, 1e-9)
+        repeat(6) { x.onFixAge(-0.4) } // negative: the clock, not the dish
+        assertEquals(0.03, x.latencyS, 1e-9)
     }
 
     @Test
@@ -152,5 +155,74 @@ class FixExtrapolatorTest {
         val gpsSeconds = (1_791_990_000_000L - 315_964_800_000L + 18_000L) / 1000.0
         assertEquals(0.45, assertNotNull(FixExtrapolator.fixAgeS(gpsSeconds, 1_791_990_000_450L)), 1e-6)
         assertNull(FixExtrapolator.fixAgeS(0.0, 1_791_990_000_450L))
+    }
+}
+
+class ReceiverClockTest {
+    private val gpsSeconds = (1_791_990_000_000L - 315_964_800_000L + 18_000L) / 1000.0
+
+    @Test
+    fun noAgeUntilTheClockOffsetIsKnown() {
+        val c = ReceiverClock()
+        assertNull(c.offsetMs)
+        assertNull(c.fixAgeS(gpsSeconds, 1_791_990_000_450L))
+    }
+
+    @Test
+    fun realGpsFixesGiveTheOffsetExactly() {
+        // the phone's clock is 674 ms ahead of GNSS time (one phone on 2026-10-26): a fix with UTC time T and
+        // elapsedRealtime epoch E, received 150 ms later on both clocks
+        val c = ReceiverClock()
+        for (k in 0 until 5) {
+            val fixUtc = 1_791_990_000_000L + k * 1000
+            val fixMono = 500_000_000_000L + k * SEC
+            c.onGpsFix(fixUtc, fixMono, fixUtc + 674 + 150, fixMono + 150 * 1_000_000)
+        }
+        assertEquals(674.0, assertNotNull(c.offsetMs), 1e-6)
+        assertEquals("gps", c.source)
+        // the dish's fix is 30 ms old at receipt; the raw wall clock would say 704 ms
+        assertEquals(0.030, assertNotNull(c.fixAgeS(gpsSeconds, 1_791_990_000_030L + 674)), 1e-6)
+        assertEquals(0.704, assertNotNull(FixExtrapolator.fixAgeS(gpsSeconds, 1_791_990_000_030L + 674)), 1e-6)
+        // mocked fixes carry the mock's own time: the caller keeps them out; a fix without an elapsed epoch is ignored
+        c.onGpsFix(1_791_990_000_000L, 0, 1_791_990_009_000L, 500_000_000_000L)
+        assertEquals(674.0, assertNotNull(c.offsetMs), 1e-6)
+    }
+
+    @Test
+    fun nmeaSentencesGiveTheOffsetFromTheirTimeOfDay() {
+        // 2026-10-26 17:40:00.500 UTC = 1793036400500; the phone's clock is 386 ms behind GNSS time (the other phone),
+        // sentences arrive 20-120 ms after their epoch: the smallest delay wins
+        val c = ReceiverClock()
+        val epoch = 1_793_036_400_500L
+        c.onNmea("\$GNGGA,174000.50,5128.63000,N,00000.00000,E,1,12,0.8,130.0,M,30.0,M,,*5A", epoch - 386 + 120)
+        assertEquals(-386.0 + 120, assertNotNull(c.offsetMs), 1e-6)
+        c.onNmea("\$GNRMC,174001.50,A,5128.63000,N,00000.00000,E,20.0,45.0,261026,,,A*6B", epoch + 1000 - 386 + 20)
+        assertEquals(-386.0 + 20, assertNotNull(c.offsetMs), 1e-6)
+        assertEquals("nmea", c.source)
+        // sentences without a fix, without a time, other kinds: ignored
+        c.onNmea("\$GNGGA,174002.50,,,,,0,00,,,M,,M,,*xx", epoch + 2000 - 5000)
+        c.onNmea("\$GNRMC,174002.50,V,,,,,,,261026,,,N*xx", epoch + 2000 - 5000)
+        c.onNmea("\$GPGSV,3,1,12,01,40,083,46*xx", epoch + 2000 - 5000)
+        c.onNmea("\$PGLOR,1,FIX,1.0,1.0*xx", epoch + 2000 - 5000)
+        assertEquals(-386.0 + 20, assertNotNull(c.offsetMs), 1e-6)
+        // a GGA just after midnight UTC received by a clock still before midnight takes the nearer day
+        val midnight = 1_793_059_200_000L // 2026-10-27 00:00:00 UTC
+        val d = ReceiverClock()
+        d.onNmea("\$GPGGA,000000.20,5128.6,N,00000.0,E,1,08,1.0,100.0,M,30.0,M,,*xx", midnight + 200 - 386 + 30)
+        assertEquals(-386.0 + 30, assertNotNull(d.offsetMs), 1e-6)
+        // real GPS fixes take precedence over NMEA
+        d.onGpsFix(midnight, 500_000_000_000L, midnight - 386 + 100, 500_000_000_000L + 100 * 1_000_000)
+        assertEquals(-386.0, assertNotNull(d.offsetMs), 1e-6)
+        assertEquals("gps", d.source)
+    }
+
+    @Test
+    fun nmeaUtcParsing() {
+        assertEquals(1_793_036_400_500L, ReceiverClock.nmeaUtcMs("\$GNRMC,174000.50,A,5128.6,N,00000.0,E,20.0,45.0,261026,,,A*6B", 0L))
+        assertEquals(1_793_036_400_000L, ReceiverClock.nmeaUtcMs("\$GPGGA,174000,5128.6,N,00000.0,E,2,08,1.0,100.0,M,30.0,M,,*xx", 1_793_036_000_000L))
+        assertNull(ReceiverClock.nmeaUtcMs("\$GPGGA,,,,,,0,00,,,M,,M,,*xx", 1_793_036_000_000L))
+        assertNull(ReceiverClock.nmeaUtcMs("\$GNRMC,174000.50,A,5128.6,N,00000.0,E,20.0,45.0,,,,A*6B", 0L))
+        assertNull(ReceiverClock.nmeaUtcMs("\$GPGSA,A,3,01,02,,,,,,,,,,,1.5,0.9,1.2*xx", 0L))
+        assertNull(ReceiverClock.nmeaUtcMs("garbage", 0L))
     }
 }

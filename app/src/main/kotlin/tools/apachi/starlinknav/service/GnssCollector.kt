@@ -61,6 +61,8 @@ class GnssCollector(
     private val state: PhoneState,
     /** Every location a provider hands to this app, by source: "gps", "network", "fused". */
     private val onLocation: (String, Location) -> Unit = { _, _ -> },
+    /** Every NMEA sentence the chipset emits (also without a recording: the receiver clock reads its time). */
+    private val onNmea: (String) -> Unit = {},
 ) {
     private val lm = context.getSystemService(LocationManager::class.java)
     /**
@@ -241,6 +243,7 @@ class GnssCollector(
 
     private val nmeaListener = OnNmeaMessageListener { message, timestamp ->
         rates.inc("nmea")
+        onNmea(message)
         record { it.copy(nmea = NmeaSentence(timestamp_ms = timestamp, sentence = message)) }
     }
 
@@ -249,13 +252,15 @@ class GnssCollector(
 
 
     /**
-     * [full]: everything (recording). Otherwise only the location listeners the mock's delivery
-     * check needs, which keeps the GNSS chip's raw measurements and NMEA off.
+     * [full]: everything (recording). Otherwise only the location listeners the mock's delivery check needs plus NMEA
+     * (the receiver clock's only GNSS time while the `gps` provider is mocked), which keeps the chip's raw
+     * measurements off.
      */
     fun start(full: Boolean = true) {
         recording = full
         if (!full) {
             listenForLocations()
+            runOnGnssThread { register("nmea_failed") { registerNmea() } }
             return
         }
         state.gnssModel = hardwareModel()

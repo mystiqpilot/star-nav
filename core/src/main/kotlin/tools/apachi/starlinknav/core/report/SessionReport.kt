@@ -15,6 +15,7 @@ import tools.apachi.starlinknav.core.nav.CutoffTracker
 import tools.apachi.starlinknav.core.nav.DishReboot
 import tools.apachi.starlinknav.core.nav.RebootTracker
 import tools.apachi.starlinknav.core.nav.FixExtrapolator
+import tools.apachi.starlinknav.core.nav.ReceiverClock
 import tools.apachi.starlinknav.core.nav.InertialConfig
 import tools.apachi.starlinknav.core.nav.InertialEstimate
 import tools.apachi.starlinknav.core.nav.InertialEvent
@@ -265,6 +266,8 @@ object SessionReports {
         val cutoffs = CutoffTracker()
         val reboots = RebootTracker()
         val served = FixExtrapolator()
+        /** The phone's wall clock against GNSS time, from the recorded GPS fixes and NMEA (the fix ages need it). */
+        val clock = ReceiverClock()
         val ages = ArrayList<Double>()
         val auto = ArrayList<AutoFix>()
         val phone = ArrayList<RefPoint>()
@@ -307,7 +310,9 @@ object SessionReports {
             }
             if (rec.t_wall_ms != 0L) startWall = min(startWall, rec.t_wall_ms)
             rec.dish?.let { d -> onDish(DishCallResult.fromRecord(d) ?: return@let, t, rec.t_wall_ms) }
+            rec.nmea?.let { clock.onNmea(it.sentence, rec.t_wall_ms) }
             rec.phone_location?.let { p ->
+                if (p.provider == "gps" && !p.is_mock && p.time_ms > 0 && p.elapsed_ns > 0) clock.onGpsFix(p.time_ms, p.elapsed_ns, rec.t_wall_ms, t)
                 if (p.provider == "gps" && !p.is_mock && p.lat.isFinite() && p.lon.isFinite()) {
                     phone += RefPoint(if (p.elapsed_ns > 0) p.elapsed_ns else t, p.lat, p.lon, p.h_acc, p.speed)
                 }
@@ -330,7 +335,7 @@ object SessionReports {
             when (call.kind) {
                 DishCallKind.DIAGNOSTICS -> {
                     val gpsTime = resp.dish_get_diagnostics?.location?.gps_time_s ?: return
-                    val age = FixExtrapolator.fixAgeS(gpsTime, wallMs) ?: return
+                    val age = clock.fixAgeS(gpsTime, wallMs) ?: return
                     if (age in 0.0..3.0) ages += age
                     served.onFixAge(age)
                 }

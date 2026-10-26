@@ -54,6 +54,7 @@ import tools.apachi.starlinknav.core.nav.Cutoff
 import tools.apachi.starlinknav.core.nav.CutoffTracker
 import tools.apachi.starlinknav.core.nav.DishReboot
 import tools.apachi.starlinknav.core.nav.FixExtrapolator
+import tools.apachi.starlinknav.core.nav.ReceiverClock
 import tools.apachi.starlinknav.core.nav.GpsTrust
 import tools.apachi.starlinknav.core.nav.TrustFix
 import tools.apachi.starlinknav.core.nav.InertialState
@@ -98,6 +99,8 @@ class NavService : Service() {
     private var sessionId: String? = null
     private var wakeLock: PowerManager.WakeLock? = null
     private var gnss: GnssCollector? = null
+    /** The phone's wall clock against GNSS time (real GPS fixes, NMEA): the diagnostics fix age is measured with it. */
+    private val receiverClock = ReceiverClock()
     private var imu: PhoneSensors? = null
     private val jobs = mutableListOf<Job>()
     @Volatile private var mockEnabled = false
@@ -199,6 +202,7 @@ class NavService : Service() {
         Live.dish.value = DishUi()
         lastAutoAlt = null
         inertial = InertialRunner(
+            clock = receiverClock,
             startMount = {
                 settings().let {
                     InertialRunner.StartMount(it.effectiveMountDeg, it.mountMode == MountMode.MANUAL, it.mountLearnedAtMs, it.mountLearned)
@@ -249,7 +253,7 @@ class NavService : Service() {
 
     private fun startGnss(full: Boolean) {
         gnss?.stop()
-        gnss = GnssCollector(this, ::submit, rates, phoneState, ::onReceived).also {
+        gnss = GnssCollector(this, ::submit, rates, phoneState, ::onReceived, onNmea = { m -> receiverClock.onNmea(m, System.currentTimeMillis()) }).also {
             it.start(full)
             // The Position page keeps the satellite counts and AGC current without a recording.
             if (!full && watching) it.setLive(true)
@@ -447,7 +451,7 @@ class NavService : Service() {
         }
         if (result.kind == DishCallKind.DIAGNOSTICS && result.ok) {
             result.response?.dish_get_diagnostics?.location?.gps_time_s
-                ?.let { FixExtrapolator.fixAgeS(it, System.currentTimeMillis()) }?.let(served::onFixAge)
+                ?.let { receiverClock.fixAgeS(it, System.currentTimeMillis()) }?.let(served::onFixAge)
         }
         if (fix == null) return
         TRAIL_KEYS[result.kind]?.let { key ->
@@ -624,6 +628,7 @@ class NavService : Service() {
     private fun onReceived(source: String, loc: Location) {
         if (source == "gps") {
             val at = loc.elapsedRealtimeNanos.takeIf { it > 0 } ?: SystemClock.elapsedRealtimeNanos()
+            if (!loc.isMockFix) receiverClock.onGpsFix(loc.time, loc.elapsedRealtimeNanos, System.currentTimeMillis(), SystemClock.elapsedRealtimeNanos())
             trust.onGpsFix(loc.latitude, loc.longitude, if (loc.hasAccuracy()) loc.accuracy.toDouble() else 0.0, at, isMock = loc.isMockFix)
         }
         // The phone's own positions for the live map; with the mock on they are the mock's.
