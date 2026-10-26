@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="description"
+      content="Star Nav — застосунок для Android з відкритим кодом: положення антени Starlink як GPS телефона, коли GNSS глушать чи підміняють."
+    />
+    <title>Star Nav — GPS, якому телефон може довіряти</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#f9f9f7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#101418" media="(prefers-color-scheme: dark)" />
+
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/assets/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Star Nav" />
+    <meta property="og:title" content="Star Nav" />
+    <meta
+      property="og:description"
+      content="Star Nav — застосунок для Android з відкритим кодом: положення антени Starlink як GPS телефона, коли GNSS глушать чи підміняють."
+    />
+    <meta property="og:url" content="https://starnav.apachi.tools/" />
+    <meta property="og:image" content="https://starnav.apachi.tools/assets/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Star Nav" />
+    <meta property="og:locale" content="uk_UA" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/main.js" defer></script>
+  </head>
+  <body>
+    <header class="site">
+      <div class="wrap bar">
+        <a class="brand" href="/">
+          <img src="/assets/icon.svg" width="32" height="32" alt="" />
+          <span>Star Nav</span>
+        </a>
+        <div class="switches">
+          <div class="languages segmented" role="group" aria-label="Language / Мова">
+            <button type="button" data-lang="uk" aria-pressed="true">Укр</button>
+            <button type="button" data-lang="en" aria-pressed="false">Eng</button>
+          </div>
+          <div class="themes segmented" role="group" aria-label="Тема" data-i18n-label="theme">
+            <button
+              type="button"
+              data-theme-choice="system"
+              aria-label="Як у системі"
+              title="Як у системі"
+              aria-pressed="true"
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <circle cx="12" cy="12" r="8" />
+                <path d="M12 4a8 8 0 0 1 0 16Z" fill="currentColor" stroke="none" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              data-theme-choice="light"
+              aria-label="Світла тема"
+              title="Світла тема"
+              aria-pressed="false"
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              data-theme-choice="dark"
+              aria-label="Темна тема"
+              title="Темна тема"
+              aria-pressed="false"
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20.5 14A8.6 8.6 0 0 1 10 3.5 8.6 8.6 0 1 0 20.5 14Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero wrap">
+        <div class="hero-copy">
+          <p class="eyebrow" data-i18n="eyebrow">Застосунок для Android · відкритий код, GPL-3.0</p>
+          <h1>Star Nav</h1>
+          <p class="tagline" data-i18n="tagline">
+            GPS, якому телефон може довіряти, коли супутникову навігацію глушать або підміняють.
+          </p>
+          <p data-i18n="intro">
+            Коли GNSS глушать або підміняють, GPS у телефоні зависає, «пливе» або перестрибує на інший континент, а за
+            ним і всі навігаційні застосунки. Антена Starlink на даху авто при цьому знає, де вона є. Star Nav читає
+            положення антени через її локальну мережу й віддає його всім застосункам на телефоні як GPS Android — через
+            механізм фіктивного місцезнаходження.
+          </p>
+          <div class="actions">
+            <a class="button primary" href="https://github.com/mystiqpilot/star-nav">
+              <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true">
+                <path
+                  d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
+                />
+              </svg>
+              <span data-i18n="source">Код на GitHub</span>
+            </a>
+            <a class="button" href="#how" data-i18n="howLink">Як це працює</a>
+          </div>
+          <p class="note">
+            <span data-i18n="noBuilds">Готових збірок ще не опубліковано. Застосунок можна зібрати з коду:</span>
+            <a
+              href="https://github.com/mystiqpilot/star-nav/blob/main/README.uk.md#збирання-з-коду"
+              data-i18n="noBuildsLink"
+              data-i18n-href="buildHref"
+              >як це зробити</a
+            >.
+          </p>
+        </div>
+        <figure class="hero-shot">
+          <picture>
+            <source
+              media="(prefers-color-scheme: dark)"
+              srcset="/shots/uk-dark/hero-360.webp 360w, /shots/uk-dark/hero-720.webp 720w"
+              sizes="(max-width: 760px) 240px, 300px"
+              data-shot="hero"
+            />
+            <img
+              src="/shots/uk-light/hero-720.webp"
+              srcset="/shots/uk-light/hero-360.webp 360w, /shots/uk-light/hero-720.webp 720w"
+              sizes="(max-width: 760px) 240px, 300px"
+              width="1080"
+              height="2400"
+              alt="Сторінка «Позиція»: позиція антени Starlink і GPS телефона"
+              data-shot="hero"
+              data-i18n-alt="heroAlt"
+            />
+          </picture>
+        </figure>
+      </section>
+
+      <section class="wrap block" id="screens" aria-labelledby="screens-title">
+        <h2 id="screens-title" data-i18n="screensTitle">Екрани</h2>
+        <p class="lead" data-i18n="screensLead">
+          Унизу п'ять сторінок: Позиція, Імітація, Starlink, Сесії й Параметри. Знімки зроблено на емуляторі з тестовою
+          антеною.
+        </p>
+        <ul class="shots">
+          <li>
+            <button type="button" class="shot" data-index="0">
+              <picture>
+                <source media="(prefers-color-scheme: dark)" srcset="/shots/uk-dark/position-360.webp 360w, /shots/uk-dark/position-720.webp 720w" sizes="180px" data-shot="position" />
+                <img src="/shots/uk-light/position-360.webp" srcset="/shots/uk-light/position-360.webp 360w, /shots/uk-light/position-720.webp 720w" sizes="180px" width="1080" height="2400" loading="lazy" alt="" data-shot="position" />
+              </picture>
+              <span class="caption"><strong data-i18n="shotPosition">Позиція</strong><span data-i18n="shotPositionText">Позиція антени й GPS телефона, кожна зі своїм станом</span></span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="shot" data-index="1">
+              <picture>
+                <source media="(prefers-color-scheme: dark)" srcset="/shots/uk-dark/mock-360.webp 360w, /shots/uk-dark/mock-720.webp 720w" sizes="180px" data-shot="mock" />
+                <img src="/shots/uk-light/mock-360.webp" srcset="/shots/uk-light/mock-360.webp 360w, /shots/uk-light/mock-720.webp 720w" sizes="180px" width="1080" height="2400" loading="lazy" alt="" data-shot="mock" />
+              </picture>
+              <span class="caption"><strong data-i18n="shotMock">Імітація</strong><span data-i18n="shotMockText">Що таке фіктивний GPS і як його ввімкнути</span></span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="shot" data-index="2">
+              <picture>
+                <source media="(prefers-color-scheme: dark)" srcset="/shots/uk-dark/starlink-360.webp 360w, /shots/uk-dark/starlink-720.webp 720w" sizes="180px" data-shot="starlink" />
+                <img src="/shots/uk-light/starlink-360.webp" srcset="/shots/uk-light/starlink-360.webp 360w, /shots/uk-light/starlink-720.webp 720w" sizes="180px" width="1080" height="2400" loading="lazy" alt="" data-shot="starlink" />
+              </picture>
+              <span class="caption"><strong data-i18n="shotStarlink">Starlink</strong><span data-i18n="shotStarlinkText">Стан антени, зв'язок і оновлення</span></span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="shot" data-index="3">
+              <picture>
+                <source media="(prefers-color-scheme: dark)" srcset="/shots/uk-dark/sky-360.webp 360w, /shots/uk-dark/sky-720.webp 720w" sizes="180px" data-shot="sky" />
+                <img src="/shots/uk-light/sky-360.webp" srcset="/shots/uk-light/sky-360.webp 360w, /shots/uk-light/sky-720.webp 720w" sizes="180px" width="1080" height="2400" loading="lazy" alt="" data-shot="sky" />
+              </picture>
+              <span class="caption"><strong data-i18n="shotSky">Небо</strong><span data-i18n="shotSkyText">Карта перешкод над антеною</span></span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="shot" data-index="4">
+              <picture>
+                <source media="(prefers-color-scheme: dark)" srcset="/shots/uk-dark/router-360.webp 360w, /shots/uk-dark/router-720.webp 720w" sizes="180px" data-shot="router" />
+                <img src="/shots/uk-light/router-360.webp" srcset="/shots/uk-light/router-360.webp 360w, /shots/uk-light/router-720.webp 720w" sizes="180px" width="1080" height="2400" loading="lazy" alt="" data-shot="router" />
+              </picture>
+              <span class="caption"><strong data-i18n="shotRouter">Роутер</strong><span data-i18n="shotRouterText">Мережі Wi-Fi роутера, пароль прихований</span></span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="shot" data-index="5">
+              <picture>
+                <source media="(prefers-color-scheme: dark)" srcset="/shots/uk-dark/settings-360.webp 360w, /shots/uk-dark/settings-720.webp 720w" sizes="180px" data-shot="settings" />
+                <img src="/shots/uk-light/settings-360.webp" srcset="/shots/uk-light/settings-360.webp 360w, /shots/uk-light/settings-720.webp 720w" sizes="180px" width="1080" height="2400" loading="lazy" alt="" data-shot="settings" />
+              </picture>
+              <span class="caption"><strong data-i18n="shotSettings">Параметри</strong><span data-i18n="shotSettingsText">Тема, запис сесій і як довго їх зберігати</span></span>
+            </button>
+          </li>
+        </ul>
+      </section>
+
+      <section class="wrap block" id="how" aria-labelledby="how-title">
+        <h2 id="how-title" data-i18n="howTitle">Як це працює</h2>
+        <ol class="steps">
+          <li>
+            <h3 data-i18n="step1">Антена на даху</h3>
+            <p data-i18n="step1Text">
+              Антена Starlink на даху авто знає, де вона є, навіть коли GPS у телефоні зависає чи перестрибує.
+            </p>
+          </li>
+          <li>
+            <h3 data-i18n="step2">Її локальна мережа</h3>
+            <p data-i18n="step2Text">
+              Телефон під'єднаний до Wi-Fi антени. Star Nav читає положення антени з її локального API за адресою
+              192.168.100.1.
+            </p>
+          </li>
+          <li>
+            <h3 data-i18n="step3">Корекція на телефоні</h3>
+            <p data-i18n="step3Text">
+              Датчики руху телефона й курс антени тримають авто на траєкторії, коли позиція антени «пливе» вбік, і
+              ведуть позицію далі під час збоїв антени.
+            </p>
+          </li>
+          <li>
+            <h3 data-i18n="step4">Кожен застосунок</h3>
+            <p data-i18n="step4Text">
+              Позиція надходить усім застосункам на телефоні як GPS Android — через механізм фіктивного
+              місцезнаходження.
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="wrap block" id="features" aria-labelledby="features-title">
+        <h2 id="features-title" data-i18n="featuresTitle">Що вміє</h2>
+        <div class="features">
+          <article>
+            <h3 data-i18n="fGps">Положення антени як GPS телефона</h3>
+            <p data-i18n="fGpsText">
+              Передає найкраще положення антени в Android як провайдер GPS, зсунуте вперед за курсом на свій вік, щоб не
+              відставати на трасі.
+            </p>
+          </article>
+          <article>
+            <h3 data-i18n="fInertial">Інерціальна корекція</h3>
+            <p data-i18n="fInertialText">
+              У режимі Авто тримає авто на траєкторії, коли позиція антени зсувається вбік, а під час збоїв антени веде
+              позицію далі численням шляху й чесно каже застосункам, наскільки вона ще точна. Обчислюється лише на
+              телефоні.
+            </p>
+          </article>
+          <article>
+            <h3 data-i18n="fModes">Один перемикач, три режими</h3>
+            <p data-i18n="fModesText">
+              Авто (рекомендовано), Сирий (позиція антени як є) і Лише Starlink (джерело антени без GNSS). Також з
+              плитки швидких налаштувань і з постійного сповіщення.
+            </p>
+          </article>
+          <article>
+            <h3 data-i18n="fCutoff">Відсічки й перезапуски</h3>
+            <p data-i18n="fCutoffText">
+              Помічає, коли антена вимикає місцезнаходження, бо авто «рухається занадто швидко для тарифу», і коли
+              антена перезапускається та чому. Про відсічку ще й тихо сповіщає.
+            </p>
+          </article>
+          <article>
+            <h3 data-i18n="fChecklist">Перелік налаштувань</h3>
+            <p data-i18n="fChecklistText">
+              Усе, що потрібно телефону: дозвіл на місцезнаходження, параметри розробника, програма для фіктивного
+              місцезнаходження, батарея, Wi-Fi, доступ до місцезнаходження антени. Кожен пункт зі станом і кнопкою до
+              потрібної сторінки налаштувань.
+            </p>
+          </article>
+          <article>
+            <h3 data-i18n="fRecorder">Запис і звіти про точність</h3>
+            <p data-i18n="fRecorderText">
+              Записує відповіді антени, GNSS телефона й датчики руху на телефоні. Кожен запис має звіт: трек,
+              розфарбований за похибкою, відсічки, завади й швидкість. Один перемикач повністю вимикає запис.
+            </p>
+          </article>
+          <article>
+            <h3 data-i18n="fExport">Приватний експорт</h3>
+            <p data-i18n="fExportText">
+              Ви самі обираєте початок і кінець того, що покине телефон; ідентифікатори антени й роутера видаляються.
+            </p>
+          </article>
+          <article>
+            <h3 data-i18n="fStarlink">Антена й роутер</h3>
+            <p data-i18n="fStarlinkText">
+              Усе, що пропонує локальний API антени, простими словами: стан, сповіщення, графіки, карта перешкод,
+              керування, а також стан роутера, пристрої й налаштування Wi-Fi. Кожна зміна спершу питає.
+            </p>
+          </article>
+          <article>
+            <h3 data-i18n="fLook">Світла й темна тема, дві мови</h3>
+            <p data-i18n="fLookText">
+              Іде за темою Android або за вашим вибором. Українська й англійська, готовий до інших мов.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="wrap block" id="requirements" aria-labelledby="requirements-title">
+        <h2 id="requirements-title" data-i18n="reqTitle">Вимоги</h2>
+        <ul class="checks">
+          <li data-i18n="req1">Android 8.0 або новіший.</li>
+          <li data-i18n="req2">
+            Антена Starlink, що повідомляє своє місцезнаходження в локальній мережі. Перевірено на Gen 3 Mini з тарифом
+            Priority; інші антени можуть працювати, але не перевірені.
+          </li>
+          <li data-i18n="req3">Телефон під'єднаний до Wi-Fi антени (антена відповідає за адресою 192.168.100.1).</li>
+          <li data-i18n="req4">
+            Увімкнені параметри розробника, і Star Nav обрано програмою для фіктивного місцезнаходження; сторінка
+            «Імітація» в застосунку проведе вас крок за кроком.
+          </li>
+        </ul>
+      </section>
+
+      <section class="wrap block" id="privacy" aria-labelledby="privacy-title">
+        <h2 id="privacy-title" data-i18n="privacyTitle">Приватність</h2>
+        <p data-i18n="privacy1">
+          Жодних облікових записів, аналітики, реклами чи звітів про збої. Застосунок спілкується з антеною та роутером
+          у вашій локальній мережі; тайли мап завантажує лише після того, як ви оберете підкладку, і тоді сервер тайлів
+          бачить місцевість на екрані. Записи лишаються в приватному сховищі застосунку, доки ви самі не експортуєте
+          частину запису.
+        </p>
+        <p data-i18n="privacy2">
+          Єдиний виняток, вимкнений, доки ви його не натиснете: якщо антена відмовляється вмикати «місцезнаходження в
+          локальній мережі» з телефона, Star Nav може один раз провести вас у ваш власний обліковий запис Starlink на
+          сторінці Starlink, щоб Starlink це ввімкнув; потім нічого не зберігається. Starlink не публікує для цього API
+          (воно може перестати працювати, а умови Starlink можуть цього не дозволяти), і це на ваш власний ризик.
+        </p>
+        <p>
+          <a href="https://github.com/mystiqpilot/star-nav/blob/main/PRIVACY.md" data-i18n="privacyLink"
+            >Повна політика приватності (англійською)</a
+          >
+        </p>
+        <p class="muted" data-i18n="privacyPage">
+          Ця сторінка теж нічого не відстежує: без аналітики, сторонніх скриптів і шрифтів. Лише захист Cloudflare від
+          ботів може ставити свій технічний файл cookie.
+        </p>
+      </section>
+
+      <section class="wrap block" id="safety" aria-labelledby="safety-title">
+        <div class="callout">
+          <h2 id="safety-title" data-i18n="safetyTitle">Безпека</h2>
+          <p data-i18n="safety">
+            Використовуйте як допомогу, а не як єдиний засіб навігації. Положення антени може помилятися на десятки
+            метрів при різкому гальмуванні чи під завадами і зникає під час відсічок за швидкістю; числення шляху
+            інерціальної корекції з кожною секундою менш точне. Не керуйте застосунком під час водіння.
+          </p>
+        </div>
+      </section>
+
+      <section class="wrap block" id="credits" aria-labelledby="credits-title">
+        <h2 id="credits-title" data-i18n="creditsTitle">Подяки</h2>
+        <ul class="credits">
+          <li>
+            <a href="https://github.com/ertong/star-debug">Star Debug</a>
+            <span data-i18n="creditStarDebug"
+              >від ertong — інструмент для Starlink з відкритим кодом, створений для волонтерської ініціативи «Народний
+              Starlink», — надихнув цей застосунок: багато з того, що Star Nav показує й робить з антеною та роутером,
+              зроблено за його прикладом. Дякуємо, що розвиваєте його відкрито.</span
+            >
+          </li>
+          <li>
+            <span data-i18n="creditGrpc1">Номери полів локального gRPC API антени взято з дампів рефлексії, опублікованих</span>
+            <a href="https://github.com/clarkzjw/starlink-grpc-golang">clarkzjw/starlink-grpc-golang</a><span
+              data-i18n="creditGrpc2"
+              >, та з документації</span
+            >
+            <a href="https://github.com/sparky8512/starlink-grpc-tools">sparky8512/starlink-grpc-tools</a>.
+          </li>
+          <li>
+            <span data-i18n="creditMore">Решта подяк і ліцензій — у</span>
+            <a
+              href="https://github.com/mystiqpilot/star-nav/blob/main/README.uk.md#подяки"
+              data-i18n-href="creditsHref"
+              >README</a
+            >.
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="site">
+      <div class="wrap">
+        <p data-i18n="affiliation">
+          Star Nav — незалежний проєкт із відкритим кодом. Він не пов'язаний зі SpaceX, не схвалений і не підтримується
+          нею. Starlink — торговельна марка Space Exploration Technologies Corp.
+        </p>
+        <p class="links">
+          <a href="https://github.com/mystiqpilot/star-nav/blob/main/LICENSE" data-i18n="license">GPL-3.0 або новіша</a>
+          <a href="https://github.com/mystiqpilot/star-nav" data-i18n="footerSource">Код на GitHub</a>
+          <a href="https://apachi.tools">apachi.tools</a>
+        </p>
+      </div>
+    </footer>
+
+    <dialog class="viewer" aria-labelledby="viewer-caption">
+      <figure>
+        <img alt="" width="1080" height="2400" />
+        <figcaption id="viewer-caption"></figcaption>
+      </figure>
+      <button type="button" class="viewer-prev" aria-label="Попередній знімок" title="Попередній знімок" data-i18n-label="previous">‹</button>
+      <button type="button" class="viewer-next" aria-label="Наступний знімок" title="Наступний знімок" data-i18n-label="next">›</button>
+      <button type="button" class="viewer-close" aria-label="Закрити" title="Закрити" data-i18n-label="close">×</button>
+    </dialog>
+  </body>
+</html>

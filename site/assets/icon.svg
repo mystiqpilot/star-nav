@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="13 17 84 84">
+  <!-- The app's launcher icon (a flat dish over a location pin) on its icon background. -->
+  <rect x="13" y="17" width="84" height="84" rx="20" fill="#0e2233" />
+  <path fill="#e8eef4" d="M36,32 L72,26 L76,46 L40,52 Z" />
+  <path
+    fill="#5bc0eb"
+    d="M54,56 C45.7,56 39,62.7 39,71 C39,82 54,92 54,92 C54,92 69,82 69,71 C69,62.7 62.3,56 54,56 Z M54,77 C50.7,77 48,74.3 48,71 C48,67.7 50.7,65 54,65 C57.3,65 60,67.7 60,71 C60,74.3 57.3,77 54,77 Z"
+  />
+</svg>

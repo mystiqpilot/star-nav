@@ -1,0 +1,28 @@
+# Crawling is deliberately allowed so that the "X-Robots-Tag: noindex" header
+# and the <meta name="robots" content="noindex"> tag are seen and obeyed.
+# Blocking the crawl instead would let bare URLs appear in results unread.
+User-agent: *
+Allow: /
+
+# Bots that collect content for training or answer engines: no noindex
+# equivalent exists for them, so refuse the crawl outright.
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-User
+User-agent: Claude-SearchBot
+User-agent: anthropic-ai
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: meta-externalagent
+User-agent: Bytespider
+User-agent: CCBot
+User-agent: Amazonbot
+User-agent: cohere-ai
+User-agent: Diffbot
+User-agent: Omgilibot
+User-agent: Timpibot
+Disallow: /
