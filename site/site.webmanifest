@@ -1,7 +1,7 @@
 {
   "name": "Star Nav",
   "short_name": "Star Nav",
-  "description": "Положення антени Starlink як GPS телефона, коли GNSS глушать чи підміняють.",
+  "description": "Положення антени Starlink як GPS смартфона, коли GNSS глушать чи підміняють.",
   "start_url": "/",
   "scope": "/",
   "display": "browser",
