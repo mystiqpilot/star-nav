@@ -27,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Prepare the page for /${{ github.event.repository.name }}/
-        run: python3 -I .github/pages-prepare.py site _site "/${{ github.event.repository.name }}"
+        run: python3 -I .github/pages-prepare.py site _site "/${{ github.event.repository.name }}" "${GITHUB_SHA::8}"
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:

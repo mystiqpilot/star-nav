@@ -5,10 +5,12 @@ it lives under /<repo>/, and Pages cannot send response headers. So the copy for
 - gets the base path before every root-absolute link (HTML, JS paths, the web manifest);
 - drops Cloudflare's _headers file and carries its Content-Security-Policy (frame-ancestors aside, which a <meta>
   cannot set) and referrer policy as <meta> tags;
-- names no Cloudflare in its privacy line: there is no Cloudflare in front of GitHub Pages.
+- names no Cloudflare in its privacy line: there is no Cloudflare in front of GitHub Pages;
+- asks for main.js and style.css with ?v=VERSION: Pages lets browsers keep every file for 10 minutes, so after a deploy
+  a cached old script could meet the new HTML (Cloudflare's _headers make those revalidate instead).
 Every replacement must match, so a change in site/ that breaks one fails the deploy instead of shipping a broken page.
 
-Usage: python3 -I .github/pages-prepare.py SRC OUT BASE      (BASE like /star-nav)
+Usage: python3 -I .github/pages-prepare.py SRC OUT BASE VERSION      (BASE like /star-nav, VERSION like a commit id)
 """
 import json
 import re
@@ -34,7 +36,7 @@ def sub(text: str, pattern: str, repl, what: str, flags: int = 0) -> str:
 
 
 def main() -> None:
-    src, out, base = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3].rstrip("/")
+    src, out, base, version = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3].rstrip("/"), sys.argv[4]
     if out.exists():
         shutil.rmtree(out)
     shutil.copytree(src, out)
@@ -53,6 +55,8 @@ def main() -> None:
         # srcset is a list ("/a-360.webp 360w, /a-720.webp 720w"): every root-absolute URL in it.
         text = re.sub(r'\bsrcset="([^"]*)"', lambda m: 'srcset="' + re.sub(r"(^|,\s*)/(?!/)", rf"\1{base}/", m.group(1)) + '"', text)
         text = sub(text, r'<meta charset="utf-8" />', f'<meta charset="utf-8" />\n    {metas}', f"<meta charset> in {html.name}")
+        for asset in ("main.js", "style.css"):
+            text = sub(text, rf'="{re.escape(base)}/{re.escape(asset)}"', f'="{base}/{asset}?v={version}"', f"{asset} in {html.name}")
         if html.name == "index.html":
             # The HTML is written in Ukrainian (main.js swaps the words), and wraps the line: any whitespace between words.
             old, new = PRIVACY[0]
