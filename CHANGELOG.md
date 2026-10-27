@@ -6,6 +6,30 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-27
+
+### Added
+- The inertial correction now knows when the dish has no GNSS fix of its own. The dish then reports a position worked
+  out from the Starlink link alone, which can be 50-140 m off while it still claims a few metres. While that lasts,
+  apps get an accuracy of at least 85 m (it returns to normal over 15 s once the dish's GNSS is back). At the dish's
+  first GNSS fix the correction starts from it again instead of taking the jump for a fault. A dish position that
+  freezes or stops is no longer followed: the correction dead-reckons until it moves again. The Mock GPS status line
+  adds "Starlink only, no dish GNSS", the notification "no dish GNSS", and the Inertial correction card shows what the
+  dish's position is made from and the accuracy floor in force.
+- The GPS check now tells the inertial correction when it distrusts the phone's own GPS (far from the dish, or it
+  jumped). The dish may be getting the same jammed or spoofed signal, so apps then get an accuracy of at least 85 m and
+  the status line and the notification say "phone GPS distrusted". While the mock is on, the check reads the phone's
+  real position from its NMEA sentences.
+- When the dish refuses position requests, Star Nav says why: the Starlink plan refuses them, this dish does not offer
+  them, or location on the local network is off. The Starlink card, the setup step, the Mock GPS status line and the
+  notification name the reason. While they are refused, the position from the dish's diagnostics (the same position,
+  read every second) is used in their place, where the dish still reports one.
+- `slnav csv` adds satellite-slot, signal-quality and outage columns at the end of `dish_status.csv`; `slnav fake-dish`
+  gets `--location-policy-denied`, `--location-unimplemented` and `--no-diagnostics-location`.
+
+### Changed
+- Session accuracy reports are built again once, for the new correction.
+
 ### Fixed
 - The age of the dish's position (how long ago the dish computed the fix that just arrived) was measured against the
   phone's clock, and a phone's clock is off GNSS time by up to a second either way (two phones on the same drive:
