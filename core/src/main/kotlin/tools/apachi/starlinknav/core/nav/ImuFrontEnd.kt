@@ -196,6 +196,9 @@ internal class ImuFrontEnd(private val c: InertialConfig, private val log: (Doub
         }
     }
 
+    /** Ticks of history behind [stationary] (it needs 10). */
+    val histSize: Int get() = hist.size
+
     /** Max |ω_cw| over the last 10 ticks below the ZUPT limit (needs 10 ticks of history). */
     fun stationary(): Boolean {
         if (hist.size < 10) return false

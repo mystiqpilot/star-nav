@@ -219,7 +219,8 @@ object AccuracyClasses {
 }
 
 object SessionReports {
-    const val VERSION = 6
+    /** 7 (2026-10-27): the filter's Starlink-only regime (numbers and lanes change on such stretches); cached reports are rebuilt. */
+    const val VERSION = 7
     const val MOVING_MPS = 2.0
     /** The dish saw 16-19 satellites on normal drives and 3-8 under interference. */
     const val DISH_SATS_LOW = 10

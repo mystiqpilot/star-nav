@@ -41,6 +41,12 @@ data class InertialEstimate(
     val raw: Boolean = false,
     /** The car is reversing: [bearingDeg] is the direction of motion (car heading + 180°). */
     val reversing: Boolean = false,
+    /** What the dish's position is made from (its GNSS flags, the owner's phone flag, the status age). */
+    val dishRegime: DishGnssRegime = DishGnssRegime.UNKNOWN,
+    /** The Starlink-only / suspect floor in force in [accuracyM], m (0 = none). */
+    val dishFloorM: Double = 0.0,
+    /** The dish is refused by the stall detector (frozen, two-point, stale clock): dead reckoning until it moves again. */
+    val stalled: Boolean = false,
 )
 
 /** One `inertial` session event. [detail] is `name key=value ...`, relative quantities only. */
@@ -98,6 +104,8 @@ class InertialNav(
     val clock: ReceiverClock = ReceiverClock(),
 ) {
     private var originNs: Long? = null
+    /** The owner's latest phone flag; one given before the first dish call (no origin yet) is applied with it. */
+    private var phoneSuspect = false
     private var lat0 = Double.NaN
     private var lon0 = Double.NaN
     private var cosLat0 = Double.NaN
@@ -139,6 +147,12 @@ class InertialNav(
     val fires: List<Pair<Double, String>> get() = core.fires
     /** The fix latency in use, s. */
     val latencyS: Double get() = core.latencyS
+    /** The dish's GNSS regime as reported now (for the runner and the replay's GpsTrust). */
+    val dishRegime: DishGnssRegime get() = core.dishRegime
+    /** The Starlink-only / suspect / unconverged floor in force now, m (0 = none). */
+    val dishFloorM: Double get() = core.dishFloorM
+    /** The dish is refused by the stall detector now. */
+    val stalled: Boolean get() = core.stalled
     /** IMU samples dropped because their tick had already run (live delivery later than a dish call). */
     var imuLateSamples = 0L
         private set
@@ -205,6 +219,7 @@ class InertialNav(
         clockTo(tNs)
         if (originNs != null) return
         originNs = tNs
+        if (phoneSuspect) core.onPhoneFlag(0.0, true)
         val pending = early.toList()
         early.clear()
         for ((t, type, v) in pending) onImuSample(type, t, v)
@@ -292,17 +307,26 @@ class InertialNav(
                 startTicks(t)
                 advance(t, inclusive = true)
                 val a = s.alignment_stats
+                val g = s.gps_stats
                 core.onStatus(
                     t, s.ned2dish_quaternion?.attitude()?.headingDeg, a?.attitude_estimation_state, a?.attitude_uncertainty_deg?.let(::f2d),
-                    s.gps_stats?.gps_valid, s.gps_stats?.gps_sats,
+                    g?.gps_valid, g?.gps_sats,
+                    inhibit = g?.inhibit_gps ?: false, pnt = g?.pnt_filter_convergence_state,
+                    outage = s.outage?.let { OutageInfo(it.cause, it.start_timestamp_ns, it.duration_ns, it.did_switch) },
                 )
                 return null
             }
             DishCallKind.DIAGNOSTICS -> {
-                val gps = resp?.dish_get_diagnostics?.location?.gps_time_s ?: return null
+                // every diagnostics answer: the fix age (receiver clock, else the raw wall clock, null while the fix time
+                // is withheld), the fix time for the slot clock and the stale-clock rule, the receipt on the GPS time line
+                val d = resp?.dish_get_diagnostics ?: return null
+                val gps = d.location?.gps_time_s ?: 0.0
                 val t = rel(tNs)
                 advance(t, inclusive = true)
-                clock.fixAgeS(gps, wallMs)?.let(core::onDiag)
+                val fromClock = clock.fixAgeS(gps, wallMs)
+                val ageS = fromClock ?: FixExtrapolator.fixAgeS(gps, wallMs)
+                val wallGpsS = (clock.gnssMs(wallMs) ?: wallMs.toDouble()) / 1000.0 - GPS_EPOCH_UNIX_S + GPS_LEAP_S
+                core.onDiag(t, ageS, gps, wallGpsS, fromReceiverClock = fromClock != null)
                 return null
             }
             DishCallKind.LOCATION_AUTO -> {
@@ -315,7 +339,7 @@ class InertialNav(
                         // compared as received, so a re-centred plane cannot turn it into a new fix
                         val t = rel(tNs)
                         advance(t, inclusive = true)
-                        core.onAutoSeenAgain(t)
+                        core.onAutoSeenAgain(t, f.horizontalSpeedMps)
                         return serveAt(t, tNs)
                     }
                     if (f.horizontalSpeedMps.isFinite() && f.horizontalSpeedMps in 0.0..90.0) {
@@ -364,6 +388,18 @@ class InertialNav(
         core.onNetwork(t, rel(fixNs), e, n, accuracyM)
     }
 
+    /**
+     * The owner's flag at [tNs]: the phone's own GNSS is distrusted (a level; the latest value counts). Only the
+     * reported regime (SUSPECT while the dish's GNSS is valid) and the told accuracy change, never the filter. Fed by
+     * the app's service (its GPS check's verdict, every 0.5 s), [InertialReplay] and tests. Before the first dish call
+     * there is no time origin: the latest value is kept and applied with that call (at relative time 0), so no event is
+     * stamped before it.
+     */
+    fun onPhoneGnssSuspect(tNs: Long, suspect: Boolean) {
+        phoneSuspect = suspect
+        if (originNs != null) core.onPhoneFlag(rel(tNs), suspect)
+    }
+
     /** What to serve at [tNs] between AUTO answers (every second while dead reckoning). */
     fun serve(tNs: Long): InertialEstimate? {
         if (originNs == null) return null
@@ -384,7 +420,7 @@ class InertialNav(
             bearingDeg = if (o.raw) null else ((Math.toDegrees(o.psi) + if (o.reversing) 180.0 else 0.0) % 360.0 + 360.0) % 360.0,
             state = o.state, sidewaysOffsetM = o.bCross, alongOffsetM = o.bAlong, imu = core.imuState,
             mountOffsetDeg = core.mount.value, eastM = o.e, northM = o.n, filterAcc68M = o.acc68, cross68M = o.cross68, raw = o.raw,
-            reversing = o.reversing,
+            reversing = o.reversing, dishRegime = o.dishRegime, dishFloorM = o.dishFloorM, stalled = o.stalled,
         )
     }
 
@@ -395,6 +431,9 @@ class InertialNav(
         const val TYPE_GYRO = 4
         /** The radius of the prototype's (and slnav csv's) local plane. */
         private const val R_E = 6371008.8
+        /** Unix seconds at the GPS epoch and GPS − UTC since 2017 (as [FixExtrapolator]): the receipt on the GPS time line. */
+        private const val GPS_EPOCH_UNIX_S = 315_964_800.0
+        private const val GPS_LEAP_S = 18.0
 
         /** A float as printed (what `slnav csv` and the prototype read), so replays see the same numbers. */
         internal fun f2d(x: Float): Double = if (x.isFinite()) x.toString().toDouble() else x.toDouble()

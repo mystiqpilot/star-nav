@@ -7,6 +7,7 @@ import tools.apachi.starlinknav.core.dish.fix
 import tools.apachi.starlinknav.core.log.proto.Record
 import java.util.PriorityQueue
 import java.util.TreeSet
+import kotlin.math.max
 
 /**
  * Runs an [InertialNav] over a recorded session the way it runs live: records in file order are re-sorted by
@@ -20,6 +21,12 @@ import java.util.TreeSet
  *
  * [autoMod] (tools) changes AUTO answers in the local plane: (seconds since the first dish call, east, north) →
  * the position to use, or null to drop the answer (a simulated cut-off).
+ *
+ * The owner's phone flag ([InertialNav.onPhoneGnssSuspect]) is fed from a [GpsTrust] run over the same queue: the
+ * phone's real GPS fixes and every AUTO answer (with the filter's honest accuracy, [InertialNav.dishFloorM], so a
+ * wandering Starlink-only dish does not flag a good phone), the verdict read at every AUTO call and every gap serve. It is fed from the time-ordered
+ * queue, not from [add]: the queue runs up to [windowNs] behind `add`, which would exceed [GpsTrustConfig.maxSkewS]
+ * and never compare.
  */
 class InertialReplay(
     val nav: InertialNav,
@@ -29,6 +36,8 @@ class InertialReplay(
     /** Feed the phone's network fixes (provider "network", not mocked). */
     private val network: Boolean = nav.config.network,
     private val liveOrder: Boolean = false,
+    /** The GPS check that feeds the phone flag; null = the flag is never fed. */
+    private val trust: GpsTrust? = GpsTrust(),
 ) {
     enum class Kind { AUTO, FAIL, GAP }
 
@@ -45,7 +54,9 @@ class InertialReplay(
 
     private class Input(val t: Long, val order: Int, val seq: Long, val call: DishCallResult? = null, val wallMs: Long = 0,
                         val sensor: Int = 0, val values: List<Float>? = null, val sampleNs: Long = 0,
-                        val netLat: Double = 0.0, val netLon: Double = 0.0, val netAcc: Double = 0.0, val netFixNs: Long = 0)
+                        val netLat: Double = 0.0, val netLon: Double = 0.0, val netAcc: Double = 0.0, val netFixNs: Long = 0,
+                        /** A real phone GPS fix for the GPS check (lat / lon / accuracy in the net fields). */
+                        val gps: Boolean = false, val gpsMock: Boolean = false)
 
     private val queue = PriorityQueue<Input>(compareBy<Input>({ it.t }, { it.order }, { it.seq }))
     private val answers = TreeSet<Long>()
@@ -87,6 +98,13 @@ class InertialReplay(
             if (network && p.provider == "network" && !p.is_mock && acc != null && p.lat.isFinite() && p.lon.isFinite()) {
                 queue += Input(t, 6, seq++, netLat = p.lat, netLon = p.lon, netAcc = acc.toDouble(), netFixNs = if (p.elapsed_ns > 0) p.elapsed_ns else t)
             }
+            // the phone's real GPS for the GPS check, at the fix's own time
+            if (trust != null && p.provider == "gps" && !p.is_mock && p.lat.isFinite() && p.lon.isFinite()) {
+                queue += Input(
+                    if (p.elapsed_ns > 0) p.elapsed_ns else t, 1, seq++,
+                    netLat = p.lat, netLon = p.lon, netAcc = acc?.toDouble() ?: Double.NaN, gps = true, gpsMock = p.is_mock,
+                )
+            }
         }
         if (t != 0L && t > maxSeen) maxSeen = t
         drain(maxSeen - windowNs)
@@ -125,6 +143,7 @@ class InertialReplay(
                 return
             }
             if (b == null && finishing) return
+            phoneFlag(s)
             onServe(Served(Kind.GAP, s, nav.serve(s), todayLat, todayLon, null))
             nextServe++
         }
@@ -148,12 +167,16 @@ class InertialReplay(
             }
             val f = if (answer) call.response?.fix() else null
             if (f == null || f.looksLikePlaceholder) {
-                onServe(Served(Kind.FAIL, i.t, nav.onDishCall(call, i.t, i.wallMs), todayLat, todayLon, null))
+                val est = nav.onDishCall(call, i.t, i.wallMs)
+                phoneFlag(i.t)
+                onServe(Served(Kind.FAIL, i.t, est, todayLat, todayLon, null))
                 return
             }
             val mod = autoMod
             if (mod == null) {
                 val est = nav.onDishCall(call, i.t, i.wallMs)
+                autoSeen(f, i.t)
+                phoneFlag(i.t)
                 today(f, i.t)
                 onServe(Served(Kind.AUTO, i.t, est, todayLat, todayLon, f))
                 return
@@ -162,12 +185,16 @@ class InertialReplay(
             val (e, n) = nav.localOf(f.lat, f.lon)
             val r = mod(nav.rel(i.t), e, n)
             if (r == null) {
-                onServe(Served(Kind.FAIL, i.t, nav.onAutoFailure(i.t), todayLat, todayLon, null))
+                val est = nav.onAutoFailure(i.t)
+                phoneFlag(i.t)
+                onServe(Served(Kind.FAIL, i.t, est, todayLat, todayLon, null))
                 return
             }
             val est = nav.onAutoLocal(i.t, r.first, r.second, f.horizontalSpeedMps)
             val (la, lo) = nav.geoOf(r.first, r.second)
             val moved = f.copy(lat = la, lon = lo)
+            autoSeen(moved, i.t)
+            phoneFlag(i.t)
             today(moved, i.t)
             onServe(Served(Kind.AUTO, i.t, est, todayLat, todayLon, moved))
             return
@@ -177,7 +204,21 @@ class InertialReplay(
             nav.onImuSample(i.sensor, i.sampleNs, v)
             return
         }
+        if (i.gps) {
+            trust?.onGpsFix(i.netLat, i.netLon, i.netAcc, i.t, i.gpsMock)
+            return
+        }
         nav.onNetworkFix(i.netFixNs, i.netLat, i.netLon, i.netAcc, i.t)
+    }
+
+    /** An AUTO answer with a position (repeats included) for the GPS check, at its fix time with the honest accuracy. */
+    private fun autoSeen(f: DishFix, tNs: Long) {
+        trust?.onAutoFix(f.lat, f.lon, max(f.sigmaM, nav.dishFloorM), f.horizontalSpeedMps, tNs - (nav.latencyS * 1e9).toLong())
+    }
+
+    private fun phoneFlag(tNs: Long) {
+        val tr = trust ?: return
+        nav.onPhoneGnssSuspect(tNs, tr.verdict(tNs).state == GpsTrustState.DISTRUSTED)
     }
 
     private companion object {

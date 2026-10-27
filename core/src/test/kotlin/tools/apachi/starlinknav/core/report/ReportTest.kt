@@ -203,7 +203,7 @@ class ReportTest {
     @Test
     fun theInertialFilterRunsInTheReport() {
         val r = SessionReports.build(drive().asSequence())
-        assertEquals(6, r.version)
+        assertEquals(7, r.version)
         val f = assertNotNull(r.summary.inertial)
         // the 60-90 s cut-off is dead-reckoned (from 2.5 s after the last fix until AUTO returns)
         assertTrue(r.spans.any { it.kind == ReportSpan.DEAD_RECKONING && it.fromNs < 65 * sec && it.toNs > 85 * sec }, "${r.spans}")

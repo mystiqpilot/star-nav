@@ -4,8 +4,10 @@ import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
+import kotlin.math.exp
 import kotlin.math.hypot
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -36,6 +38,29 @@ enum class ImuState {
     /** Gyro and forward accel in use. */
     FORWARD,
 }
+
+/** What the dish's position is made from, from its status (1 Hz) and, optionally, the owner's phone-GNSS flag. */
+enum class DishGnssRegime {
+    /** `gps_valid` true and `inhibit_gps` false (and no phone flag). */
+    TRUSTED,
+    /** `gps_valid` false or `inhibit_gps` true: the position comes from the Starlink link alone (≈ 85 m 68 %). */
+    STARLINK_ONLY,
+    /**
+     * The dish says its GNSS is valid while the owner flags the phone's own GNSS as distrusted (jump, far from the dish):
+     * the dish may be fed the same signal. Only the told accuracy changes; the filter follows the dish as in TRUSTED.
+     * The app feeds the flag from its GPS check (under the mock the phone's position comes from its NMEA sentences),
+     * replays from a GPS check run over the log.
+     */
+    SUSPECT,
+    /** No status with gps_stats within [InertialConfig.soStatusStaleS]; the floor of the last known regime stays. */
+    UNKNOWN,
+}
+
+/** The last known source of the dish's position (`gps_valid` / `inhibit_gps` only), the level that drives the filter. */
+internal enum class DishSource { GNSS, STARLINK_ONLY }
+
+/** The status' current outage (`DishOutage`): [startNs] and [durationNs] on the dish's clock (GPS ns on a real dish). */
+class OutageInfo(val cause: Int, val startNs: Long, val durationNs: Long, val didSwitch: Boolean)
 
 /**
  * The inertial filter in the local plane on one relative clock (s): the logic of `Nav2` in `nav2.py`
@@ -128,6 +153,62 @@ internal class InertialCore(
     /** The onset of a fault whose reference ended without a return (for the mirror test), and when. */
     private var mirrorF0 = Double.NaN
     private var mirrorT = -1e9
+    // ---- the dish's GNSS regime (port-side, 2026-10-27): Starlink-only accuracy, the switch back, slot windows, stalls
+    /** The last known source of the dish's position; null until a status carried gps_stats. */
+    private var source: DishSource? = null
+    private var lastInhibit = false
+    /** Receipt of the last status that carried gps_stats; UNKNOWN is reported [InertialConfig.soStatusStaleS] after it. */
+    private var lastGpsStatsT = -1e9
+    /** The owner's flag: the phone's own GNSS is distrusted (a level; only the reported regime and the floor change). */
+    private var phoneSuspect = false
+    /** `pnt_filter_convergence_state` said UNCONVERGED (1) and no later status said CONVERGED (2). */
+    private var unconverged = false
+    /** The regime as reported; one `dish_regime` event per change. */
+    var dishRegime = DishGnssRegime.UNKNOWN
+        private set
+    /** The Starlink-only / suspect / unconverged floor in force at the last evaluation, m (0 = none). */
+    var dishFloorM = 0.0
+        private set
+    /** The re-anchor (σ per axis, m) waiting for the next AUTO fix after a switch back to dish GNSS; 0 = none. */
+    private var pendingSwitchK = 0.0
+    /** When the source last went back to GNSS: the floor decays from there. */
+    private var tTrusted = -1e9
+    /** When the source last became Starlink-only (the dwell starts), and the decayed floor still in force then, m. */
+    private var tSoStart = -1e9
+    private var soBase = 0.0
+    /** The floor at the last switch back, m: what the dwell could have built (see [setSource]), decaying since [tTrusted]. */
+    private var soFloor0 = 0.0
+    /** No sideways holds before this time: the quiet window after the switch back, scaled like [soFloor0]. */
+    private var quietUntil = -1e9
+    /** Receipt of the fix whose gate reject last opened a sideways hold (one opened just before a switch back is dropped). */
+    private var gateHoldT = -1e9
+    /** Fix time of the last gate reject; a `did_switch` outage reported afterwards whose window holds it forgives it. */
+    private var lastRejectTf = Double.NaN
+    /** Answers with a speed outside 0..90 m/s are being dropped (one `dish_fix_dropped` event per run). */
+    private var hsDropRun = false
+    /** The latest AUTO answer's speed, repeats included (the stall detector's "moving" test). */
+    private var lastHs = Double.NaN
+    /** The slot clock: filter time of the reference and the GPS seconds at that moment (NaN = none yet). */
+    private var slotRefT = Double.NaN
+    private var slotRefGps = Double.NaN
+    /** The reference came from the phone's wall clock (no fix time from the dish): the windows get [InertialConfig.slotWallSlackS]. */
+    private var slotFromWall = false
+    /** `did_switch` outages by start (dish clock ns), the latest 20; a start seen again updates its duration. */
+    private val outages = LinkedHashMap<Long, OutageInfo>()
+    /** The dish is refused (stall detector): its answers take the failure path until it moves again. */
+    var stalled = false
+        private set
+    private var stallReason = ""
+    private var stallSince = -1e9
+    /** Receipt of the first answer with the current position (a run of repeats is measured from it). */
+    private var frozenSince = Double.NaN
+    /** The last 12 AUTO answers, repeats included: (receipt, e, n). */
+    private val ring = ArrayDeque<DoubleArray>()
+    /** The last diagnostics: receipt and `gps_time_s` (0 = withheld), and the run of diagnostics whose fix time did not advance. */
+    private var lastDiagT = Double.NaN
+    private var lastDiagGps = 0.0
+    private var noAdvanceSince = Double.NaN
+    private var noAdvanceN = 0
 
     init {
         ekf.decide = { m, x, p -> decide(m, x, p) }
@@ -135,7 +216,58 @@ internal class InertialCore(
 
     // ------------------------------------------------------------------ inputs
 
+    /** A diagnostics fix age from the receiver clock, s: the latency only (the prototype's input). */
     fun onDiag(age: Double) = latency.add(age)
+
+    /**
+     * A diagnostics answer at receipt [t]: [ageS] the fix age at receipt (null while `gps_time_s` is withheld),
+     * [gpsTimeS] the dish's fix time (GPS seconds; 0 when withheld), [wallGpsS] the receipt on the GPS time line from the
+     * phone's wall clock. The latency is fed only with [fromReceiverClock] (an age from the raw wall clock is off by the
+     * phone's clock error, as today). The slot clock (§6): with a fix time, the GPS time at receipt is the fix time plus
+     * the age (the latency estimate cancels against `tf = t − latency`, so the windows sit on the true fix epoch); without
+     * one, the wall clock places the slots within about a second ([InertialConfig.slotWallSlackS]). The stale-clock
+     * stall (§7): the fix time not advancing while the receipts go on; never from the age's level, which with no
+     * receiver clock is the phone's clock error (the jammed case). A withheld fix time resets that test.
+     */
+    fun onDiag(t: Double, ageS: Double?, gpsTimeS: Double, wallGpsS: Double, fromReceiverClock: Boolean = true) {
+        if (ageS != null && fromReceiverClock) latency.add(ageS)
+        if (gpsTimeS > 0) {
+            slotRefT = t
+            slotRefGps = gpsTimeS + (if (fromReceiverClock && ageS != null) ageS else latency.value)
+            slotFromWall = false
+        } else if (slotRefT.isNaN() || slotFromWall) {
+            slotRefT = t
+            slotRefGps = wallGpsS
+            slotFromWall = true
+        }
+        if (gpsTimeS > 0) {
+            if (lastDiagGps > 0 && gpsTimeS == lastDiagGps) {
+                if (noAdvanceSince.isNaN()) {
+                    noAdvanceSince = lastDiagT
+                    noAdvanceN = 1
+                }
+                noAdvanceN++
+                if (c.stallDetector && !stalled && t - noAdvanceSince > c.stallAgeS && noAdvanceN >= 3) startStall(t, "stale", noAdvanceSince)
+            } else {
+                noAdvanceSince = Double.NaN
+                noAdvanceN = 0
+                if (stalled && stallReason == "stale") endStall(t)
+            }
+            lastDiagGps = gpsTimeS
+        } else {
+            noAdvanceSince = Double.NaN
+            noAdvanceN = 0
+            lastDiagGps = 0.0
+        }
+        lastDiagT = t
+    }
+
+    /** The owner's phone-GNSS flag at [t] (a level, the latest value counts): SUSPECT and the floor while dish GNSS is valid. */
+    fun onPhoneFlag(t: Double, suspect: Boolean) {
+        if (phoneSuspect == suspect) return
+        phoneSuspect = suspect
+        updateRegime(t, "phone")
+    }
 
     val latencyS: Double get() = latency.value
 
@@ -147,6 +279,7 @@ internal class InertialCore(
             out != null -> if (imu.faReady) ImuState.FORWARD else ImuState.GYRO
             else -> imu.lastStep
         }
+        updateRegime(t, "stale")
         val f = out?.f ?: Double.NaN
         val (w, src) = when {
             out != null -> out.w to 1
@@ -212,10 +345,33 @@ internal class InertialCore(
         }
     }
 
-    fun onStatus(t: Double, hx: Double?, attState: Int?, uncDeg: Double?, gpsValid: Boolean?, sats: Int?) {
+    /**
+     * A status at [t]: the dish heading and attitude, and its GNSS flags ([gpsValid] null = no gps_stats, [inhibit],
+     * [pnt] = `pnt_filter_convergence_state`, null / 0 leaves the convergence flag) and the current [outage] (§3, §6).
+     * The regime bookkeeping runs before the attitude check: the boot samples have att_state 1 and are the unconverged ones.
+     */
+    fun onStatus(
+        t: Double, hx: Double?, attState: Int?, uncDeg: Double?, gpsValid: Boolean?, sats: Int?,
+        inhibit: Boolean = false, pnt: Int? = null, outage: OutageInfo? = null,
+    ) {
         lastStatusT = t
         lastGpsValid = gpsValid
         lastSats = sats
+        var cause = "gps_valid"
+        if (gpsValid != null) {
+            lastGpsStatsT = t
+            val src = if (inhibit || !gpsValid) DishSource.STARLINK_ONLY else DishSource.GNSS
+            if (src != source) cause = when {
+                inhibit != lastInhibit -> "inhibit"
+                unconverged && pnt == 2 -> "converged"
+                else -> "gps_valid"
+            }
+            lastInhibit = inhibit
+            setSource(t, src)
+        }
+        if (pnt == 1) unconverged = true else if (pnt == 2) unconverged = false
+        outage?.let { onOutage(it) }
+        updateRegime(t, cause)
         if (attState != 2 || hx == null || !hx.isFinite()) return
         val hxU: Double
         if (heads.isNotEmpty()) {
@@ -262,22 +418,62 @@ internal class InertialCore(
         return null
     }
 
-    /** An AUTO answer repeating the previous fix (prototype: `on_auto` with the same xy): only the receipt time counts. */
-    fun onAutoSeenAgain(t: Double) {
-        lastAutoRx = t
+    /** An AUTO answer repeating the previous fix as the facade saw it (the same lat / lon), with its speed [hs]. */
+    fun onAutoSeenAgain(t: Double, hs: Double = Double.NaN) = repeated(t, hs)
+
+    /**
+     * The one repeat path (prototype: `on_auto` with the same xy, where only the receipt time counts). The answer joins
+     * the stall detector's ring; a run of [InertialConfig.stallFrozenS] of the same position while the car moves is a
+     * frozen dish (§7), and while stalled a repeat no longer advances [lastAutoRx], so dead reckoning starts.
+     */
+    private fun repeated(t: Double, hs: Double) {
+        // (the range [onAuto] drops: a repeated answer must not carry a bogus speed into the stall detector's "moving")
+        if (hs.isFinite() && hs in 0.0..90.0) lastHs = hs
+        lastXy?.let { ringAdd(t, it.first, it.second) }
+        if (c.stallDetector) {
+            if (stalled && stallReason == "two_point" && twoPointSpan() == null) endStall(t)
+            if (!stalled) {
+                val span = twoPointSpan()
+                if (span != null && moving(t)) startStall(t, "two_point", t - span)
+                else if (!frozenSince.isNaN() && t - frozenSince >= c.stallFrozenS - 1e-9 && moving(t)) startStall(t, "frozen", frozenSince)
+            }
+        }
+        if (!stalled) lastAutoRx = t
     }
 
     fun onAuto(t: Double, e: Double, n: Double, hs: Double) {
-        if (!e.isFinite() || !n.isFinite() || !hs.isFinite() || hs < 0 || hs > 90) return
-        lastAutoRx = t
-        lastXy?.let { if (it.first == e && it.second == n) return }
+        if (!e.isFinite() || !n.isFinite()) return
+        if (!hs.isFinite() || hs < 0 || hs > 90) {
+            if (!hsDropRun) {
+                hsDropRun = true
+                log(t, "dish_fix_dropped", "reason=speed hs_mps=%.0f".format(Locale.ROOT, hs))
+            }
+            return
+        }
+        hsDropRun = false
+        lastHs = hs
+        lastXy?.let { if (it.first == e && it.second == n) { repeated(t, hs); return } }
         lastXy = e to n
+        frozenSince = t
+        ringAdd(t, e, n)
+        // the failure path while the dish is stalled (nothing applied, lastAutoRx stays): a new position ends a frozen
+        // stall and is applied, a third position ends a two-point one; a stale clock holds until the clock advances
+        if (stallOnPosition(t)) return
+        lastAutoRx = t
         val tf = t - latency.value
         val prev = fixes.lastOrNull()
         fixes.addLast(MountCalibrator.Fix(tf, e, n, hs))
         while (fixes.size > 40) fixes.removeFirst()
+        // the regime switch (§5) and the slot window of this fix (§6), decided once here for the chord logic and `decide`
+        val so = soActive
+        val window = window(tf)
+        // no sideways holds while Starlink-only without holds, nor in the quiet window after the switch back (the dish
+        // converges onto its GNSS fix: its sideways motion then is the correction, not a fault; the window is as long
+        // as the Starlink-only dwell could have built an error to converge from, see [setSource])
+        val noHolds = (so && !c.soHolds) || (c.soEnabled && source == DishSource.GNSS && t < quietUntil)
+        // nothing differentiates the lagging Starlink-only dish speed; the IMU (fHist) still gives the decel
         var ddec = 0.0
-        if (fixes.size >= 3) {
+        if (!so && fixes.size >= 3) {
             val ta = fixes[fixes.size - 3]
             if (tf - ta.tf > 1.0 && tf - ta.tf < 3.5) ddec = (hs - ta.hs) / (tf - ta.tf)
         }
@@ -289,7 +485,11 @@ internal class InertialCore(
             if (dt > 2.5) {
                 det.reset()
                 watch?.reset()
-            } else if (dt > 0.3 && 0.5 * (hs + prev.hs) > c.detMinSpeed) {
+            } else if (window == null && dt > 0.3 && 0.5 * (hs + prev.hs) > c.detMinSpeed) {
+                // (the chord into a slot-window fix is skipped by both detectors, the reversing vote, the reference and
+                // the forward-axis fit: a Starlink-only step there is the solution re-anchoring, not evidence; a window
+                // covers ~3.5 of 15 s, so ~23 % of the Starlink-only chords are left out of the dish-data CUSUM they
+                // would only pollute; the step itself is confirmed by the NIS in `decide`)
                 val hm = headAt(0.5 * (tf + prev.tf))
                 if (hm != null) {
                     val psi = hm.first
@@ -297,6 +497,8 @@ internal class InertialCore(
                     val sats = lastSats
                     val health = t - lastStatusT < 3.0 && ((sats != null && sats <= c.satsMin) || lastGpsValid == false)
                     if (c.detector) verdict = det.step(dt, vLat, health, learn = bMode == B_TIGHT)
+                    // Starlink-only without holds, or the quiet window after the switch back: the acting detector only watches
+                    if (verdict == Verdict.CONFIRM && noHolds) verdict = Verdict.NONE
                     watch?.let { w ->
                         if (w.step(dt, vLat, health, learn = bMode == B_TIGHT) == Verdict.CONFIRM) {
                             watchConfirms++
@@ -330,7 +532,7 @@ internal class InertialCore(
                 lastHoldEnd = t
             }
             // ---- the dish's return to the fault-free reference (port-side exit policy)
-            val hmChord = if (c.returnRule && dt > 0.0 && dt <= max(2.5, c.retGapS)) headAt(0.5 * (tf + prev.tf)) else null
+            val hmChord = if (c.returnRule && window == null && dt > 0.0 && dt <= max(2.5, c.retGapS)) headAt(0.5 * (tf + prev.tf)) else null
             val dLat = if (hmChord == null) 0.0 else (e - prev.e) * cos(hmChord.first) - (n - prev.n) * sin(hmChord.first)
             val ds = hypot(e - prev.e, n - prev.n)
             // the chords' mean sideways drift against the dish heading in trusted driving (a mount offset a few tenths
@@ -340,7 +542,7 @@ internal class InertialCore(
                 chordLatSum = chordLatSum * w + dLat
                 chordDist = chordDist * w + ds
             }
-            if (c.returnRule && refOn && !refF0.isNaN()) {
+            if (window == null && c.returnRule && refOn && !refF0.isNaN()) {
                 if (hmChord == null) {
                     endRef(t, if (dt > max(2.5, c.retGapS)) "gap" else "no_chord")
                 } else {
@@ -387,14 +589,16 @@ internal class InertialCore(
             // Only chords that move at about the dish speed count (a standing car's noise and AUTO jumps do not),
             // and it takes two in a row to switch reversing on.
             // (not while the dish error is open with the leak guard: a sideways error turning with the road moves the chords)
-            if (c.reverseHold && dt > 0.3 && dt <= 2.5 && !(c.leakGuard && bMode == B_OPEN)) {
+            if (c.reverseHold && window == null && dt > 0.3 && dt <= 2.5 && !(c.leakGuard && bMode == B_OPEN)) {
                 val de = e - prev.e
                 val dn = n - prev.n
                 val chordV = hypot(de, dn) / dt
                 val hsMean = 0.5 * (hs + prev.hs)
                 val psi = headAt(0.5 * (tf + prev.tf))?.first ?: if (ekf.ok) ekf.x[3] else null
+                // Starlink-only: no votes below detMinSpeed; at a standstill that solution wanders 1-2 m/s in a random
+                // direction and hs is the derivative of the wander, so the chord test flaps "reversing" on and off
                 if (psi != null && minOf(hs, prev.hs) >= c.reverseMinChordSpeed && chordV >= c.reverseMinChordSpeed &&
-                    abs(chordV - hsMean) <= max(1.5, 0.3 * hsMean)
+                    abs(chordV - hsMean) <= max(1.5, 0.3 * hsMean) && (!so || hsMean >= c.detMinSpeed)
                 ) {
                     val off = abs(wrap(atan2(de, dn) - psi)) * R2D
                     reverseVotes = if (off > c.reverseOnDeg) reverseVotes + 1 else 0
@@ -417,7 +621,8 @@ internal class InertialCore(
         // ---- forward-axis epoch fit (trusted fixes only)
         val trusted = bMode == B_TIGHT && verdict == Verdict.NONE && t - lastTrustBreak > 10.0
         // reversing: the dish speed is |v| with the car going backwards, so it fits neither the forward axis nor the speed
-        if (useImu && trusted && fixes.size >= 3 && !reversing) {
+        // (not from the lagging Starlink-only dish speed unless asked, and not from the chord into a slot window)
+        if (useImu && trusted && fixes.size >= 3 && !reversing && window == null && (!so || c.soForwardAxis)) {
             for (j in fixes.size - 2 downTo 0) {
                 val fj = fixes[j]
                 if (tf - fj.tf >= 1.5) {
@@ -427,16 +632,47 @@ internal class InertialCore(
             }
         }
         if (!ekf.ok) {
+            pendingSwitchK = 0.0
             rawPos = e to n
             rawT = t
             tryInit(t, tf, e, n, hs, prev)
             return
         }
-        mount.onFix(t, fixes, heads, bMode == B_TIGHT && t - lastTrustBreak > c.mntTrustS && !(c.mntSkipReversing && reversing))
+        // (nor from the chord into a slot-window fix: a Starlink-only step there is confirmed only by `decide`, which runs
+        // after this call, so the window stands in for the step; the step then sets lastTrustBreak for the chords spanning it)
+        mount.onFix(t, fixes, heads, bMode == B_TIGHT && t - lastTrustBreak > c.mntTrustS && !(c.mntSkipReversing && reversing) && window == null)
         var decel = if (fHist.size >= 5) fHist.sum() / fHist.size - ekf.x[4] else ddec
         decel = minOf(decel, ddec)
-        ekf.insert(Meas(tf, emptyList(), decided = false, auto = AutoFix(e, n, hs, t, verdict, decel)))
-        if (decel > c.speedSkipDecel && !reversing) ekf.insert(Meas(tf - c.speedLag, listOf(Part.Speed(hs, sq(c.rSpeed)))))
+        // The switch back to dish GNSS (§3): the position covariance is loosened at this fix's own time, inserted before
+        // the fix so the entry's stable sort applies it first and `decide` sees it (re-applying the entry from its stored
+        // prior is idempotent). Not at the status: a fix decided with the old covariance would be one gate reject, and
+        // with |cross| > |along| and a mount known a sideways hold against the now-correct dish. A hold a gate reject
+        // opened within soSwitchHoldS before (the dish flipped between polls, one fix of lag) goes with it; so does any
+        // fault-free reference (and mirror onset): measured against the Starlink-only track it says nothing about the
+        // GNSS track and would only be told as the accuracy once the hold has closed. An older hold itself is left to
+        // the exit policy.
+        var switched = false
+        var holdDropped = false
+        if (pendingSwitchK > 0.0) {
+            val k2 = sq(pendingSwitchK)
+            val parts = ArrayList<Part>(2)
+            if (bMode == B_OPEN && t - gateHoldT <= c.soSwitchHoldS) {
+                parts += Part.ResetBAll
+                bMode = B_TIGHT
+                endRef(t, null)
+                holdDropped = true
+            }
+            parts += Part.Reanchor(k2, 0.0, k2)
+            ekf.insert(Meas(tf, parts))
+            endRef(t, null)
+            mirrorF0 = Double.NaN
+            nReject = 0
+            pendingSwitchK = 0.0
+            switched = true
+        }
+        ekf.insert(Meas(tf, emptyList(), decided = false, auto = AutoFix(e, n, hs, t, verdict, decel, so, window, switched, holdDropped, noHolds)))
+        // Starlink-only: the dish speed is ±5 m/s (p5..p95), so its measurement is loosened to soRSpeed (§5)
+        if (decel > c.speedSkipDecel && !reversing) ekf.insert(Meas(tf - c.speedLag, listOf(Part.Speed(hs, sq(if (so) c.soRSpeed else c.rSpeed)))))
         afterFix(t)
         if (holdActive) {
             if (reversing) {
@@ -523,6 +759,7 @@ internal class InertialCore(
         var y1 = a.z1 - (x[1] + x[7])
         var yAl = y0 * u0 + y1 * u1
         var yCr = y0 * n0 + y1 * n1
+        if (a.switched) log(t, "dish_switch", "along_m=%+.0f cross_m=%+.0f hold_dropped=%d".format(Locale.ROOT, yAl, yCr, if (a.holdDropped) 1 else 0))
         val rAl = c.rAl + c.rAlBrakeK * brake
         var rCr = c.rCr
         val gAl = c.rgAl + c.rgBrakeK * brake
@@ -603,8 +840,18 @@ internal class InertialCore(
         val rAl2 = rAl * rAl
         val rCr2 = rCr * rCr
         var accept = true
-        if (nis > c.gate) {
+        if (nis > c.gate && a.window != null) {
+            // Starlink-only and inside a slot window (§6): the step is the solution re-anchoring, not a fault. The
+            // position covariance absorbs it (dish-error state and hold logic untouched); lastTrustBreak makes the mount
+            // calibrator ignore the next mntTrustS (longer than its longest chord, so no chord spanning the step becomes
+            // a sample) and pauses the chord-bias update and the forward-axis fit for 10 s.
+            parts += Part.Reanchor(y0 * y0, y0 * y1, y1 * y1)
+            nReject = 0
+            lastTrustBreak = t
+            log(t, "slot_step", "window=%s phase_s=%.1f along_m=%+.0f cross_m=%+.0f nis=%.0f".format(Locale.ROOT, a.window, phase(m.t), yAl, yCr, nis))
+        } else if (nis > c.gate) {
             nReject++
+            lastRejectTf = m.t
             if (recordFires) fires += t to "gate"
             lastTrustBreak = t
             if (nReject >= c.nReanchor) {
@@ -633,10 +880,11 @@ internal class InertialCore(
             } else {
                 accept = false
                 log(t, "dish_gate_reject", "nis=%.0f along_m=%+.0f cross_m=%+.0f".format(Locale.ROOT, nis, yAl, yCr))
-                if (abs(yCr) > abs(yAl) && bMode != B_OPEN && (mount.value != null || !c.gateHoldNeedsMount)) {
+                if (abs(yCr) > abs(yAl) && bMode != B_OPEN && (mount.value != null || !c.gateHoldNeedsMount) && !a.noHolds) {
                     val k = sq(c.openInitCr)
                     parts += Part.OpenB(k * n0 * n0, k * n0 * n1, k * n1 * n1)
                     bMode = B_OPEN
+                    gateHoldT = t
                     tTrig = t
                     nClose = 0
                     val refWas = refNote()
@@ -775,6 +1023,219 @@ internal class InertialCore(
         }
     }
 
+    // ------------------------------------------------------------------ the dish's GNSS regime (§3, §4)
+
+    /** The regime switch of §5 applies: the dish is Starlink-only and the switch is on. */
+    private val soActive: Boolean get() = c.soEnabled && source == DishSource.STARLINK_ONLY
+
+    /**
+     * A new last known source. GNSS → Starlink-only: no re-anchor (the wander grows slowly, τ ≈ 45 s; a re-anchor would
+     * only tell a 130 m spike for one serve), the floor applies at once, the dwell starts (a re-anchor still waiting
+     * from a switch back the dish undid between two fixes is dropped). Starlink-only → GNSS: the re-anchor waits for
+     * the next AUTO fix ([onAuto]); the floor to decay from and the quiet window are what the dwell could have built:
+     * the wander grows with [InertialConfig.soWanderTauS], so after a 1 s dwell there is next to nothing to converge
+     * from and after a minute everything (a flap adds to what the last switch back still has to decay; with no history
+     * the dish may have been Starlink-only for long: the full floor). UNKNOWN is not in this table: a stale status only
+     * changes the reported regime, so a flip observed across a status gap still gets its re-anchor and decay.
+     */
+    private fun setSource(t: Double, src: DishSource) {
+        val prev = source
+        source = src
+        if (prev == src) return
+        if (src == DishSource.STARLINK_ONLY) {
+            tSoStart = t
+            soBase = if (prev == null) c.soAccM else decayedFloor(t)
+            pendingSwitchK = 0.0
+        }
+        if (prev == null || !c.soEnabled) return
+        reverseVotes = 0
+        if (src == DishSource.GNSS) {
+            val built = min(1.0, max(0.0, (t - tSoStart) / c.soWanderTauS))
+            soFloor0 = min(c.soAccM, soBase + c.soAccM * built)
+            quietUntil = t + c.soSwitchQuietS * (if (c.soAccM > 0.0) soFloor0 / c.soAccM else built)
+            pendingSwitchK = c.soSwitchReanchorM
+            tTrusted = t
+        }
+    }
+
+    /** The reported regime from the last known source, the phone flag and the status age; one event per change. */
+    private fun updateRegime(t: Double, cause: String) {
+        val r = when {
+            t - lastGpsStatsT > c.soStatusStaleS -> DishGnssRegime.UNKNOWN
+            source == DishSource.STARLINK_ONLY -> DishGnssRegime.STARLINK_ONLY
+            phoneSuspect -> DishGnssRegime.SUSPECT
+            else -> DishGnssRegime.TRUSTED
+        }
+        dishFloorM = dishFloor(t)
+        if (r == dishRegime) return
+        log(t, "dish_regime", "from=${dishRegime.name} to=${r.name} cause=${if (r == DishGnssRegime.UNKNOWN) "stale" else cause}")
+        dishRegime = r
+    }
+
+    /** The Starlink-only accuracy: [InertialConfig.soAccM] plus the speed-change term (default weight 0), capped. */
+    private fun soAcc(): Double {
+        var dv = 0.0
+        if (c.soAccDvK != 0.0) {
+            val last = fixes.lastOrNull()
+            val old = last?.let { l -> fixes.lastOrNull { l.tf - it.tf >= c.soAccDvWindowS } }
+            if (last != null && old != null) dv = abs(last.hs - old.hs)
+        }
+        return min(c.soAccM + c.soAccDvK * dv, c.soAccMaxM)
+    }
+
+    /**
+     * The floor of the told accuracy at [t] (§4): the Starlink-only accuracy while the source is Starlink-only or the
+     * phone is flagged, its decay after the switch back (from what the dwell could have built, [setSource]), the
+     * unconverged floor whatever the regime; 0 = none. The source is the last known one (a stale status changes nothing
+     * here); when the phone flag clears with dish GNSS valid the floor drops at once (the dish was fine all along: no decay).
+     */
+    private fun dishFloor(t: Double): Double {
+        if (!c.soEnabled) return 0.0
+        var floor = when {
+            source == DishSource.STARLINK_ONLY || phoneSuspect -> soAcc()
+            source == DishSource.GNSS -> decayedFloor(t)
+            else -> 0.0
+        }
+        if (unconverged) floor = max(floor, c.soUnconvergedAccM)
+        return floor
+    }
+
+    /** What is left at [t] of the floor of the last switch back ([soFloor0] · e^(−Δt / soDecayS)); 0 five decay times after it. */
+    private fun decayedFloor(t: Double): Double =
+        if (t - tTrusted < 5 * c.soDecayS) soFloor0 * exp(-(t - tTrusted) / c.soDecayS) else 0.0
+
+    // ------------------------------------------------------------------ slot windows (§6)
+
+    /**
+     * A status' outage: `did_switch` ones are kept by start (the latest outage's duration may still grow). The status
+     * reports an outage 0.7-1.7 s after its start and a fix is decided once, so outageBeforeS only covers fixes not yet
+     * decided; when a new `did_switch` outage arrives and the last gate reject's fix time lies inside its window, the
+     * reject count is forgiven (the next big step re-anchors at once instead of after three rejects); a hold that
+     * reject opened is left to the exit policy.
+     */
+    private fun onOutage(o: OutageInfo) {
+        if (!o.didSwitch || o.startNs == 0L) return
+        val fresh = !outages.containsKey(o.startNs)
+        outages.remove(o.startNs)
+        outages[o.startNs] = o
+        while (outages.size > 20) outages.remove(outages.keys.first())
+        if (fresh && c.slotAware && source == DishSource.STARLINK_ONLY && !lastRejectTf.isNaN() && nearOutage(lastRejectTf)) {
+            nReject = 0
+            lastRejectTf = Double.NaN
+        }
+    }
+
+    /** GPS-time phase of filter time [tx] within the 15 s slot, s; needs the slot clock. */
+    private fun phase(tx: Double): Double = (((slotRefGps + (tx - slotRefT)) % 15.0) + 15.0) % 15.0
+
+    /** [tf] lies within outageBeforeS before the start or outageAfterS after the end of a `did_switch` outage. */
+    private fun nearOutage(tf: Double): Boolean {
+        if (slotRefT.isNaN()) return false
+        for (o in outages.values) {
+            val tStart = slotRefT + (o.startNs / 1e9 - slotRefGps)
+            val tEnd = tStart + o.durationNs / 1e9
+            if (tf >= tStart - c.outageBeforeS && tf <= tEnd + c.outageAfterS) return true
+        }
+        return false
+    }
+
+    /**
+     * The slot window the fix time [tf] lies in while Starlink-only and slot-aware: "boundary" (the last slotStepBeforeS
+     * or the first slotStepAfterS of a 15 s GPS-time slot, widened by the wall slack when the slot clock is the phone's),
+     * "outage" (near a `did_switch` outage), or null. Without a slot reference nothing can be placed.
+     */
+    private fun window(tf: Double): String? {
+        if (!c.slotAware || source != DishSource.STARLINK_ONLY || slotRefT.isNaN()) return null
+        val slack = if (slotFromWall) c.slotWallSlackS else 0.0
+        val ph = phase(tf)
+        if (ph >= 15.0 - c.slotStepBeforeS - slack || ph < c.slotStepAfterS + slack) return "boundary"
+        return if (nearOutage(tf)) "outage" else null
+    }
+
+    // ------------------------------------------------------------------ stall detector (§7)
+
+    /**
+     * The car moves: the IMU is in use with 10 ticks of history and not still, or the dish heading turns faster than
+     * stallTurnDegS, or the latest dish speed or the filter's speed state is at least stallSpeedMps (the state carries
+     * the last good speed through a stall on a straight road where the gyro is quiet and a frozen dish may report 0).
+     * (An accelerometer vibration test would be the next refinement; no data to set its threshold.)
+     */
+    private fun moving(t: Double): Boolean {
+        val imuMoving = useImu && (imuState == ImuState.GYRO || imuState == ImuState.FORWARD) && imu.histSize >= 10 && !imu.stationary()
+        val turning = t - dishRateT < 2.5 && abs(dishRate) > c.stallTurnDegS
+        val fast = !lastHs.isNaN() && lastHs >= c.stallSpeedMps
+        val ekfFast = ekf.ok && ekf.x[2] >= c.stallSpeedMps
+        return imuMoving || turning || fast || ekfFast
+    }
+
+    private fun ringAdd(t: Double, e: Double, n: Double) {
+        ring.addLast(doubleArrayOf(t, e, n))
+        while (ring.size > 12) ring.removeFirst()
+    }
+
+    private fun samePos(p: DoubleArray, q: DoubleArray) = abs(p[1] - q[1]) <= 0.05 && abs(p[2] - q[2]) <= 0.05
+
+    /**
+     * The two-point oscillation: the trailing run of the ring that holds at most two distinct positions (0.05 m) has at
+     * least 6 answers, 3 changes between the two and spans stallTwoPointS; returns the span, or null. (The run is taken
+     * from the end so the drive's last positions before the oscillation began do not delay the verdict.)
+     */
+    private fun twoPointSpan(): Double? {
+        if (ring.size < 6) return null
+        val a = ring.last()
+        var b: DoubleArray? = null
+        var count = 0
+        var changes = 0
+        var first = a
+        var prev: DoubleArray? = null
+        for (i in ring.size - 1 downTo 0) {
+            val p = ring[i]
+            val bb = b
+            val which = when {
+                samePos(p, a) -> 0
+                bb == null -> { b = p; 1 }
+                samePos(p, bb) -> 1
+                else -> -1
+            }
+            if (which < 0) break
+            count++
+            first = p
+            if (prev != null && !samePos(prev, p)) changes++
+            prev = p
+        }
+        if (b == null) return null
+        val span = a[0] - first[0]
+        return if (count >= 6 && changes >= 3 && span >= c.stallTwoPointS - 1e-9) span else null
+    }
+
+    /** A new distinct AUTO position: ends a frozen stall, ends or starts a two-point one; true = the answer is refused. */
+    private fun stallOnPosition(t: Double): Boolean {
+        if (!c.stallDetector) return false
+        if (stalled) {
+            when (stallReason) {
+                "frozen" -> endStall(t)
+                "two_point" -> if (twoPointSpan() == null) endStall(t)
+            }
+        } else {
+            val span = twoPointSpan()
+            if (span != null && moving(t)) startStall(t, "two_point", t - span)
+        }
+        return stalled
+    }
+
+    private fun startStall(t: Double, reason: String, since: Double) {
+        stalled = true
+        stallReason = reason
+        stallSince = t
+        log(t, "dish_stall", "reason=%s since_s=%.1f".format(Locale.ROOT, reason, t - since))
+    }
+
+    private fun endStall(t: Double) {
+        if (!stalled) return
+        stalled = false
+        log(t, "dish_stall_end", "after_s=%.1f".format(Locale.ROOT, t - stallSince))
+    }
+
     // ------------------------------------------------------------------ output
 
     class Out(
@@ -794,6 +1255,12 @@ internal class InertialCore(
         val raw: Boolean,
         /** The car is reversing (port-side): [speed] is the dish speed, the motion is against [psi]. */
         val reversing: Boolean = false,
+        /** The dish's GNSS regime as reported (port-side, 2026-10-27). */
+        val dishRegime: DishGnssRegime = DishGnssRegime.UNKNOWN,
+        /** The Starlink-only / suspect / unconverged floor in force, m (0 = none). */
+        val dishFloorM: Double = 0.0,
+        /** The dish is refused by the stall detector. */
+        val stalled: Boolean = false,
     )
 
     private fun acc68(p: DoubleArray, dt: Double, x: DoubleArray): Double {
@@ -815,7 +1282,12 @@ internal class InertialCore(
             val r = rawPos ?: return null
             if (t - rawT > c.rawMaxAgeS) return null
             lastState = InertialState.TRACKING
-            return Out(r.first, r.second, InertialState.TRACKING, max(c.accFloorM, 0.0), Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, 0.0, 0.0, true)
+            val floor = dishFloor(t)
+            dishFloorM = floor
+            return Out(
+                r.first, r.second, InertialState.TRACKING, max(c.accFloorM, floor), Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, 0.0, 0.0, true,
+                dishRegime = dishRegime, dishFloorM = floor, stalled = stalled,
+            )
         }
         val x = ekf.x
         val p = ekf.p
@@ -849,6 +1321,10 @@ internal class InertialCore(
             accuracy = max(accuracy, abs(refF0 + refA))
         }
         accuracy = max(accuracy, c.accFloorM)
+        // the dish's regime floor (§4) in quadrature with the filter's own radius: dead-reckoning growth adds to it
+        val floor = dishFloor(t)
+        dishFloorM = floor
+        if (floor > 0.0) accuracy = max(accuracy, hypot(floor, acc68))
         val dr = state == InertialState.DEAD_RECKONING || state == InertialState.NETWORK_AIDED
         // push stop on what would be told (the prototype's acc68, or more with the port-side rules)
         if (dr && (accuracy > c.maxAccPush || cr68 > c.maxCrossPush)) {
@@ -868,7 +1344,7 @@ internal class InertialCore(
         if (state == InertialState.NO_OUTPUT) return null
         val rev = c.reverseHold && reversing
         val speed = if (rev) fixes.lastOrNull()?.hs ?: 0.0 else x[2]
-        return Out(e, n, state, accuracy, acc68, al68, cr68, speed, x[3], bAl, bCr, false, rev)
+        return Out(e, n, state, accuracy, acc68, al68, cr68, speed, x[3], bAl, bCr, false, rev, dishRegime, floor, stalled)
     }
 
     var lastState: InertialState = InertialState.NO_OUTPUT
@@ -882,6 +1358,7 @@ internal class InertialCore(
         fixes.addAll(fs)
         lastXy = lastXy?.let { f(it.first, it.second) }
         rawPos = rawPos?.let { f(it.first, it.second) }
+        for (r in ring) f(r[1], r[2]).let { r[1] = it.first; r[2] = it.second }
     }
 }
 

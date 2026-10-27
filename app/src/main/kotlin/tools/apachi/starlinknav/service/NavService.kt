@@ -52,6 +52,7 @@ import tools.apachi.starlinknav.core.log.proto.Record
 import tools.apachi.starlinknav.core.log.proto.SessionHeader
 import tools.apachi.starlinknav.core.nav.Cutoff
 import tools.apachi.starlinknav.core.nav.CutoffTracker
+import tools.apachi.starlinknav.core.nav.DishPositionBounds
 import tools.apachi.starlinknav.core.nav.DishReboot
 import tools.apachi.starlinknav.core.nav.FixExtrapolator
 import tools.apachi.starlinknav.core.nav.ReceiverClock
@@ -454,8 +455,11 @@ class NavService : Service() {
                 ?.let { receiverClock.fixAgeS(it, System.currentTimeMillis()) }?.let(served::onFixAge)
         }
         if (fix == null) return
+        // The explicit STARLINK source is told as what it is worth (6-21 km from AUTO on the 2026-10-26 drive): the trail
+        // and the Starlink-only push carry the bound; the GPS check keeps the raw fix (its rule 3 wants the dish's own σ).
+        val bounded = if (result.kind == DishCallKind.LOCATION_STARLINK) fix.copy(sigmaM = DishPositionBounds.toldAccuracyM(result.kind, fix)) else fix
         TRAIL_KEYS[result.kind]?.let { key ->
-            trails.add(key, TrailPoint(now, fix.lat, fix.lon, fix.sigmaM.toFloat(), fix.horizontalSpeedMps.toFloat()))
+            trails.add(key, TrailPoint(now, bounded.lat, bounded.lon, bounded.sigmaM.toFloat(), bounded.horizontalSpeedMps.toFloat()))
         }
         // The GPS check: the AUTO fix at the moment it describes (receipt minus its age), the Starlink-only one as it came.
         if (result.kind == DishCallKind.LOCATION_AUTO && autoPosition != null) {
@@ -482,7 +486,7 @@ class NavService : Service() {
                     // The source has been seen frozen for whole drives: say so while the car moves.
                     val frozen = ((now - starlinkChangedNs) / 1e9).takeIf { it > FROZEN_AFTER_S && lastAutoSpeed > 3.0 }
                     Live.mock.update { it.copy(frozenS = frozen) }
-                    push(fix, course.copy(lat = fix.lat, lon = fix.lon, shiftM = 0.0), result.kind, mode, now)
+                    push(bounded, course.copy(lat = fix.lat, lon = fix.lon, shiftM = 0.0), result.kind, mode, now)
                 }
             }
             else -> Unit

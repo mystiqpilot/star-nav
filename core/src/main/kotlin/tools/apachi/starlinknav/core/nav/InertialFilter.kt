@@ -149,8 +149,17 @@ internal sealed class Part {
 /** A measurement in the ring; an AUTO fix is decided at its first application and its parts cached. */
 internal class Meas(val t: Double, var parts: List<Part>, var decided: Boolean = true, val auto: AutoFix? = null, val net: NetFix? = null)
 
-/** What the AUTO decision needs (PORTING2 §4). */
-internal class AutoFix(var z0: Double, var z1: Double, val hs: Double, val rx: Double, val verdict: Verdict, val decel: Double)
+/**
+ * What the AUTO decision needs (PORTING2 §4). Port-side: [so] = the dish was Starlink-only at receipt (the regime
+ * switch applies), [window] = the slot window the fix time lies in ("boundary" / "outage", null = none), [switched] =
+ * this fix consumes the re-anchor of a switch back to dish GNSS ([holdDropped]: a fresh gate hold went with it),
+ * [noHolds] = a gate reject opens no sideways hold (Starlink-only without holds, or the quiet window after the switch).
+ */
+internal class AutoFix(
+    var z0: Double, var z1: Double, val hs: Double, val rx: Double, val verdict: Verdict, val decel: Double,
+    val so: Boolean = false, val window: String? = null, val switched: Boolean = false, val holdDropped: Boolean = false,
+    val noHolds: Boolean = false,
+)
 
 /** [RETURN_REF]: the exit policy's return (AUTO back on the fault-free track the reference keeps), port-side. */
 internal enum class Verdict { NONE, SUSPECT, CONFIRM, RETURN, RETURN_WALK, RETURN_REF }

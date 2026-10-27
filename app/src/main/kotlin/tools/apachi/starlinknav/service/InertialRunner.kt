@@ -133,7 +133,11 @@ class InertialRunner(
             lastAutoNs = tNs
             val fix = if (call.ok) call.response?.fix()?.takeIf { !it.looksLikePlaceholder } else null
             if (fix != null) lastFixNs = tNs
-            evaluated(tNs, est, fix, plain)
+            // A stalled dish (frozen, two-point, stale clock) is refused by the filter: its answer is neither the plain
+            // fallback (that would push the very answer the detector refused when the dead reckoning hits the push stop)
+            // nor a dish push for the network fallback (Serve.fix null).
+            val refused = nav.stalled
+            evaluated(tNs, est, if (refused) null else fix, if (refused) null else plain)
         }
     }
 

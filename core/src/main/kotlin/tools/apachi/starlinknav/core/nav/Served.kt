@@ -1,8 +1,25 @@
 package tools.apachi.starlinknav.core.nav
 
+import tools.apachi.starlinknav.core.dish.DishCallKind
 import tools.apachi.starlinknav.core.dish.DishFix
 import tools.apachi.starlinknav.core.dish.Geo
+import kotlin.math.max
 import kotlin.math.min
+
+/**
+ * What a dish position may be told to be worth, keyed on the call kind: the AUTO answer's own `source` field says
+ * STARLINK on every fix of every drive (with and without dish GNSS) and its `sigma_m` is 1-8 m in both regimes, so
+ * neither identifies anything; the explicit STARLINK source (LOCATION_STARLINK) was 6-21 km from AUTO with a σ of
+ * 100-320 m on the 2026-10-26 drive.
+ */
+object DishPositionBounds {
+    /** The explicit STARLINK source is told as at least this, m. */
+    const val STARLINK_SOURCE_ACCURACY_M = 20_000.0
+
+    /** The accuracy to tell apps for [fix] from a call of [kind]: the dish's σ, floored for the explicit STARLINK source. */
+    fun toldAccuracyM(kind: DishCallKind, fix: DishFix): Double =
+        if (kind == DishCallKind.LOCATION_STARLINK) max(fix.sigmaM, STARLINK_SOURCE_ACCURACY_M) else fix.sigmaM
+}
 
 /**
  * Turns dish fixes into the position the mock GPS serves: the fix moved forward along the

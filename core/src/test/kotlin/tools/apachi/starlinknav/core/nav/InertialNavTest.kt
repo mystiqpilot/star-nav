@@ -634,6 +634,12 @@ class InertialNavTest {
         assertEquals(1, learned.size, "mount learned once: $learned")
         assertEquals(-177.0, learned[0], 1.0)
         assertTrue(events.any { it.name == "dish_degraded" }, events.joinToString { it.name })
+        // the fake dish starts 656 s into its uptime, so its first status already says gps_valid: TRUSTED from the first
+        // status on, no switch, no Starlink-only floor, no stall (its fixes repeat only when the car stands)
+        assertTrue(served.all { it.second.dishRegime == DishGnssRegime.TRUSTED && it.second.dishFloorM == 0.0 && !it.second.stalled }, "regime")
+        assertEquals(listOf("from=UNKNOWN to=TRUSTED cause=gps_valid"), events.filter { it.name == "dish_regime" }.map { it.detail })
+        assertTrue(events.none { it.name == "dish_switch" || it.name == "dish_stall" }, events.joinToString { it.name })
+        assertTrue(events.none { it.name == "dish_gate_reject" && nav.rel(it.tNs) < 30.0 }, "no gate reject at the start")
         val err = { e: InertialEstimate, tr: FakeDishSimulation.Truth -> Geo.distanceM(e.lat, e.lon, tr.lat, tr.lon) }
         val before = served.filter { it.first in 250.0..299.0 }
         assertTrue(before.all { err(it.second, it.third) < 3.0 }, "tracking before the fault: ${before.maxOf { err(it.second, it.third) }}")

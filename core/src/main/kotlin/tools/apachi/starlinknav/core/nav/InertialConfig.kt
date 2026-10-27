@@ -268,7 +268,43 @@ data class InertialConfig(
      */
     val leakGuard: Boolean = false,
     val leakK: Double = 1.0,
+    /**
+     * The dish's GNSS regime (port-side, 2026-10-27; off in [CFG2]): Starlink-only accuracy, the switch back, slot windows
+     * and the stall detector. A nested group: with its 25 parameters inline the data class would exceed the JVM's 255
+     * parameter slots (a double takes two) and could not load. Read through the properties of the same names below;
+     * change with `copy(so = so.copy(...))`.
+     */
+    val so: StarlinkOnlyConfig = StarlinkOnlyConfig(),
 ) {
+    // [so], read as if its parameters were this class's own (what the filter's code and the KDoc of [StarlinkOnlyConfig] use)
+    val soEnabled: Boolean get() = so.soEnabled
+    val soAccM: Double get() = so.soAccM
+    val soAccDvK: Double get() = so.soAccDvK
+    val soAccDvWindowS: Double get() = so.soAccDvWindowS
+    val soAccMaxM: Double get() = so.soAccMaxM
+    val soDecayS: Double get() = so.soDecayS
+    val soSwitchReanchorM: Double get() = so.soSwitchReanchorM
+    val soSwitchHoldS: Double get() = so.soSwitchHoldS
+    val soSwitchQuietS: Double get() = so.soSwitchQuietS
+    val soWanderTauS: Double get() = so.soWanderTauS
+    val soUnconvergedAccM: Double get() = so.soUnconvergedAccM
+    val soStatusStaleS: Double get() = so.soStatusStaleS
+    val soRSpeed: Double get() = so.soRSpeed
+    val soHolds: Boolean get() = so.soHolds
+    val soForwardAxis: Boolean get() = so.soForwardAxis
+    val slotAware: Boolean get() = so.slotAware
+    val slotStepBeforeS: Double get() = so.slotStepBeforeS
+    val slotStepAfterS: Double get() = so.slotStepAfterS
+    val slotWallSlackS: Double get() = so.slotWallSlackS
+    val outageBeforeS: Double get() = so.outageBeforeS
+    val outageAfterS: Double get() = so.outageAfterS
+    val stallDetector: Boolean get() = so.stallDetector
+    val stallFrozenS: Double get() = so.stallFrozenS
+    val stallTwoPointS: Double get() = so.stallTwoPointS
+    val stallAgeS: Double get() = so.stallAgeS
+    val stallTurnDegS: Double get() = so.stallTurnDegS
+    val stallSpeedMps: Double get() = so.stallSpeedMps
+
     companion object {
         /** The app's configuration (decision 2026-10-15, exit policy of the sideways hold added the same day). */
         val SHIPPED = InertialConfig()
@@ -283,12 +319,150 @@ data class InertialConfig(
             reverseHold = false, network = false, rebaseM = Double.POSITIVE_INFINITY,
             holdSig = false, returnRule = false, leakGuard = false,
             mntLongChordS = 6.0, mntSeDeg = null, mntSkipReversing = false, gateHoldNeedsMount = false, mountFlip = false,
+            so = StarlinkOnlyConfig(soEnabled = false, slotAware = false, stallDetector = false),
         )
 
         /** CFG2 with the shipped detector (h = 9 m, hold 25 s): what `nav2.py` runs for the port comparison. */
         val CFG2_H9 = CFG2.copy(cusumH = 9.0, holdMax = 25.0)
     }
 }
+
+/**
+ * The dish's GNSS regime (port-side, 2026-10-27; off in [InertialConfig.CFG2]): Starlink-only accuracy, the switch back,
+ * slot windows and the stall detector, as [InertialConfig.so]. Numbers from the 2026-10-26 drive (a phone, mock off; one
+ * 5-min Starlink-only stretch with the phone's own GNSS as the reference, 296 fixes) and the 2026-10-24 drives (D1 67 %
+ * valid, D2 jammed).
+ */
+data class StarlinkOnlyConfig(
+    /**
+     * Honest accuracy and the filter changes while the dish says its GNSS is invalid or inhibited (`gps_stats.gps_valid`
+     * false or `inhibit_gps` true: the position comes from the Starlink link alone) and the re-anchor on the way back.
+     * Off: the regime is still computed and reported, but no floor, no re-anchor and no change of the filter's inputs.
+     */
+    val soEnabled: Boolean = true,
+    /**
+     * The told 68 % radius while Starlink-only, m: the p68 of |AUTO − reference| over the 296 referenced Starlink-only
+     * fixes (p50 54, p95 138; along p68 78, cross p68 17). A constant 60 m covered only 52 % of them.
+     */
+    val soAccM: Double = 85.0,
+    /**
+     * Weight of the speed-change term, m per m/s of |dish speed now − dish speed [soAccDvWindowS] ago|: a knob with
+     * default 0, not a calibrated model (the Starlink-only error showed no usable dependence on the dish speed or its
+     * change over 10-30 s: correlation −0.04 / −0.25 on ~5 effective samples).
+     */
+    val soAccDvK: Double = 0.0,
+    /** The window of the speed-change term, s: the 10-30 s over which the note looked for a dependence (none found). */
+    val soAccDvWindowS: Double = 30.0,
+    /** Cap of the Starlink-only accuracy with the speed-change term, m. */
+    val soAccMaxM: Double = 200.0,
+    /**
+     * After the dish's GNSS comes back the floor decays as [soAccM] · e^(−Δt / this), s: measured, the AUTO error slid
+     * from ~75 m to 31 / 25 / 22 / 19 / 21 / 13 / 8 m at 0 / 1 / 2 / 3 / 5 / 10 / 20 s after `gps_valid` turned true
+     * (no snap). With 15 s the floor is 70 m at 3 s (19 measured), 44 at 10 s (13), 22 at 20 s (8), 12 at 30 s, then
+     * [accFloorM] takes over; nothing is left 5 decay times after the switch. 10 s (the first guess from those two
+     * flips) covered the error in the 30 s after the slower of the two recorded switches only 57-61 % of the time (the
+     * dish was still 13-15 m off at 17-45 s), 15 s covers it 89-93 %, 20 s 100 % but tells 41 m for a 15 m error.
+     */
+    val soDecayS: Double = 15.0,
+    /**
+     * At the switch back to dish GNSS the position covariance is loosened by this much (σ per axis, m) at the next AUTO
+     * fix, so the dish's correction is taken without a gate fight: the chord across the flip had 13-25 m of excess on
+     * the two recorded flips. Not applied on the way into Starlink-only (the wander grows slowly, τ ≈ 45 s).
+     */
+    val soSwitchReanchorM: Double = 25.0,
+    /**
+     * A sideways hold a gate reject opened this many s or less before the switch back is dropped with the re-anchor: the
+     * dish flips between polls, so the first fix of the new regime can still carry the old flag (one fix of lag) and
+     * its step was rejected against the Starlink-only track.
+     */
+    val soSwitchHoldS: Double = 2.0,
+    /**
+     * No sideways holds (acting detector or gate, in the TRUSTED regime too) for up to this long after the switch
+     * back, s: the dish converges onto its GNSS fix over the measured slide (31 → 8 m in 20 s), so AUTO's sideways
+     * motion in that window is the correction, not a fault, and a hold would keep the Starlink-only error while the
+     * floor still covers it. Synthetic: a 15 m cross slide with τ 8 s fires the CUSUM (h ≈ 8 m·s with the adapted σ)
+     * at 5-15 s after the flip. A deliberate addition to spec §5 ("GNSS: exactly today's behaviour plus the decaying
+     * floor"): without it the spec's own test 3(b) opens a hold against the converging dish. The window is scaled by
+     * what the Starlink-only dwell could have built (like the floor at the switch back, [soWanderTauS]): a flapping
+     * dish (dwells of 1 s) gets next to no window, a stretch of a minute or more the full one. 0 = off.
+     */
+    val soSwitchQuietS: Double = 20.0,
+    /**
+     * Growth time of the Starlink-only wander, s (§0: τ_along ≈ 45 s, one recorded GNSS → Starlink-only flip, each fix
+     * 1-2 m from the last). The floor at the switch back and the quiet window are [soAccM] / [soSwitchQuietS] times
+     * min(1, dwell / this) (plus what a previous switch back still had to decay): after a 1 s dwell the dish is a
+     * metre or two from its GNSS solution, not 85 m.
+     */
+    val soWanderTauS: Double = 45.0,
+    /**
+     * Floor of the told accuracy while `pnt_filter_convergence_state` says UNCONVERGED (1), whatever the regime, m: the
+     * 68 boot samples of the 2026-10-26 drive were the only ones, all with `gps_valid` false.
+     */
+    val soUnconvergedAccM: Double = 150.0,
+    /**
+     * Without a status carrying gps_stats for this long the reported regime is UNKNOWN (the floor of the last known
+     * regime stays), s: the poller drops to one call per 3 s while the dish is unreachable, so 5 s would flap.
+     */
+    val soStatusStaleS: Double = 10.0,
+    /**
+     * σ of the dish speed measurement while Starlink-only, m/s, instead of [rSpeed]: its error was −5.1..+5.6 m/s
+     * (p5..p95, σ ≈ 3.3) against the reference, following the true acceleration with gain 0.3 over 3-8 s. The speed
+     * state's variance becomes honest (steady state σ_v ≈ 2 m/s), so dead reckoning's accuracy grows as it should.
+     */
+    val soRSpeed: Double = 3.5,
+    /**
+     * Sideways holds while Starlink-only (the user asked for the sideways correction in the jammed case). False: the
+     * acting detector's confirm is downgraded to none and a gate reject never opens a hold while Starlink-only (only
+     * the [nReanchor]-reject re-anchor); the evaluation reports both.
+     */
+    val soHolds: Boolean = true,
+    /**
+     * Learn the phone's forward axis from the dish speed while Starlink-only. False: that speed is a lagging filter
+     * state (gain 0.3 over 3-8 s) and the fit would learn garbage. The ZUPT stays (it also needs the IMU still).
+     */
+    val soForwardAxis: Boolean = false,
+    /**
+     * Slot-aware gating while Starlink-only: a step whose fix time lies in the first [slotStepAfterS] (or the last
+     * [slotStepBeforeS]) of a 15 s GPS-time slot, or near a `did_switch` outage, is re-anchoring, not a fault. The
+     * Starlink-only solution steps preferentially in the first ~3 s after a GPS-time multiple of 15 s (persistent level
+     * changes of 15-20 m median, 71 % corrective) and the big snaps (100-600 m) lie within −5..+15 s of an outage start
+     * carrying `did_switch`; with dish GNSS valid the boundary statistic is flat.
+     */
+    val slotAware: Boolean = true,
+    /** The boundary window reaches this far before a 15 s GPS-time multiple, s: a margin for the slot clock's own error. */
+    val slotStepBeforeS: Double = 0.5,
+    /** ... and this far after it, s: the steps lie in the first ~3 s after the boundary (§0 slot statistics). */
+    val slotStepAfterS: Double = 3.0,
+    /** Widening of the slot windows on both sides while the slot clock comes from the phone's wall clock (may be ~1 s off), s. */
+    val slotWallSlackS: Double = 1.0,
+    /** A fix this long before the start of a `did_switch` outage is near it, s (the big snaps lie within −5..+15 s of the start). */
+    val outageBeforeS: Double = 5.0,
+    /** ... and this long after its end, s (the same −5..+15 s statistic; the status reports an outage 0.7-1.7 s after its start). */
+    val outageAfterS: Double = 15.0,
+    /**
+     * The stall detector (every regime): a dish that serves the same position for [stallFrozenS] while the car moves, two
+     * positions in alternation over [stallTwoPointS], or a fix clock (`gps_time_s`) that stopped advancing for
+     * [stallAgeS] over three diagnostics is refused and the filter dead-reckons until it moves again. The Mini never
+     * stalled on any recorded drive (the signatures come from other dishes): the detector must stay quiet there.
+     */
+    val stallDetector: Boolean = true,
+    /**
+     * The dish computes a solution every ~1.08 s and the app asks every second, so one repeat every ~12 s is normal and
+     * two in a row rare; this many s of the same position while moving is not, s.
+     */
+    val stallFrozenS: Double = 5.0,
+    /** Two positions in alternation (≤ 2 distinct, ≥ 3 changes, ≥ 6 answers) over at least this long, s. */
+    val stallTwoPointS: Double = 8.0,
+    /**
+     * The fix clock not advancing while the receipts advanced by more than this over ≥ 3 diagnostics, s. Never from the
+     * age's level: the phone's wall clock may be off by any amount with no receiver clock (the jammed case).
+     */
+    val stallAgeS: Double = 10.0,
+    /** "Moving" for the detector: a dish heading rate above this, °/s, ... */
+    val stallTurnDegS: Double = 3.0,
+    /** ... or the latest dish speed, or the filter's speed state, at or above this, m/s (or the IMU not still). */
+    val stallSpeedMps: Double = 2.0,
+)
 
 internal const val D2R = Math.PI / 180.0
 internal const val R2D = 180.0 / Math.PI
