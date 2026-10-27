@@ -68,6 +68,7 @@ import tools.apachi.starlinknav.ui.MainActivity
 import tools.apachi.starlinknav.ui.MockTileService
 import tools.apachi.starlinknav.ui.disablementReason
 import tools.apachi.starlinknav.ui.refusalWordsRes
+import tools.apachi.starlinknav.ui.regimeTagRes
 import tools.apachi.starlinknav.ui.duration
 import tools.apachi.starlinknav.ui.rebootCause
 import java.util.Locale
@@ -1022,15 +1023,19 @@ class NavService : Service() {
         if (!i.running) return null
         val acc = i.accuracyM?.let { "%.0f".format(Locale.ROOT, it) } ?: "-"
         val sinceFix = "%.0f".format(Locale.ROOT, if (i.lastFixNs != 0L) (now - i.lastFixNs).coerceAtLeast(0L) / 1e9 else 0.0)
+        // While the filter follows the dish: what its position is made from when that is not its own GNSS.
+        val tagged = { line: String -> regimeTagRes(i.dishRegime, short = true)?.let { getString(R.string.notif_line_tagged, line, getString(it)) } ?: line }
+        // Why the dish gives no position (a cut-off is said before this line).
+        val why = Live.dish.value.refusal?.takeIf { cutoffs.active == null }?.let { getString(refusalWordsRes(it)) }
         return when (inertialLine(i, m, now)) {
             InertialLine.PLAIN -> null
-            InertialLine.STARTING -> getString(R.string.notif_line_inertial_starting, "%.0f".format(Locale.ROOT, m.accuracyM ?: 0f))
-            InertialLine.NO_MOUNT -> getString(R.string.notif_line_inertial_no_mount, acc)
-            InertialLine.TRACKING -> getString(R.string.notif_line_inertial_tracking, acc)
-            InertialLine.SIDEWAYS -> getString(R.string.notif_line_inertial_sideways, "%.0f".format(Locale.ROOT, kotlin.math.abs(i.sidewaysM ?: 0.0)), acc)
-            InertialLine.DEAD_RECKONING -> getString(R.string.notif_line_inertial_dr, sinceFix, acc)
+            InertialLine.STARTING -> tagged(getString(R.string.notif_line_inertial_starting, "%.0f".format(Locale.ROOT, m.accuracyM ?: 0f)))
+            InertialLine.NO_MOUNT -> tagged(getString(R.string.notif_line_inertial_no_mount, acc))
+            InertialLine.TRACKING -> tagged(getString(R.string.notif_line_inertial_tracking, acc))
+            InertialLine.SIDEWAYS -> tagged(getString(R.string.notif_line_inertial_sideways, "%.0f".format(Locale.ROOT, kotlin.math.abs(i.sidewaysM ?: 0.0)), acc))
+            InertialLine.DEAD_RECKONING -> getString(R.string.notif_line_inertial_dr, sinceFix, acc).let { if (why != null) getString(R.string.notif_line_tagged, it, why) else it }
             InertialLine.NETWORK -> getString(R.string.notif_line_inertial_network, sinceFix, acc)
-            InertialLine.STOPPED -> getString(R.string.notif_line_inertial_stopped, sinceFix)
+            InertialLine.STOPPED -> if (why != null) getString(R.string.notif_line_inertial_stopped_refused, sinceFix, why) else getString(R.string.notif_line_inertial_stopped, sinceFix)
         }
     }
 

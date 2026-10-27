@@ -236,7 +236,8 @@ private fun DishLocationRow(check: SetupCheck, appName: String) {
         reading != null -> Hint(localLocationSentence(reading))
     }
     if (detail?.diagnosticsPosition == true) Hint(stringResource(R.string.setup_dish_location_via_diagnostics, appName))
-    LocalLocationOutcomeLine(showRemembered = true)
+    // The last attempt to switch the setting on says nothing against the plan's or the firmware's refusal.
+    if (detail?.refusal != LocationRefusal.POLICY_DENIED && detail?.refusal != LocationRefusal.UNIMPLEMENTED) LocalLocationOutcomeLine(showRemembered = true)
     // The button is there while location is not known to be available, the dish answers at all, and enabling the setting
     // can help (not against the plan's or the firmware's refusal).
     val canAsk = detail?.reachable == true && reading?.planRestricted != true && reading?.unimplemented != true &&

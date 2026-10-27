@@ -1430,4 +1430,25 @@
     <string name="notif_line_refused">Немає позиції антени · %1$s</string>
     <string name="local_location_unimplemented">Прошивка або тариф цієї антени не пропонує запитів позиції застосункам у локальній мережі; увімкнення цього налаштування цього не змінює.</string>
     <string name="setup_dish_location_via_diagnostics">Діагностика антени все ж дає її позицію, і %1$s використовує її замість запитів.</string>
+    <!-- The dish's GNSS regime and the phone flag in the status lines and the inertial card -->
+    <string name="regime_tag_starlink_only">лише Starlink, без GNSS антени</string>
+    <string name="regime_tag_starlink_only_short">без GNSS антени</string>
+    <string name="regime_tag_suspect">GPS смартфона не довіряємо</string>
+    <string name="home_line_inertial_tracking_tag">Авто, з корекцією · %1$s · ±%2$s м</string>
+    <string name="home_line_inertial_no_mount_tag">Авто, позиція антени: бічна корекція чекає на зсув кріплення · %1$s · ±%2$s м</string>
+    <string name="home_line_inertial_starting_tag">Авто, корекція запускається: позиція антени · %1$s · ±%2$s м</string>
+    <string name="home_line_inertial_sideways_tag">Позиція антени зсунута на %1$s м убік: утримується за рухом · %2$s · ±%3$s м</string>
+    <string name="home_line_inertial_dr_refused">Числення шляху вже %1$s с (%2$s) · ±%3$s м</string>
+    <string name="home_line_inertial_stopped_refused">Немає позиції антени %1$s с (%2$s): числення шляху надто неточне, нічого не видається</string>
+    <string name="notif_line_tagged">%1$s · %2$s</string>
+    <string name="notif_line_inertial_stopped_refused">Немає позиції %1$s с (%2$s)</string>
+    <string name="inertial_regime">Джерело позиції антени</string>
+    <string name="inertial_regime_gnss">GNSS антени</string>
+    <string name="inertial_regime_starlink_only">лише зв\'язок Starlink (без GNSS антени)</string>
+    <string name="inertial_regime_suspect">GNSS антени під сумнівом (GPS смартфона не довіряємо)</string>
+    <string name="inertial_regime_unknown">невідомо (немає свіжого стану антени)</string>
+    <string name="inertial_regime_floor">%1$s · нижня межа %2$s\u00A0м</string>
+    <string name="inertial_phone_gps">GPS смартфона</string>
+    <string name="inertial_phone_gps_distrusted">не довіряємо (далеко від антени або стрибок)</string>
+    <string name="inertial_phone_gps_ok">довіряємо або не перевірено</string>
 </resources>

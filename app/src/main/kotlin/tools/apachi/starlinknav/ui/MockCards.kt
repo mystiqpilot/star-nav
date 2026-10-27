@@ -8,6 +8,7 @@ import androidx.compose.ui.res.stringResource
 import tools.apachi.starlinknav.R
 import tools.apachi.starlinknav.SettingsSnapshot
 import tools.apachi.starlinknav.core.dish.fix
+import tools.apachi.starlinknav.core.nav.DishGnssRegime
 import tools.apachi.starlinknav.core.nav.ImuState
 import tools.apachi.starlinknav.core.nav.InertialState
 import tools.apachi.starlinknav.service.InertialUi
@@ -111,6 +112,18 @@ fun InertialCard(i: InertialUi, settings: SettingsSnapshot, serving: Boolean, no
                     stringResource(if (serving) R.string.inertial_accuracy else R.string.inertial_accuracy_not_served),
                     i.accuracyM?.let { "±" + stringResource(R.string.live_unit_m, it.f(0)) } ?: "-",
                 )
+                // What the dish's position is made from (its GNSS, or the Starlink link alone) and the floor that puts
+                // under the accuracy; and the phone flag from the GPS check, which raises the same floor.
+                KeyValueRow(
+                    stringResource(R.string.inertial_regime),
+                    regimeText(i),
+                    status = if (i.dishRegime == DishGnssRegime.STARLINK_ONLY || i.dishRegime == DishGnssRegime.SUSPECT) Status.WARN else null,
+                )
+                KeyValueRow(
+                    stringResource(R.string.inertial_phone_gps),
+                    stringResource(if (i.phoneSuspect) R.string.inertial_phone_gps_distrusted else R.string.inertial_phone_gps_ok),
+                    status = if (i.phoneSuspect) Status.WARN else null,
+                )
                 i.sidewaysM?.let { m ->
                     KeyValueRow(
                         stringResource(R.string.inertial_sideways),
@@ -130,6 +143,20 @@ fun InertialCard(i: InertialUi, settings: SettingsSnapshot, serving: Boolean, no
         }
         if (!i.running) Hint(stringResource(R.string.inertial_not_running)) else Hint(stringResource(R.string.inertial_hint))
     }
+}
+
+/** The dish's GNSS regime as the filter reports it, with the accuracy floor it puts under the output when there is one. */
+@Composable
+fun regimeText(i: InertialUi): String {
+    val regime = stringResource(
+        when (i.dishRegime) {
+            DishGnssRegime.TRUSTED -> R.string.inertial_regime_gnss
+            DishGnssRegime.STARLINK_ONLY -> R.string.inertial_regime_starlink_only
+            DishGnssRegime.SUSPECT -> R.string.inertial_regime_suspect
+            DishGnssRegime.UNKNOWN -> R.string.inertial_regime_unknown
+        },
+    )
+    return if (i.dishFloorM > 0.0) stringResource(R.string.inertial_regime_floor, regime, i.dishFloorM.f(0)) else regime
 }
 
 /** The mount offset in use and where it came from: learned now, learned earlier (when that value was), manual, or not yet. */

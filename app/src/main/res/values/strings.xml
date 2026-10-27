@@ -1459,4 +1459,25 @@
     <string name="notif_line_refused">No dish position · %1$s</string>
     <string name="local_location_unimplemented">This dish\'s firmware or plan does not offer position requests to apps on the local network; switching this setting on does not change that.</string>
     <string name="setup_dish_location_via_diagnostics">The dish\'s diagnostics still give its position, which %1$s uses instead.</string>
+    <!-- The dish's GNSS regime and the phone flag in the status lines and the inertial card -->
+    <string name="regime_tag_starlink_only">Starlink only, no dish GNSS</string>
+    <string name="regime_tag_starlink_only_short">no dish GNSS</string>
+    <string name="regime_tag_suspect">phone GPS distrusted</string>
+    <string name="home_line_inertial_tracking_tag">Auto, corrected · %1$s · ±%2$s m</string>
+    <string name="home_line_inertial_no_mount_tag">Auto, dish position: the sideways correction waits for the mount offset · %1$s · ±%2$s m</string>
+    <string name="home_line_inertial_starting_tag">Auto, correction starting: dish position · %1$s · ±%2$s m</string>
+    <string name="home_line_inertial_sideways_tag">Dish position shifted %1$s m sideways: held on motion · %2$s · ±%3$s m</string>
+    <string name="home_line_inertial_dr_refused">Dead reckoning for %1$s s (%2$s) · ±%3$s m</string>
+    <string name="home_line_inertial_stopped_refused">No dish position for %1$s s (%2$s): dead reckoning too uncertain, nothing served</string>
+    <string name="notif_line_tagged">%1$s · %2$s</string>
+    <string name="notif_line_inertial_stopped_refused">No position for %1$s s (%2$s)</string>
+    <string name="inertial_regime">Dish position from</string>
+    <string name="inertial_regime_gnss">the dish\'s GNSS</string>
+    <string name="inertial_regime_starlink_only">the Starlink link only (no dish GNSS)</string>
+    <string name="inertial_regime_suspect">the dish\'s GNSS, in doubt (phone GPS distrusted)</string>
+    <string name="inertial_regime_unknown">unknown (no recent dish status)</string>
+    <string name="inertial_regime_floor">%1$s · floor %2$s\u00A0m</string>
+    <string name="inertial_phone_gps">Phone GPS</string>
+    <string name="inertial_phone_gps_distrusted">distrusted (far from the dish, or it jumped)</string>
+    <string name="inertial_phone_gps_ok">trusted or not checked</string>
 </resources>
