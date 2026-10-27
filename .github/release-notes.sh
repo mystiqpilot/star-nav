@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Prints the GitHub release text for one version, in English and Ukrainian: which file to download, the version's
-# section of CHANGELOG.md and of CHANGELOG.uk.md, and the signing certificate. Used by release.yml.
+# section of CHANGELOG.md and of CHANGELOG.uk.md, the signing certificate and the checksums link. Used by release.yml.
 # Usage: .github/release-notes.sh VERSION CERT_SHA256
 set -euo pipefail
 v="$1"
@@ -28,6 +28,11 @@ section() {
 en="$(section CHANGELOG.md)"
 uk="$(section CHANGELOG.uk.md)"
 
+# A table row: what the phone is, then the play and foss APK for its ABI as download links.
+dl="$repo/releases/download/v$v"
+apk() { printf '[star-nav-%s-%s-%s.apk](%s/star-nav-%s-%s-%s.apk)' "$v" "$1" "$2" "$dl" "$v" "$1" "$2"; }
+row() { printf '| %s | %s | %s |' "$1" "$(apk play "$2")" "$(apk foss "$2")"; }
+
 cat <<EOF
 ## English
 
@@ -35,15 +40,22 @@ Star Nav $v for Android 8.0 and newer. What the app does and how to set it up: [
 
 ### Which file
 
-| File | For |
-|---|---|
-| \`star-nav-$v-play-arm64-v8a.apk\` | most phones (64-bit); also puts Google Play services' fused location into mock mode |
-| \`star-nav-$v-foss-arm64-v8a.apk\` | the same phones, without any Google library |
-| \`*-armeabi-v7a.apk\` | older 32-bit phones |
-| \`*-universal.apk\` | any phone, if unsure (larger download) |
-| \`*-x86_64.apk\` | emulators and x86 devices |
+| Phone | With Google Play services | Without Google |
+|---|---|---|
+$(row "Most phones (64-bit)" arm64-v8a)
+$(row "Older 32-bit phones" armeabi-v7a)
+$(row "Any phone, if unsure (larger download)" universal)
+$(row "Emulators and x86 devices" x86_64)
 
-Every file is signed with the same key. A build from another source (Google Play, F-Droid, your own) has another key: to switch, export the sessions you want to keep, uninstall, then install this one.
+The build with Google Play services also puts their fused location into mock mode; the one without has no Google library. Every file is signed with the same key. A build from another source (Google Play, F-Droid, your own) has another key: to switch, export the sessions you want to keep, uninstall, then install this one.
+
+Signing certificate SHA-256:
+
+\`\`\`text
+$cert
+\`\`\`
+
+Checksums of every file: [SHA256SUMS]($dl/SHA256SUMS).
 
 ### What's new in $v
 
@@ -57,23 +69,26 @@ Star Nav $v для Android 8.0 і новіших. Що робить застос
 
 ### Який файл
 
-| Файл | Для чого |
-|---|---|
-| \`star-nav-$v-play-arm64-v8a.apk\` | більшість смартфонів (64-біт); також переводить «злите» (fused) місцезнаходження Google Play services у фіктивний режим |
-| \`star-nav-$v-foss-arm64-v8a.apk\` | ті самі смартфони, без жодних бібліотек Google |
-| \`*-armeabi-v7a.apk\` | старіші 32-бітні смартфони |
-| \`*-universal.apk\` | будь-який смартфон, якщо не впевнені (більший файл) |
-| \`*-x86_64.apk\` | емулятори й пристрої x86 |
+| Смартфон | Із сервісами Google Play | Без Google |
+|---|---|---|
+$(row "Більшість смартфонів (64-біт)" arm64-v8a)
+$(row "Старіші 32-бітні смартфони" armeabi-v7a)
+$(row "Будь-який смартфон, якщо не впевнені (більший файл)" universal)
+$(row "Емулятори й пристрої x86" x86_64)
 
-Усі файли підписані одним ключем. Збірка з іншого джерела (Google Play, F-Droid, власна) має інший ключ: щоб перейти, експортуйте потрібні сесії, видаліть застосунок і встановіть цю.
+Збірка із сервісами Google Play також переводить їхнє «злите» (fused) місцезнаходження у фіктивний режим; збірка без Google не має жодних бібліотек Google. Усі файли підписані одним ключем. Збірка з іншого джерела (Google Play, F-Droid, власна) має інший ключ: щоб перейти, експортуйте потрібні сесії, видаліть застосунок і встановіть цю.
+
+Сертифікат підпису SHA-256:
+
+\`\`\`text
+$cert
+\`\`\`
+
+Контрольні суми всіх файлів: [SHA256SUMS]($dl/SHA256SUMS).
 
 ### Що нового в $v
 
 $uk
 
 Усі версії: [CHANGELOG.uk.md]($repo/blob/v$v/CHANGELOG.uk.md) (до 0.5.5 — англійською в [CHANGELOG.md]($repo/blob/v$v/CHANGELOG.md)).
-
----
-
-Signing certificate SHA-256 / Сертифікат підпису SHA-256: \`$cert\`. Checksums / контрольні суми: \`SHA256SUMS\`.
 EOF
