@@ -22,6 +22,7 @@ import tools.apachi.starlinknav.App
 import tools.apachi.starlinknav.R
 import tools.apachi.starlinknav.core.dish.DishCallKind
 import tools.apachi.starlinknav.core.nav.InertialState
+import tools.apachi.starlinknav.core.nav.LocationRefusal
 import tools.apachi.starlinknav.service.CutoffUi
 import tools.apachi.starlinknav.service.InertialLine
 import tools.apachi.starlinknav.service.InertialUi
@@ -49,7 +50,7 @@ fun MockHeroCard(details: Boolean = true) {
     val dishDown = dishLive.last[DishCallKind.STATUS]?.result?.httpStatus == 0
     // Auto with the correction on: apps get the filter's position (its state is the hero line).
     val inertialServing = inertialServesApps(inertial, mock, settings)
-    MockHero(mock, cutoff, dishDown, now, enabled = hasLocation, inertial = inertial.takeIf { inertialServing }, details = details)
+    MockHero(mock, cutoff, dishDown, now, enabled = hasLocation, inertial = inertial.takeIf { inertialServing }, details = details, refusal = dishLive.refusal)
 }
 
 /**
@@ -68,7 +69,7 @@ fun MockStatusRow() {
     val hasLocation = ContextCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
     val dishDown = dishLive.last[DishCallKind.STATUS]?.result?.httpStatus == 0
     val inertialServing = inertialServesApps(inertial, mock, settings)
-    val (line, status) = mockStatusLine(mock, cutoff, dishDown, now, inertial.takeIf { inertialServing })
+    val (line, status) = mockStatusLine(mock, cutoff, dishDown, now, inertial.takeIf { inertialServing }, dishLive.refusal)
     Section(stringResource(R.string.mock_switch_title)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
@@ -87,7 +88,7 @@ fun MockStatusRow() {
 }
 
 @Composable
-private fun MockHero(mock: MockUi, cutoff: CutoffUi, dishDown: Boolean, now: Long, enabled: Boolean, inertial: InertialUi?, details: Boolean) {
+private fun MockHero(mock: MockUi, cutoff: CutoffUi, dishDown: Boolean, now: Long, enabled: Boolean, inertial: InertialUi?, details: Boolean, refusal: LocationRefusal? = null) {
     val ctx = LocalContext.current
     Section(stringResource(R.string.mock_switch_title)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -101,7 +102,7 @@ private fun MockHero(mock: MockUi, cutoff: CutoffUi, dishDown: Boolean, now: Lon
                 modifier = Modifier.scale(1.25f).padding(start = Space.m, end = Space.s),
             )
         }
-        val (line, status) = mockStatusLine(mock, cutoff, dishDown, now, inertial)
+        val (line, status) = mockStatusLine(mock, cutoff, dishDown, now, inertial, refusal)
         StatusLine(status, line)
         // `details` off where the page shows them in a card of their own (Mock GPS).
         if (mock.enabled && details) {
@@ -122,15 +123,19 @@ private fun MockHero(mock: MockUi, cutoff: CutoffUi, dishDown: Boolean, now: Lon
  * else the plain one (off, waiting, cut off, fallback, no fix, serving).
  */
 @Composable
-fun mockStatusLine(mock: MockUi, cutoff: CutoffUi, dishDown: Boolean, now: Long, inertial: InertialUi?): Pair<String, Status> =
-    inertial?.let { inertialHeroLine(mock, it, cutoff, now) } ?: heroLine(mock, cutoff, dishDown, now)
+fun mockStatusLine(mock: MockUi, cutoff: CutoffUi, dishDown: Boolean, now: Long, inertial: InertialUi?, refusal: LocationRefusal? = null): Pair<String, Status> =
+    inertial?.let { inertialHeroLine(mock, it, cutoff, now) } ?: heroLine(mock, cutoff, dishDown, now, refusal)
 
 @Composable
-private fun heroLine(mock: MockUi, cutoff: CutoffUi, dishDown: Boolean, now: Long): Pair<String, Status> {
+private fun heroLine(mock: MockUi, cutoff: CutoffUi, dishDown: Boolean, now: Long, refusal: LocationRefusal?): Pair<String, Status> {
     if (!mock.enabled) return stringResource(R.string.home_line_off) to Status.NEUTRAL
     val active = cutoff.active
     if (active != null) {
         return stringResource(R.string.home_line_cutoff, disablementReason(active.code), active.durationS(now).f(0)) to Status.BAD
+    }
+    // get_location refused and nothing standing in for it (no fresh push): the reason, not "waiting" or a bare age
+    if (refusal != null && (mock.lastPushMonoNs == 0L || (now - mock.lastPushMonoNs) / 1e9 > 5)) {
+        return stringResource(R.string.home_line_refused, stringResource(refusalWordsRes(refusal))) to Status.BAD
     }
     if (mock.fallbackSinceNs != 0L) {
         val silentS = ((now - (mock.lastPushMonoNs.takeIf { it != 0L } ?: mock.fallbackSinceNs)) / 1e9).coerceAtLeast(0.0).f(0)

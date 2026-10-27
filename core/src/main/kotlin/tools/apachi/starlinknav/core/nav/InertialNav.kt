@@ -2,6 +2,7 @@ package tools.apachi.starlinknav.core.nav
 
 import tools.apachi.starlinknav.core.dish.DishCallKind
 import tools.apachi.starlinknav.core.dish.DishCallResult
+import tools.apachi.starlinknav.core.dish.DishFix
 import tools.apachi.starlinknav.core.dish.attitude
 import tools.apachi.starlinknav.core.dish.fix
 import tools.apachi.starlinknav.core.log.proto.AppEvent
@@ -123,6 +124,18 @@ class InertialNav(
     private var lastSigma = Double.NaN
     private var lastLat = Double.NaN
     private var lastLon = Double.NaN
+    /** The dish-location fallback chain: why `get_location` is refused, and the diagnostics' position standing in meanwhile. */
+    private val chain = DishLocationChain { refusal, call, tNs ->
+        onEvent(InertialEvent(tNs, "dish_location", if (refusal == null) "answers" else "refused=${refusal.name} message=${(call.grpcMessage ?: call.error).orEmpty().take(80)}"))
+    }
+
+    /**
+     * The diagnostics' position the last DIAGNOSTICS call was taken as (the AUTO answer's stand-in while `get_location` is
+     * refused, [InertialConfig.diagFallback]); null when that call was not, and after every other call. The owner serves
+     * such a call like an AUTO answer and counts it as a dish fix.
+     */
+    var diagnosticsAsPosition: DishFix? = null
+        private set
 
     init {
         core.mount.onLearned = onMountLearned
@@ -161,6 +174,8 @@ class InertialNav(
     val phoneGnssSuspect: Boolean get() = phoneSuspect
     /** The dish is refused by the stall detector now. */
     val stalled: Boolean get() = core.stalled
+    /** Why `get_location` is refused now (one of the three states), null while the dish answers it (or was not asked yet). */
+    val locationRefusal: LocationRefusal? get() = chain.refusal
     /** IMU samples dropped because their tick had already run (live delivery later than a dish call). */
     var imuLateSamples = 0L
         private set
@@ -308,6 +323,8 @@ class InertialNav(
     fun onDishCall(call: DishCallResult, tNs: Long, wallMs: Long): InertialEstimate? {
         setOrigin(tNs)
         val resp = call.response
+        val link = chain.onCall(call, tNs)
+        diagnosticsAsPosition = null
         when (call.kind) {
             DishCallKind.STATUS -> {
                 val s = resp?.dish_get_status ?: return null
@@ -335,33 +352,44 @@ class InertialNav(
                 val ageS = fromClock ?: FixExtrapolator.fixAgeS(gps, wallMs)
                 val wallGpsS = (clock.gnssMs(wallMs) ?: wallMs.toDouble()) / 1000.0 - GPS_EPOCH_UNIX_S + GPS_LEAP_S
                 core.onDiag(t, ageS, gps, wallGpsS, fromReceiverClock = fromClock != null)
+                // the fallback chain's second link: while get_location is refused by policy / unimplemented / not enabled,
+                // the diagnostics' position is the AUTO answer (the same solution; its σ is floored like any AUTO σ by
+                // the regime floor and accFloorM when served; its speed is the chord between distinct positions)
+                val standIn = if (config.diagFallback && link?.fromDiagnostics == true) link.fix else null
+                if (standIn != null) {
+                    diagnosticsAsPosition = standIn
+                    return onFix(standIn, tNs)
+                }
                 return null
             }
             DishCallKind.LOCATION_AUTO -> {
                 val f = if (call.ok) resp?.fix() else null
-                if (f != null && !f.looksLikePlaceholder) {
-                    ensureOrigin(f.lat, f.lon)
-                    lastSigma = f.sigmaM
-                    if (f.lat == lastLat && f.lon == lastLon) {
-                        // the dish's solution seen again (it computes one every ~1.08 s, the app asks every second):
-                        // compared as received, so a re-centred plane cannot turn it into a new fix
-                        val t = rel(tNs)
-                        advance(t, inclusive = true)
-                        core.onAutoSeenAgain(t, f.horizontalSpeedMps)
-                        return serveAt(t, tNs)
-                    }
-                    if (f.horizontalSpeedMps.isFinite() && f.horizontalSpeedMps in 0.0..90.0) {
-                        lastLat = f.lat
-                        lastLon = f.lon
-                    }
-                    val (e, n) = localOf(f.lat, f.lon)
-                    return onAutoLocal(tNs, e, n, f.horizontalSpeedMps)
-                }
+                if (f != null && !f.looksLikePlaceholder) return onFix(f, tNs)
                 // an answer without a position counts as a failure (the filter's clock and state still move on)
                 return onAutoFailure(tNs)
             }
             else -> return null
         }
+    }
+
+    /** A dish position with a speed (an AUTO answer, or the diagnostics' position standing in for one) at its receipt. */
+    private fun onFix(f: DishFix, tNs: Long): InertialEstimate? {
+        ensureOrigin(f.lat, f.lon)
+        lastSigma = f.sigmaM
+        if (f.lat == lastLat && f.lon == lastLon) {
+            // the dish's solution seen again (it computes one every ~1.08 s, the app asks every second):
+            // compared as received, so a re-centred plane cannot turn it into a new fix
+            val t = rel(tNs)
+            advance(t, inclusive = true)
+            core.onAutoSeenAgain(t, f.horizontalSpeedMps)
+            return serveAt(t, tNs)
+        }
+        if (f.horizontalSpeedMps.isFinite() && f.horizontalSpeedMps in 0.0..90.0) {
+            lastLat = f.lat
+            lastLon = f.lon
+        }
+        val (e, n) = localOf(f.lat, f.lon)
+        return onAutoLocal(tNs, e, n, f.horizontalSpeedMps)
     }
 
     /** An AUTO answer already in the local plane (the replay's fault injection works there). */

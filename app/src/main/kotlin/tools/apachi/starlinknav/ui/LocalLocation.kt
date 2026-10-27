@@ -1,6 +1,7 @@
 package tools.apachi.starlinknav.ui
 
 import android.text.format.DateFormat
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
@@ -12,6 +13,7 @@ import tools.apachi.starlinknav.core.dish.DishCallKind
 import tools.apachi.starlinknav.core.dish.LocalLocationBasis
 import tools.apachi.starlinknav.core.dish.LocalLocationReading
 import tools.apachi.starlinknav.core.dish.LocalLocationState
+import tools.apachi.starlinknav.core.nav.LocationRefusal
 import tools.apachi.starlinknav.service.CommandBus
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -40,13 +42,22 @@ fun localLocationValue(r: LocalLocationReading?): Pair<String, Color> {
 
 /** The setting was read from the dish and says plainly on or off: the value alone tells it, no explanation needed. */
 val LocalLocationReading.isPlain: Boolean
-    get() = settingRead && !planRestricted && (state == LocalLocationState.ON || state == LocalLocationState.OFF)
+    get() = settingRead && !planRestricted && !unimplemented && (state == LocalLocationState.ON || state == LocalLocationState.OFF)
+
+/** A few words naming a refusal of `get_location`, for the status lines (the cards and the Setup row have whole sentences). */
+@StringRes
+fun refusalWordsRes(r: LocationRefusal): Int = when (r) {
+    LocationRefusal.POLICY_DENIED -> R.string.refusal_policy_short
+    LocationRefusal.UNIMPLEMENTED -> R.string.refusal_unimplemented_short
+    LocationRefusal.NOT_ENABLED -> R.string.refusal_not_enabled_short
+}
 
 /** One sentence that says what the state means and how it was found; never claims more than the dish said. */
 @Composable
 fun localLocationSentence(r: LocalLocationReading): String = stringResource(
     when {
         r.planRestricted -> R.string.local_location_plan
+        r.unimplemented -> R.string.local_location_unimplemented
         r.state == LocalLocationState.ON -> R.string.local_location_reads_on
         r.state == LocalLocationState.OFF && (r.settingRead || r.basis == LocalLocationBasis.DIAGNOSTICS) -> R.string.local_location_reads_off
         r.state == LocalLocationState.OFF -> R.string.local_location_off_inferred

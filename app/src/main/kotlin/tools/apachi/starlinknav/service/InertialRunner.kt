@@ -134,9 +134,11 @@ class InertialRunner(
      */
     fun dish(call: DishCallResult, tNs: Long, wallMs: Long, plain: (() -> Unit)? = null) = post {
         val est = nav.onDishCall(call, tNs, wallMs)
-        if (call.kind == DishCallKind.LOCATION_AUTO) {
+        // The diagnostics' position standing in for a refused get_location (the fallback chain) is an AUTO answer here.
+        val standIn = nav.diagnosticsAsPosition
+        if (call.kind == DishCallKind.LOCATION_AUTO || standIn != null) {
             lastAutoNs = tNs
-            val fix = if (call.ok) call.response?.fix()?.takeIf { !it.looksLikePlaceholder } else null
+            val fix = standIn ?: if (call.ok) call.response?.fix()?.takeIf { !it.looksLikePlaceholder } else null
             if (fix != null) lastFixNs = tNs
             // A stalled dish (frozen, two-point, stale clock) is refused by the filter: its answer is neither the plain
             // fallback (that would push the very answer the detector refused when the dead reckoning hits the push stop)

@@ -31,6 +31,15 @@ enum class DishPositionState {
     /** The dish refuses location (speed-policy disablement): status still answers, no position. */
     CUT_OFF,
 
+    /** `get_location` is refused by the plan's or the firmware's policy ([LocationRefusal.POLICY_DENIED]); the diagnostics may still give the position. */
+    POLICY_DENIED,
+
+    /** This firmware or plan does not offer `get_location` ([LocationRefusal.UNIMPLEMENTED]); the diagnostics may still give the position. */
+    UNIMPLEMENTED,
+
+    /** Location on the local network is off on the dish ([LocationRefusal.NOT_ENABLED]): the user must enable it. */
+    NOT_ENABLED,
+
     /** The dish answers but gave no usable position lately. */
     NO_FIX,
 
@@ -45,19 +54,29 @@ enum class DishPositionState {
  * @param unreachable the dish does not answer: the last status failed in transport, or no answer for a few seconds
  * @param restartingHint a restart is known to be under way (see [DishPositionState.RESTARTING])
  * @param cutoffActive a speed-policy cut-off is running
- * @param fixAgeS age of the latest dish AUTO position; null = none yet
+ * @param refusal `get_location` is refused for one of the three reasons; shown whatever the fix age, because the position
+ *   then comes from the diagnostics (fresh [fixAgeS]) or not at all, and the card says which
+ * @param fixAgeS age of the latest dish position (AUTO, or the diagnostics standing in); null = none yet
  * @param staleS a position older than this counts as no fix
  */
 fun dishPositionState(
     unreachable: Boolean,
     restartingHint: Boolean,
     cutoffActive: Boolean,
+    refusal: LocationRefusal?,
     fixAgeS: Double?,
     staleS: Double = 5.0,
 ): DishPositionState = when {
     unreachable && restartingHint -> DishPositionState.RESTARTING
     unreachable -> DishPositionState.UNREACHABLE
     cutoffActive -> DishPositionState.CUT_OFF
+    refusal == LocationRefusal.POLICY_DENIED -> DishPositionState.POLICY_DENIED
+    refusal == LocationRefusal.UNIMPLEMENTED -> DishPositionState.UNIMPLEMENTED
+    refusal == LocationRefusal.NOT_ENABLED -> DishPositionState.NOT_ENABLED
     fixAgeS == null || fixAgeS > staleS -> DishPositionState.NO_FIX
     else -> DishPositionState.OK
 }
+
+/** The three refusal states of [DishPositionState]. */
+val DishPositionState.isRefusal: Boolean
+    get() = this == DishPositionState.POLICY_DENIED || this == DishPositionState.UNIMPLEMENTED || this == DishPositionState.NOT_ENABLED

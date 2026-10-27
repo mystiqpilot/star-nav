@@ -24,14 +24,67 @@ data class DishFix(
      * both are live fixes.
      */
     val looksLikePlaceholder: Boolean
-        get() = !lat.isFinite() || !lon.isFinite() || abs(lat) > 90 || abs(lon) > 180 || (lat == 0.0 && lon == 0.0)
+        get() = placeholder(lat, lon)
     val sourceName: String get() = PositionSource.name(source)
+
+    companion object {
+        /** The one "no fix" test (see [looksLikePlaceholder]), shared with the diagnostics' location. */
+        fun placeholder(lat: Double, lon: Double): Boolean =
+            !lat.isFinite() || !lon.isFinite() || abs(lat) > 90 || abs(lon) > 180 || (lat == 0.0 && lon == 0.0)
+    }
 }
 
 fun DeviceResponse.fix(): DishFix? {
     val r = get_location ?: return null
     val lla = r.lla ?: return null
     return DishFix(r.source, lla.lat, lla.lon, lla.alt, r.sigma_m, r.horizontal_speed_mps, r.vertical_speed_mps)
+}
+
+/**
+ * The dish's position as the official diagnostics report it (`get_diagnostics.location`): the same solution `get_location`
+ * AUTO serves, one second older at most, read even where `get_location` is refused by the plan or the firmware (the
+ * fallback chain's second link, see `DishLocationChain`). No speed, no source; the fix time is the dish's GPS-time clock.
+ */
+data class DiagnosticsFix(
+    /** "Whether local location queries are enabled for this terminal": the setting, and false while the dish withholds the position (a cut-off). */
+    val enabled: Boolean,
+    val lat: Double,
+    val lon: Double,
+    val alt: Double,
+    /** `uncertainty_meters` when `uncertainty_meters_valid`; null otherwise. */
+    val uncertaintyM: Double?,
+    /** `gps_time_s`, the fix time on the GPS time scale (UTC + 18 s); 0 while withheld. */
+    val gpsTimeS: Double,
+) {
+    /** As [DishFix.looksLikePlaceholder]: only an impossible coordinate means "no fix". */
+    val looksLikePlaceholder: Boolean get() = DishFix.placeholder(lat, lon)
+
+    /** The σ to tell for this fix: the dish's uncertainty when valid, else [UNKNOWN_SIGMA_M]. */
+    val sigmaM: Double get() = uncertaintyM?.takeIf { it.isFinite() && it > 0 } ?: UNKNOWN_SIGMA_M
+
+    /**
+     * The same position as a [DishFix], so everything that serves an AUTO fix can serve this one: source AUTO (the dish's own
+     * solution), [sigmaM], the given horizontal speed (the diagnostics has none: the caller derives it from successive
+     * positions, NaN = unknown) and no vertical speed.
+     */
+    fun toDishFix(horizontalSpeedMps: Double): DishFix =
+        DishFix(PositionSource.AUTO.code, lat, lon, alt, sigmaM, horizontalSpeedMps, 0.0)
+
+    companion object {
+        /**
+         * Told accuracy while the dish gives no valid uncertainty, m: the Mini's GPS source reports a nominal 15 m; on the
+         * 2026-10-26 reference drive the valid uncertainty was 1.5-1.6 m on most fixes (p95 9 m), so this is conservative.
+         */
+        const val UNKNOWN_SIGMA_M = 15.0
+    }
+}
+
+fun DeviceResponse.diagnosticsFix(): DiagnosticsFix? {
+    val l = dish_get_diagnostics?.location ?: return null
+    return DiagnosticsFix(
+        enabled = l.enabled, lat = l.latitude, lon = l.longitude, alt = l.altitude_meters,
+        uncertaintyM = if (l.uncertainty_meters_valid) l.uncertainty_meters else null, gpsTimeS = l.gps_time_s,
+    )
 }
 
 /**

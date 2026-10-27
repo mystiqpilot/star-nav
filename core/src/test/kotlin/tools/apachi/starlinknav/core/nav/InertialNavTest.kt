@@ -2,6 +2,7 @@ package tools.apachi.starlinknav.core.nav
 
 import tools.apachi.starlinknav.core.dish.DishCallKind
 import tools.apachi.starlinknav.core.dish.DishCallResult
+import tools.apachi.starlinknav.core.dish.DishFix
 import tools.apachi.starlinknav.core.dish.FakeDishSimulation
 import tools.apachi.starlinknav.core.dish.Geo
 import tools.apachi.starlinknav.core.dish.GrpcStatus
@@ -837,5 +838,94 @@ class InertialNavTest {
         val e = nav.onDishCall(empty, 31L * 1_000_000_000L, wall0)
         assertNotNull(e, "served like a failure")
         assertEquals(nav.rel(31L * 1_000_000_000L), nav.rel(e.tNs))
+    }
+
+    /**
+     * The fallback chain's second link in the facade: with `get_location` refused by policy the diagnostics' position is the
+     * AUTO answer (tracking on it, no reset when the dish answers again); while `get_location` answers the diagnostics never
+     * stands in and the switch changes nothing; off, a refused `get_location` stays a failure.
+     */
+    @Test
+    fun facadeServesTheDiagnosticsPositionWhileGetLocationIsRefusedByPolicy() {
+        val wall0 = 1_791_990_000_000L
+        val sec = 1_000_000_000L
+        // the poller's order every second: status, the (refused) AUTO, the diagnostics
+        fun drive(sim: FakeDishSimulation, nav: InertialNav, seconds: IntRange, clock: (Long) -> Unit, each: (Int, InertialEstimate?, DishFix?) -> Unit) {
+            for (k in seconds) {
+                var now = k * sec + sec / 5
+                clock(now)
+                nav.onDishCall(call(sim, DishCallKind.STATUS), now, wall0 + now / 1_000_000)
+                assertNull(nav.diagnosticsAsPosition)
+                now = k * sec + 45 * sec / 100
+                clock(now)
+                val auto = nav.onDishCall(call(sim, DishCallKind.LOCATION_AUTO), now, wall0 + now / 1_000_000)
+                assertNull(nav.diagnosticsAsPosition)
+                now = k * sec + sec / 2
+                clock(now)
+                val est = nav.onDishCall(call(sim, DishCallKind.DIAGNOSTICS), now, wall0 + now / 1_000_000)
+                each(k, est ?: auto, nav.diagnosticsAsPosition)
+            }
+        }
+        val err = { e: InertialEstimate, tr: FakeDishSimulation.Truth -> Geo.distanceM(e.lat, e.lon, tr.lat, tr.lon) }
+        var now = 0L
+        val sim = FakeDishSimulation(spoofEverySec = 0, radiusM = 2000.0, locationPolicyDenied = true, startNs = 0, clock = { now }, wallClockMs = { wall0 + now / 1_000_000L })
+        val events = ArrayList<InertialEvent>()
+        val nav = InertialNav(InertialConfig.SHIPPED, -177.0, onEvent = { events += it })
+        val served = ArrayList<Triple<Int, InertialEstimate, FakeDishSimulation.Truth>>()
+        var standIns = 0
+        drive(sim, nav, 1..120, { now = it }) { k, est, standIn ->
+            if (standIn != null) {
+                standIns++
+                assertEquals(1.59, standIn.sigmaM, 1e-9)
+            }
+            if (est != null) served += Triple(k, est, sim.truthAt(k + 0.5))
+        }
+        assertEquals(LocationRefusal.POLICY_DENIED, nav.locationRefusal)
+        assertEquals(120, standIns, "every diagnostics stood in for the refused get_location")
+        assertEquals(listOf("refused=POLICY_DENIED message=GetLocation requests disabled due to policy"), events.filter { it.name == "dish_location" }.map { it.detail })
+        val late = served.filter { it.first > 60 }
+        assertTrue(late.size >= 55 && late.all { it.second.state == InertialState.TRACKING }, late.map { it.second.state }.distinct().toString())
+        assertTrue(late.all { err(it.second, it.third) < 5.0 }, "tracking on the diagnostics' position: ${late.maxOf { err(it.second, it.third) }}")
+        assertEquals(0, nav.resets)
+        // the dish answers again: AUTO is the position, the diagnostics stands in no more, the filter carries on
+        sim.locationPolicyDenied = false
+        var standInsAfter = 0
+        val after = ArrayList<Triple<Int, InertialEstimate, FakeDishSimulation.Truth>>()
+        drive(sim, nav, 121..180, { now = it }) { k, est, standIn ->
+            if (standIn != null) standInsAfter++
+            if (est != null) after += Triple(k, est, sim.truthAt(k + 0.5))
+        }
+        assertNull(nav.locationRefusal)
+        assertEquals(0, standInsAfter)
+        assertEquals(listOf("refused=POLICY_DENIED message=GetLocation requests disabled due to policy", "answers"), events.filter { it.name == "dish_location" }.map { it.detail })
+        assertTrue(after.all { it.second.state == InertialState.TRACKING && err(it.second, it.third) < 5.0 }, "carried on: ${after.maxOf { err(it.second, it.third) }}")
+        assertEquals(0, nav.resets)
+
+        // with the switch off a refused get_location is a failure as before: nothing is ever tracked
+        now = 0L
+        val simOff = FakeDishSimulation(spoofEverySec = 0, radiusM = 2000.0, locationPolicyDenied = true, startNs = 0, clock = { now }, wallClockMs = { wall0 + now / 1_000_000L })
+        val navOff = InertialNav(InertialConfig.SHIPPED.copy(so = InertialConfig.SHIPPED.so.copy(diagFallback = false)), -177.0)
+        drive(simOff, navOff, 1..60, { now = it }) { _, est, standIn ->
+            assertNull(standIn)
+            assertTrue(est == null || est.state == InertialState.NO_OUTPUT, "${est?.state}")
+        }
+        assertEquals(LocationRefusal.POLICY_DENIED, navOff.locationRefusal, "the refusal is still followed")
+
+        // while get_location answers the chain changes nothing: the same estimates with the switch on and off, no stand-in
+        fun plain(diag: Boolean): List<Pair<Double, Double>> {
+            now = 0L
+            val s = FakeDishSimulation(spoofEverySec = 0, radiusM = 2000.0, startNs = 0, clock = { now }, wallClockMs = { wall0 + now / 1_000_000L })
+            val n = InertialNav(InertialConfig.SHIPPED.copy(so = InertialConfig.SHIPPED.so.copy(diagFallback = diag)), -177.0)
+            val out = ArrayList<Pair<Double, Double>>()
+            drive(s, n, 1..90, { now = it }) { _, est, standIn ->
+                assertNull(standIn)
+                assertNull(n.locationRefusal)
+                if (est != null) out += est.lat to est.lon
+            }
+            return out
+        }
+        val on = plain(true)
+        assertEquals(plain(false), on)
+        assertTrue(on.size >= 85)
     }
 }

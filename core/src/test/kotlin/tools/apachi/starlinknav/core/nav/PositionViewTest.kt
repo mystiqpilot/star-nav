@@ -37,8 +37,8 @@ class PositionViewTest {
 
     @Test
     fun dishStateFollowsTheOrderOfTheChecks() {
-        fun s(unreachable: Boolean = false, restarting: Boolean = false, cutoff: Boolean = false, age: Double? = 1.0) =
-            dishPositionState(unreachable, restarting, cutoff, age)
+        fun s(unreachable: Boolean = false, restarting: Boolean = false, cutoff: Boolean = false, refusal: LocationRefusal? = null, age: Double? = 1.0) =
+            dishPositionState(unreachable, restarting, cutoff, refusal, age)
         assertEquals(DishPositionState.OK, s())
         assertEquals(DishPositionState.OK, s(age = 5.0))
         assertEquals(DishPositionState.NO_FIX, s(age = 5.1))
@@ -49,5 +49,16 @@ class PositionViewTest {
         assertEquals(DishPositionState.RESTARTING, s(unreachable = true, restarting = true, cutoff = true))
         // The hint alone changes nothing while the dish answers.
         assertEquals(DishPositionState.OK, s(restarting = true))
+        // A refusal of get_location is named whatever the fix age: with a fresh one the position comes from the diagnostics
+        // (the card says so), without one there is none; a cut-off or a silent dish comes first.
+        assertEquals(DishPositionState.POLICY_DENIED, s(refusal = LocationRefusal.POLICY_DENIED))
+        assertEquals(DishPositionState.POLICY_DENIED, s(refusal = LocationRefusal.POLICY_DENIED, age = null))
+        assertEquals(DishPositionState.UNIMPLEMENTED, s(refusal = LocationRefusal.UNIMPLEMENTED, age = 30.0))
+        assertEquals(DishPositionState.NOT_ENABLED, s(refusal = LocationRefusal.NOT_ENABLED))
+        assertEquals(DishPositionState.CUT_OFF, s(cutoff = true, refusal = LocationRefusal.NOT_ENABLED))
+        assertEquals(DishPositionState.UNREACHABLE, s(unreachable = true, refusal = LocationRefusal.POLICY_DENIED))
+        for (st in DishPositionState.entries) {
+            assertEquals(st in setOf(DishPositionState.POLICY_DENIED, DishPositionState.UNIMPLEMENTED, DishPositionState.NOT_ENABLED), st.isRefusal, "$st")
+        }
     }
 }

@@ -14,6 +14,7 @@ import tools.apachi.starlinknav.core.nav.ImuState
 import tools.apachi.starlinknav.core.nav.GpsTrustState
 import tools.apachi.starlinknav.core.nav.GpsTrustVerdict
 import tools.apachi.starlinknav.core.nav.InertialState
+import tools.apachi.starlinknav.core.nav.LocationRefusal
 import tools.apachi.starlinknav.core.nav.TrustComparison
 import tools.apachi.starlinknav.core.nav.TrustFix
 import tools.apachi.starlinknav.core.nav.UnknownWhy
@@ -39,6 +40,12 @@ data class DishUi(
     val transport: String = "-",
     val endpoint: String = "-",
     val last: Map<DishCallKind, DishCallSample> = emptyMap(),
+    /** Why `get_location` is refused now (policy / unimplemented / not enabled), null while the dish answers it; since when (monotonic ns); its words. */
+    val refusal: LocationRefusal? = null,
+    val refusalSinceNs: Long = 0,
+    val refusalMessage: String? = null,
+    /** The last time the diagnostics' position stood in for a refused `get_location` (monotonic ns, 0 = never). */
+    val diagnosticsPositionNs: Long = 0,
 )
 
 data class PhoneUi(

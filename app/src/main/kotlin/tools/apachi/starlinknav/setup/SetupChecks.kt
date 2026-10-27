@@ -24,6 +24,8 @@ import tools.apachi.starlinknav.core.dish.DishCallResult
 import tools.apachi.starlinknav.core.dish.LocalLocation
 import tools.apachi.starlinknav.core.dish.LocalLocationReading
 import tools.apachi.starlinknav.core.dish.LocalLocationState
+import tools.apachi.starlinknav.core.dish.diagnosticsFix
+import tools.apachi.starlinknav.core.nav.LocationRefusal
 import tools.apachi.starlinknav.service.DishClients
 import tools.apachi.starlinknav.service.FusedMock
 import tools.apachi.starlinknav.service.Live
@@ -55,8 +57,11 @@ sealed interface Detail {
     /** Android 17 reads Developer options as off to every app whatever they are: the state cannot be checked. */
     data object DeveloperOptionsHidden : Detail
     data object WifiButNoDish : Detail
-    /** What the Setup row for the dish's local-network location says: the reading it was derived from. */
-    data class DishLocation(val reading: LocalLocationReading, val reachable: Boolean) : Detail
+    /**
+     * What the Setup row for the dish's local-network location says: the reading it was derived from, why `get_location` is
+     * refused (one of the three states, null while it answers) and whether the diagnostics' position stands in meanwhile.
+     */
+    data class DishLocation(val reading: LocalLocationReading, val reachable: Boolean, val refusal: LocationRefusal? = null, val diagnosticsPosition: Boolean = false) : Detail
     data class DeliveryFailed(val sources: List<String>) : Detail
     data object MockOff : Detail
 }
@@ -67,14 +72,26 @@ data class DishFindings(
     /** The dish's "location on the local network" setting: [LocalLocationState] ON / OFF / answers anyway / unknown. */
     val location: LocalLocationReading,
     val atMonoNs: Long,
+    /** Why `get_location` is refused (policy / unimplemented / not enabled); null while it answers or nothing can be told. */
+    val refusal: LocationRefusal? = null,
+    /** With [refusal]: the dish's diagnostics give its position (enabled, not a placeholder), so the app serves that instead. */
+    val diagnosticsPosition: Boolean = false,
 ) {
-    /** Whether the dish gives its position to this phone: null when it cannot be told (unreachable, disabled right now, plan). */
+    /**
+     * Whether the dish gives its position to this phone: through `get_location`, or through its diagnostics while `get_location`
+     * is refused; null when it cannot be told (unreachable, disabled right now).
+     */
     val locationShared: Boolean?
-        get() = when (location.state) {
-            LocalLocationState.ON, LocalLocationState.ANSWERS_ANYWAY -> true
-            LocalLocationState.OFF -> false
-            LocalLocationState.UNKNOWN -> null
+        get() = when {
+            refusal != null -> diagnosticsPosition
+            else -> when (location.state) {
+                LocalLocationState.ON, LocalLocationState.ANSWERS_ANYWAY -> true
+                LocalLocationState.OFF -> false
+                LocalLocationState.UNKNOWN -> null
+            }
         }
+
+    fun detail() = Detail.DishLocation(location, reachable, refusal, diagnosticsPosition)
 }
 
 object SetupChecks {
@@ -182,11 +199,19 @@ object SetupChecks {
         val getConfig = if (statusConfig != null) null else {
             runCatching { client.call(DishCallKind.CONFIG) }.getOrNull()?.takeIf { it.ok }?.response?.dish_get_config?.dish_config
         }
-        // The official diagnostics' location.enabled only when no config could be read at all (it is the third source).
-        val diagnosticsEnabled = if (statusConfig != null || getConfig != null) null else {
-            call(DishCallKind.DIAGNOSTICS).takeIf { it.ok }?.response?.dish_get_diagnostics?.location?.enabled
+        // The official diagnostics when no config could be read at all (its location.enabled is the setting's third source),
+        // and when get_location is refused: does its position stand in (the fallback chain's second link)?
+        val diagnostics = if ((statusConfig == null && getConfig == null) || LocationRefusal.classify(auto, statusConfig, getConfig) != null) {
+            call(DishCallKind.DIAGNOSTICS).takeIf { it.ok }?.response?.diagnosticsFix()
+        } else {
+            null
         }
-        DishFindings(reachable = true, location = LocalLocation.read(statusConfig, getConfig, auto, diagnosticsEnabled), atMonoNs = now)
+        val diagnosticsEnabled = if (statusConfig != null || getConfig != null) null else diagnostics?.enabled
+        val refusal = LocationRefusal.classify(auto, statusConfig, getConfig, diagnosticsEnabled)
+        DishFindings(
+            reachable = true, location = LocalLocation.read(statusConfig, getConfig, auto, diagnosticsEnabled), atMonoNs = now,
+            refusal = refusal, diagnosticsPosition = refusal != null && diagnostics != null && diagnostics.enabled && !diagnostics.looksLikePlaceholder,
+        )
     }
 
     /**
@@ -215,9 +240,9 @@ object SetupChecks {
                 else -> SetupCheck(item, CheckState.NEEDED)
             }
             SetupItem.DISH_LOCATION -> when (dish?.locationShared) {
-                true -> SetupCheck(item, CheckState.OK, Detail.DishLocation(dish.location, dish.reachable))
-                false -> SetupCheck(item, CheckState.NEEDED, Detail.DishLocation(dish.location, dish.reachable))
-                null -> SetupCheck(item, CheckState.UNKNOWN, dish?.let { Detail.DishLocation(it.location, it.reachable) })
+                true -> SetupCheck(item, CheckState.OK, dish.detail())
+                false -> SetupCheck(item, CheckState.NEEDED, dish.detail())
+                null -> SetupCheck(item, CheckState.UNKNOWN, dish?.detail())
             }
             SetupItem.MOCK_DELIVERY -> {
                 val mock = Live.mock.value

@@ -203,6 +203,18 @@ class FakeDishSimulation(
      * --location-off` starts it off, the way a Mini starts before the setting is switched on.
      */
     @Volatile private var locationLocal: Boolean = true,
+    /**
+     * `get_location` refused by policy, as V4 and Mini dishes answered from 2026-05-20 (PERMISSION_DENIED "GetLocation
+     * requests disabled due to policy", a plan restriction, not a UT disablement) whatever the setting says; the diagnostics'
+     * location still answers, the fallback chain's second link. `slnav fake-dish --location-policy-denied`.
+     */
+    @Volatile var locationPolicyDenied: Boolean = false,
+    /**
+     * The diagnostics carry the dish's position (`location.enabled` true, coordinates, fix time). Off: withheld as during a
+     * UT disablement (enabled false, zero coordinates and fix time, the uncertainty invalid), so nothing stands in for a
+     * refused `get_location`. `slnav fake-dish --no-diagnostics-location`.
+     */
+    private val diagnosticsLocation: Boolean = true,
     /** Restart by itself this often (0 = never), reporting [rebootReason] (RebootReason) afterwards. */
     private val rebootEverySec: Long = 0,
     private val rebootReason: Int = 2,
@@ -453,6 +465,9 @@ class FakeDishSimulation(
             req.get_status != null -> DeviceResponse(id = req.id, dish_get_status = status(tr)) to ok
             req.get_location != null && tr.disabled ->
                 null to (GrpcStatus.PERMISSION_DENIED to "GetLocation requests disabled due to UT disablement")
+            // The plan's refusal (the 2026-05-20 wording on V4 and Mini): a PLAN_RESTRICTED outcome, whatever the setting says.
+            req.get_location != null && locationPolicyDenied ->
+                null to (GrpcStatus.PERMISSION_DENIED to "GetLocation requests disabled due to policy")
             // With the setting off every source is refused. The wording is the one the research found in the firmware's
             // source comments (not seen on a real Mini); it is neither a UT disablement nor a plan restriction.
             req.get_location != null && !locationLocal ->
@@ -483,6 +498,10 @@ class FakeDishSimulation(
                 val fixTr = truthAt(tr.tSec - FIX_AGE_S)
                 val (lat, lon) = jitter(fixTr, 0.15, 1.6).let { faulty(fixTr, it.first, it.second) }
                 val info = deviceInfo()
+                // The real Mini withholds the diagnostics' location while it is disabled (every one of the 578 cut-off diagnostics
+                // of the 2026-10-26 reference drive: enabled false, zero coordinates and fix time, uncertainty invalid); the
+                // setting off hides it the same way here (not seen on a real dish). The plan's refusal leaves it in.
+                val withheld = tr.disabled || !locationLocal || !diagnosticsLocation
                 DeviceResponse(
                     id = req.id,
                     dish_get_diagnostics = DishGetDiagnosticsResponse(
@@ -495,13 +514,17 @@ class FakeDishSimulation(
                             boresight_azimuth_deg = quaternion(dishHeadingDeg(tr.headingDeg)).attitude().normalAzimuthDeg.toFloat(),
                             boresight_elevation_deg = 70f, desired_boresight_azimuth_deg = 0f, desired_boresight_elevation_deg = 90f,
                         ),
-                        location = DishGetDiagnosticsResponse.Location(
-                            // Official API: "whether local location queries are enabled for this terminal" (the setting).
-                            enabled = locationLocal, latitude = lat, longitude = lon, altitude_meters = 115.5,
-                            uncertainty_meters_valid = true, uncertainty_meters = 1.59,
-                            // The real dish reported fixes ~0.5 s older than the phone clock.
-                            gps_time_s = (wallClockMs() - 450 - 315_964_800_000L + 18_000L) / 1000.0,
-                        ),
+                        location = if (withheld) {
+                            DishGetDiagnosticsResponse.Location(enabled = false)
+                        } else {
+                            DishGetDiagnosticsResponse.Location(
+                                // Official API: "whether local location queries are enabled for this terminal" (the setting).
+                                enabled = true, latitude = lat, longitude = lon, altitude_meters = 115.5,
+                                uncertainty_meters_valid = true, uncertainty_meters = 1.59,
+                                // The real dish reported fixes ~0.5 s older than the phone clock.
+                                gps_time_s = (wallClockMs() - 450 - 315_964_800_000L + 18_000L) / 1000.0,
+                            )
+                        },
                     ),
                 ) to ok
             }

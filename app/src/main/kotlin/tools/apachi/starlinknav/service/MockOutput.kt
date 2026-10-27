@@ -155,8 +155,11 @@ class MockGpsOutput(private val context: Context) {
             altitude = fix.alt
             this.accuracy = accuracy
             verticalAccuracyMeters = accuracy * 1.5f
-            speed = fix.horizontalSpeedMps.toFloat()
-            speedAccuracyMetersPerSecond = 0.5f
+            // the diagnostics' position standing in for a refused get_location has no speed until a second one came (NaN)
+            fix.horizontalSpeedMps.takeIf { it.isFinite() }?.let {
+                speed = it.toFloat()
+                speedAccuracyMetersPerSecond = 0.5f
+            }
             bearing?.let {
                 this.bearing = it
                 bearingAccuracyDegrees = 10f
@@ -168,7 +171,7 @@ class MockGpsOutput(private val context: Context) {
         val error = send(loc)
         val record = MockOutput(
             provider = mocked.joinToString("+"), lat = served.lat, lon = served.lon, alt = fix.alt, h_acc = accuracy,
-            speed = fix.horizontalSpeedMps.toFloat(), bearing = bearing, source = source, error = error,
+            speed = fix.horizontalSpeedMps.takeIf { it.isFinite() }?.toFloat(), bearing = bearing, source = source, error = error,
             fix_lat = fix.lat, fix_lon = fix.lon, shift_m = served.shiftM.toFloat(), age_s = served.ageS.toFloat(),
         )
         return Pushed(record, loc)

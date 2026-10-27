@@ -61,10 +61,13 @@ import tools.apachi.starlinknav.core.nav.GpsTrustState
 import tools.apachi.starlinknav.core.nav.NmeaFixes
 import tools.apachi.starlinknav.core.nav.TrustFix
 import tools.apachi.starlinknav.core.nav.InertialState
+import tools.apachi.starlinknav.core.nav.DishLocationChain
+import tools.apachi.starlinknav.core.nav.LocationRefusal
 import tools.apachi.starlinknav.core.nav.RebootTracker
 import tools.apachi.starlinknav.ui.MainActivity
 import tools.apachi.starlinknav.ui.MockTileService
 import tools.apachi.starlinknav.ui.disablementReason
+import tools.apachi.starlinknav.ui.refusalWordsRes
 import tools.apachi.starlinknav.ui.duration
 import tools.apachi.starlinknav.ui.rebootCause
 import java.util.Locale
@@ -118,6 +121,8 @@ class NavService : Service() {
     @Volatile private var mockPushes = 0L
     // Fed only from the dish poller's coroutine.
     private var cutoffs = CutoffTracker()
+    /** The dish-location fallback chain (poller coroutine only): why get_location is refused, the diagnostics standing in. */
+    private val chain = DishLocationChain(::onLocationRefusal)
     /** Fed from the dish poller and from [sendCommand] (the command bus): every access holds [trackerLock]. */
     private var reboots = RebootTracker()
     private val trackerLock = Any()
@@ -427,10 +432,14 @@ class NavService : Service() {
         val now = SystemClock.elapsedRealtimeNanos()
         val wallMs = System.currentTimeMillis()
         submit(Record(t_mono_ns = now, t_wall_ms = wallMs, dish = result.toRecord()))
-        val fix = if (result.ok) result.response?.fix()?.takeIf { !it.looksLikePlaceholder } else null
+        // The fallback chain: while get_location is refused by policy / unimplemented / not enabled, the diagnostics' position
+        // stands in for the AUTO answer (the same solution, with the chord speed) and is served, trailed and checked as one.
+        val standIn = chain.onCall(result, now)?.takeIf { it.fromDiagnostics }?.fix
+        val fix = standIn ?: if (result.ok) result.response?.fix()?.takeIf { !it.looksLikePlaceholder } else null
+        val asAuto = result.kind == DishCallKind.LOCATION_AUTO || standIn != null
         val mode = settings().mockMode
         // Today's Auto position, fed while the mock is off too, so the course is known the moment it is switched on.
-        val autoPosition = if (result.kind == DishCallKind.LOCATION_AUTO && fix != null) {
+        val autoPosition = if (asAuto && fix != null) {
             lastAutoSpeed = fix.horizontalSpeedMps
             lastAutoAlt = fix.alt
             served.serve(fix, now)
@@ -445,7 +454,13 @@ class NavService : Service() {
             null
         }
         inertial?.dish(result, now, wallMs, plain)
-        Live.dish.update { d -> d.copy(transport = result.transport, last = d.last + (result.kind to DishCallSample(result, now))) }
+        Live.dish.update { d ->
+            d.copy(
+                transport = result.transport, last = d.last + (result.kind to DishCallSample(result, now)),
+                refusal = chain.refusal, refusalSinceNs = chain.refusals.sinceNs, refusalMessage = chain.refusals.message,
+                diagnosticsPositionNs = if (standIn != null) now else d.diagnosticsPositionNs,
+            )
+        }
         cutoffs.onCall(result, now)
         CapabilityStore.record(result)
         synchronized(trackerLock) {
@@ -468,11 +483,11 @@ class NavService : Service() {
         // The explicit STARLINK source is told as what it is worth (6-21 km from AUTO on the 2026-10-26 drive): the trail
         // and the Starlink-only push carry the bound; the GPS check keeps the raw fix (its rule 3 wants the dish's own σ).
         val bounded = if (result.kind == DishCallKind.LOCATION_STARLINK) fix.copy(sigmaM = DishPositionBounds.toldAccuracyM(result.kind, fix)) else fix
-        TRAIL_KEYS[result.kind]?.let { key ->
-            trails.add(key, TrailPoint(now, bounded.lat, bounded.lon, bounded.sigmaM.toFloat(), bounded.horizontalSpeedMps.toFloat()))
+        (if (standIn != null) "dish_auto" else TRAIL_KEYS[result.kind])?.let { key ->
+            trails.add(key, TrailPoint(now, bounded.lat, bounded.lon, bounded.sigmaM.toFloat(), bounded.horizontalSpeedMps.takeIf { it.isFinite() }?.toFloat()))
         }
         // The GPS check: the AUTO fix at the moment it describes (receipt minus its age), the Starlink-only one as it came.
-        if (result.kind == DishCallKind.LOCATION_AUTO && autoPosition != null) {
+        if (asAuto && autoPosition != null) {
             // With the dish's honest accuracy: on a Starlink-only stretch the AUTO fix wanders 50-140 m from the truth
             // while its own σ says 1-8 m, which would make a correct phone look "far from Starlink". The floor is the
             // filter's (from the dish's state alone, not the phone flag), published twice a second: up to 0.5 s behind.
@@ -481,8 +496,8 @@ class NavService : Service() {
         } else if (result.kind == DishCallKind.LOCATION_STARLINK) {
             trust.onStarlinkOnlyFix(fix.lat, fix.lon, now)
         }
-        when (result.kind) {
-            DishCallKind.LOCATION_AUTO -> {
+        when {
+            asAuto -> {
                 val position = autoPosition ?: return
                 when (mode) {
                     // With the correction on the inertial thread pushes the filter's position instead.
@@ -491,7 +506,7 @@ class NavService : Service() {
                     MockMode.STARLINK_ONLY -> Unit
                 }
             }
-            DishCallKind.LOCATION_STARLINK -> {
+            result.kind == DishCallKind.LOCATION_STARLINK -> {
                 val course = starlinkCourse.serve(fix, now)
                 val previous = starlinkLast
                 if (previous == null || previous.lat != fix.lat || previous.lon != fix.lon) starlinkChangedNs = now
@@ -845,6 +860,12 @@ class NavService : Service() {
         updateNotification(force = true)
     }
 
+    /** The fallback chain's state changed (poller coroutine): into the session log and the status lines. */
+    private fun onLocationRefusal(refusal: LocationRefusal?, call: DishCallResult, atNs: Long) {
+        event("dish_location", if (refusal == null) "answers" else "refused=${refusal.name} message=${(call.grpcMessage ?: call.error).orEmpty().take(120)}")
+        updateNotificationAsync()
+    }
+
     /** Called by the tracker when the first status after a dish restart arrives. */
     private fun onReboot(r: DishReboot) {
         Live.reboot.update { it.copy(last = r, count = reboots.reboots.size) }
@@ -954,6 +975,7 @@ class NavService : Service() {
         val m = Live.mock.value
         val parts = ArrayList<String>()
         val inertialLine = if (mockEnabled && m.lastPushMonoNs != 0L && inertialServing()) inertialStatus(now, m) else null
+        val refusal = Live.dish.value.refusal
         when {
             inertialLine != null -> {
                 cutoffs.active?.let { parts += getString(R.string.notif_line_cutoff, "%.0f".format(Locale.ROOT, it.durationS(now))) }
@@ -966,13 +988,19 @@ class NavService : Service() {
                 ?: getString(R.string.notif_line_fallback_waiting)
             cutoffs.active != null -> parts += getString(R.string.notif_line_cutoff, "%.0f".format(Locale.ROOT, cutoffs.active!!.durationS(now)))
             !mockEnabled -> parts += getString(R.string.notif_line_mock_off)
+            // get_location refused and nothing standing in: the reason, not "waiting" or a bare age
+            m.lastPushMonoNs == 0L && refusal != null -> parts += getString(R.string.notif_line_refused, getString(refusalWordsRes(refusal)))
             m.lastPushMonoNs == 0L -> parts += getString(R.string.notif_line_waiting)
             else -> {
                 val age = (now - m.lastPushMonoNs) / 1e9
                 // A transport failure on the last status: the dish (or its Wi-Fi) is gone, e.g. restarting.
                 val dishDown = Live.dish.value.last[DishCallKind.STATUS]?.result?.httpStatus == 0
                 parts += if (age > 5) {
-                    getString(if (dishDown) R.string.notif_line_dish_down else R.string.notif_line_no_fix, "%.0f".format(Locale.ROOT, age))
+                    when {
+                        dishDown -> getString(R.string.notif_line_dish_down, "%.0f".format(Locale.ROOT, age))
+                        refusal != null -> getString(R.string.notif_line_refused, getString(refusalWordsRes(refusal)))
+                        else -> getString(R.string.notif_line_no_fix, "%.0f".format(Locale.ROOT, age))
+                    }
                 } else {
                     getString(R.string.notif_line_fix, "%.1f".format(Locale.ROOT, age), "%.0f".format(Locale.ROOT, m.accuracyM ?: 0f))
                 }

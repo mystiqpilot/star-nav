@@ -23,6 +23,7 @@ import tools.apachi.starlinknav.core.nav.InertialState
 import tools.apachi.starlinknav.core.nav.PositionFormat
 import tools.apachi.starlinknav.core.nav.UnknownWhy
 import tools.apachi.starlinknav.core.nav.dishPositionState
+import tools.apachi.starlinknav.core.nav.isRefusal
 import tools.apachi.starlinknav.service.CutoffUi
 import tools.apachi.starlinknav.service.DishUi
 import tools.apachi.starlinknav.service.InertialUi
@@ -80,7 +81,9 @@ internal fun StarlinkCard(
         (reboot.updateWaiting && reboot.updateRestartAtS?.let { wallS - it in -30..RESTART_WINDOW_S.toLong() } == true)
     val auto = trust.auto
     val fixAgeS = auto?.let { ((now - it.atNs) / 1e9).coerceAtLeast(0.0) }
-    val state = dishPositionState(unreachable, restarting, cutoff.active != null, fixAgeS)
+    val state = dishPositionState(unreachable, restarting, cutoff.active != null, dish.refusal, fixAgeS)
+    // get_location refused, but the dish's diagnostics give the position (the fallback chain): apps and this page get that one.
+    val viaDiagnostics = state.isRefusal && fixAgeS != null && fixAgeS <= DIAGNOSTICS_FRESH_S
     val waiting = !serviceRunning || (statusCall == null && auto == null)
 
     Section(stringResource(R.string.pos_starlink_title)) {
@@ -97,17 +100,24 @@ internal fun StarlinkCard(
                     val active = cutoff.active
                     stringResource(R.string.home_line_cutoff, active?.let { disablementReason(it.code) } ?: "-", (active?.durationS(now) ?: 0.0).f(0)) to Status.BAD
                 }
+                DishPositionState.POLICY_DENIED ->
+                    stringResource(if (viaDiagnostics) R.string.pos_dish_policy_diag else R.string.pos_dish_policy) to (if (viaDiagnostics) Status.WARN else Status.BAD)
+                DishPositionState.UNIMPLEMENTED ->
+                    stringResource(if (viaDiagnostics) R.string.pos_dish_unimplemented_diag else R.string.pos_dish_unimplemented) to (if (viaDiagnostics) Status.WARN else Status.BAD)
+                DishPositionState.NOT_ENABLED ->
+                    stringResource(if (viaDiagnostics) R.string.pos_dish_not_enabled_diag else R.string.pos_dish_not_enabled) to (if (viaDiagnostics) Status.WARN else Status.BAD)
                 DishPositionState.NO_FIX ->
                     (fixAgeS?.let { stringResource(R.string.pos_dish_no_fix, it.f(0)) } ?: stringResource(R.string.pos_dish_no_fix_yet)) to Status.WARN
                 DishPositionState.UNREACHABLE -> stringResource(R.string.pos_dish_unreachable) to Status.BAD
                 DishPositionState.RESTARTING -> stringResource(R.string.pos_dish_restarting) to Status.WARN
             }
         }
-        StatusLine(status, text)
-        if (!waiting && state == DishPositionState.CUT_OFF && inertialServing && inertial.state != InertialState.NO_OUTPUT) {
+        // The dish's own words under a refusal (its gRPC message), as the Starlink page shows them for other refused calls.
+        StatusLine(status, text, detail = if (!waiting && state.isRefusal) dish.refusalMessage?.takeIf { it.isNotBlank() } else null)
+        if (!waiting && (state == DishPositionState.CUT_OFF || (state.isRefusal && !viaDiagnostics)) && inertialServing && inertial.state != InertialState.NO_OUTPUT) {
             Hint(stringResource(R.string.pos_dish_cutoff_continues))
         }
-        val dim = state != DishPositionState.OK
+        val dim = state != DishPositionState.OK && !viaDiagnostics
         if (auto != null) CoordinatesLine(auto.lat, auto.lon, dim)
         val showStatus = !waiting && state != DishPositionState.UNREACHABLE && state != DishPositionState.RESTARTING
         val gps = if (showStatus) statusCall?.result?.response?.dish_get_status?.gps_stats else null
@@ -117,7 +127,7 @@ internal fun StarlinkCard(
                 if (auto != null) {
                     KeyValueRow(stringResource(R.string.pos_field_accuracy), accuracyLabel(auto.accuracyM))
                     KeyValueRow(stringResource(R.string.pos_field_age), stringResource(R.string.live_age, (fixAgeS ?: 0.0).f(1)), valueColor = if (dim) colors.muted else Color.Unspecified)
-                    KeyValueRow(stringResource(R.string.pos_field_source), stringResource(R.string.live_src_dish_auto))
+                    KeyValueRow(stringResource(R.string.pos_field_source), stringResource(if (viaDiagnostics) R.string.pos_src_dish_diagnostics else R.string.live_src_dish_auto))
                 }
                 gps?.let { g ->
                     KeyValueRow(
@@ -146,6 +156,9 @@ private const val RECENT_RESTART_NS = 30 * 60 * 1_000_000_000L
 
 /** No status answer for this long: the dish is unreachable. */
 private const val UNREACHABLE_AFTER_S = 5.0
+
+/** Under a refusal of get_location a position this fresh is the diagnostics' standing in. */
+private const val DIAGNOSTICS_FRESH_S = 5.0
 
 /** A restart command, or the planned update restart, counts as the cause of a silent dish for this long. */
 private const val RESTART_WINDOW_S = 600.0

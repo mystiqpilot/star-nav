@@ -160,6 +160,9 @@ class LocalLocationTest {
         assertTrue(plan.planRestricted)
         // The call is not offered at all, the dish is silent, or nothing was asked.
         assertEquals(LocalLocationState.UNKNOWN, LocalLocation.read(null, null, refused(GrpcStatus.UNIMPLEMENTED, "Unimplemented: *device.Request_GetLocation")).state)
+        assertTrue(LocalLocation.read(null, null, refused(GrpcStatus.UNIMPLEMENTED, "Unimplemented: *device.Request_GetLocation")).unimplemented, "the screens say the firmware does not offer it")
+        assertTrue(LocalLocation.read(localConfig, null, refused(GrpcStatus.UNIMPLEMENTED, "Unimplemented: *device.Request_GetLocation")).unimplemented)
+        assertFalse(LocalLocation.read(localConfig, null, refused(GrpcStatus.PERMISSION_DENIED, "Failed to get location: Disabled due to policy")).unimplemented)
         assertEquals(LocalLocationState.UNKNOWN, LocalLocation.read(null, null, DishCallResult.failure(DishCallKind.LOCATION_AUTO, 0, 0, "-", "connect timed out")).state)
         assertEquals(LocalLocationState.UNKNOWN, LocalLocation.read(null, null, null).state)
         assertEquals(LocalLocationState.UNKNOWN, LocalLocationReading.UNKNOWN.state)

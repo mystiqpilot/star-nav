@@ -56,6 +56,8 @@ data class LocalLocationReading(
     val disabledNow: Boolean = false,
     /** The plan refuses position requests ("Failed to get location: Disabled due to policy"); switching the setting on would not help. */
     val planRestricted: Boolean = false,
+    /** The firmware or plan does not offer position requests at all (UNIMPLEMENTED); switching the setting on would not help either. */
+    val unimplemented: Boolean = false,
 ) {
     /** Whether location is, as far as can be told, available now: the setting is on, or the dish answers anyway. */
     val available: Boolean get() = state == LocalLocationState.ON || state == LocalLocationState.ANSWERS_ANYWAY
@@ -88,7 +90,8 @@ object LocalLocation {
         val autoFix = auto != null && auto.ok && auto.response?.fix()?.looksLikePlaceholder == false
         val disabled = auto?.refusedByDisablement == true
         val plan = auto?.outcome == CallOutcome.PLAN_RESTRICTED
-        fun reading(state: LocalLocationState, basis: LocalLocationBasis) = LocalLocationReading(state, basis, mode, disabled, plan)
+        val unimplemented = auto != null && !auto.ok && auto.outcome == CallOutcome.UNIMPLEMENTED
+        fun reading(state: LocalLocationState, basis: LocalLocationBasis) = LocalLocationReading(state, basis, mode, disabled, plan, unimplemented)
         return when {
             mode == LocationRequestMode.LOCAL -> reading(LocalLocationState.ON, settingBasis)
             mode == null && diagnosticsEnabled == true -> reading(LocalLocationState.ON, LocalLocationBasis.DIAGNOSTICS)

@@ -1415,4 +1415,19 @@
     <string name="ui_status_neutral">Без стану</string>
     <string name="ui_status_info">Інформація</string>
     <string name="ui_loading">Завантаження…</string>
+    <!-- The three refusals of get_location and the diagnostics standing in (the dish-location fallback chain) -->
+    <string name="refusal_policy_short">запити позиції відхиляє тариф Starlink</string>
+    <string name="refusal_unimplemented_short">ця антена не пропонує запитів позиції</string>
+    <string name="refusal_not_enabled_short">місцезнаходження в локальній мережі вимкнено</string>
+    <string name="pos_dish_policy">Антена відхиляє запити позиції: вимкнено політикою для цього тарифу Starlink. Позиції від антени немає.</string>
+    <string name="pos_dish_policy_diag">Запити позиції відхиляє тариф Starlink; позиція береться з діагностики антени.</string>
+    <string name="pos_dish_unimplemented">Прошивка або тариф цієї антени не пропонує запитів позиції в локальній мережі. Позиції від антени немає.</string>
+    <string name="pos_dish_unimplemented_diag">Ця антена не пропонує запитів позиції; позиція береться з її діагностики.</string>
+    <string name="pos_dish_not_enabled">На антені вимкнено місцезнаходження в локальній мережі. Увімкніть його на сторінці «Імітація», «Як це ввімкнути».</string>
+    <string name="pos_dish_not_enabled_diag">На антені вимкнено місцезнаходження в локальній мережі; тим часом позиція береться з її діагностики. Увімкніть його на сторінці «Імітація», «Як це ввімкнути».</string>
+    <string name="pos_src_dish_diagnostics">Діагностика антени</string>
+    <string name="home_line_refused">Немає позиції антени: %1$s</string>
+    <string name="notif_line_refused">Немає позиції антени · %1$s</string>
+    <string name="local_location_unimplemented">Прошивка або тариф цієї антени не пропонує запитів позиції застосункам у локальній мережі; увімкнення цього налаштування цього не змінює.</string>
+    <string name="setup_dish_location_via_diagnostics">Діагностика антени все ж дає її позицію, і %1$s використовує її замість запитів.</string>
 </resources>

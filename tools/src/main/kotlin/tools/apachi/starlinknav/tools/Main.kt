@@ -48,7 +48,8 @@ private const val USAGE = """slnav — starlink-nav desktop tools
   slnav export <session.slog> --from SEC --to SEC [--out file.zip]
       SEC is seconds after the first record.
   slnav fake-dish [--bind 127.0.0.1] [--port 9201] [--spoof-every 120] [--spoof-for 30]
-                  [--disable-every 0] [--disable-for 0] [--location-off]
+                  [--disable-every 0] [--disable-for 0] [--location-off] [--location-policy-denied]
+                  [--location-unimplemented] [--no-diagnostics-location]
                   [--reboot-every 0] [--reboot-reason 2] [--reboot-down 40] [--no-update]
                   [--deny-set-config true|false] [--allow-set-config] [--unimplemented a,b,...]
                   [--mount-offset -177] [--fault-sideways METRES --fault-at S [--fault-ramp S] [--fault-for S]]
@@ -64,6 +65,12 @@ private const val USAGE = """slnav — starlink-nav desktop tools
       (PERMISSION_DENIED "GetLocation requests are not enabled on this device") until a dish_set_config write switches it to LOCAL
       (needs --allow-set-config; with the default --deny-set-config the write is refused and the dish stays off). To test the app's
       enable flow on an emulator: `slnav fake-dish --location-off --allow-set-config` (accepted) or `--location-off` (refused).
+      The other two refusals of GetLocation: --location-policy-denied answers PERMISSION_DENIED "GetLocation requests disabled
+      due to policy" (the plan's refusal of 2026-05-20, a PLAN_RESTRICTED outcome) and --location-unimplemented answers
+      UNIMPLEMENTED (the same as --unimplemented get_location); the diagnostics' location still answers in both, so the app
+      serves the position from it (its fallback chain), unless --no-diagnostics-location withholds it too (then the dish
+      gives no position at all: dead reckoning and the network fallback). During a --disable-every cut-off and with
+      --location-off the diagnostics' location is withheld like a real Mini's (enabled false, zero coordinates and fix time).
       It starts with a software update waiting (unless --no-update); a restart (the reboot command,
       or every --reboot-every seconds, then reporting RebootReason --reboot-reason) leaves it silent
       for --reboot-down seconds and installs the update.
@@ -339,13 +346,16 @@ private fun export(o: Opts) {
 
 private fun fakeDish(o: Opts) {
     val deny = if (o.flag("--allow-set-config")) false else o.boolOption("--deny-set-config", default = true)
-    val unimplemented = o.value("--unimplemented")?.split(',')?.flatMap { FakeArms.forToken(it) }?.toSet().orEmpty()
+    val unimplemented = o.value("--unimplemented")?.split(',')?.flatMap { FakeArms.forToken(it) }?.toSet().orEmpty() +
+        (if (o.flag("--location-unimplemented")) setOf("get_location") else emptySet())
     val sim = FakeDishSimulation(
         spoofEverySec = o.value("--spoof-every")?.toLong() ?: 120,
         spoofForSec = o.value("--spoof-for")?.toLong() ?: 30,
         disableEverySec = o.value("--disable-every")?.toLong() ?: 0,
         disableForSec = o.value("--disable-for")?.toLong() ?: 0,
         locationLocal = !o.flag("--location-off"),
+        locationPolicyDenied = o.flag("--location-policy-denied"),
+        diagnosticsLocation = !o.flag("--no-diagnostics-location"),
         rebootEverySec = o.value("--reboot-every")?.toLong() ?: 0,
         rebootReason = o.value("--reboot-reason")?.toInt() ?: 2,
         rebootDownSec = o.value("--reboot-down")?.toLong() ?: 40,
@@ -363,6 +373,13 @@ private fun fakeDish(o: Opts) {
     println("fake dish serving gRPC-Web on $bind:${server.port} (Ctrl-C to stop)")
     println("  dish_set_config ${if (deny) "refused (PERMISSION_DENIED)" else "accepted"}; unimplemented: ${unimplemented.sorted().ifEmpty { listOf("-") }.joinToString()}")
     println("  location on the local network (location_request_mode): ${if (o.flag("--location-off")) "OFF, GetLocation refused until dish_set_config switches it to LOCAL" + (if (deny) " (refused: needs --allow-set-config)" else "") else "LOCAL"}")
+    val refusal = when {
+        o.flag("--location-policy-denied") -> "refused by policy (PERMISSION_DENIED \"disabled due to policy\")"
+        "get_location" in unimplemented -> "UNIMPLEMENTED"
+        o.flag("--location-off") -> "refused: not enabled"
+        else -> "answers"
+    }
+    println("  GetLocation: $refusal; diagnostics location: ${if (o.flag("--no-diagnostics-location")) "withheld" else if (o.flag("--location-off")) "withheld while the setting is off" else "answers (the app's fallback while GetLocation is refused)"}")
     println("  dish heading = track %+.1f°".format(Locale.ROOT, sim.mountOffsetDeg) + (o.value("--fault-sideways")?.let { m ->
         "; AUTO and diagnostics $m m sideways from ${o.value("--fault-at") ?: "0"} s (ramp ${o.value("--fault-ramp") ?: "0"} s, for ${o.value("--fault-for") ?: "ever"} s)"
     } ?: ""))

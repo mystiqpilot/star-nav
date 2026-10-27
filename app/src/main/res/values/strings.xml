@@ -1444,4 +1444,19 @@
     <string name="ui_status_neutral">No status</string>
     <string name="ui_status_info">Information</string>
     <string name="ui_loading">Loading…</string>
+    <!-- The three refusals of get_location and the diagnostics standing in (the dish-location fallback chain) -->
+    <string name="refusal_policy_short">position requests refused by the Starlink plan</string>
+    <string name="refusal_unimplemented_short">position requests not offered by this dish</string>
+    <string name="refusal_not_enabled_short">location on the local network is off</string>
+    <string name="pos_dish_policy">The dish refuses position requests: disabled by policy for this Starlink plan. No position from the dish.</string>
+    <string name="pos_dish_policy_diag">Position requests are refused by the Starlink plan; the position comes from the dish\'s diagnostics instead.</string>
+    <string name="pos_dish_unimplemented">This dish\'s firmware or plan does not offer position requests on the local network. No position from the dish.</string>
+    <string name="pos_dish_unimplemented_diag">This dish does not offer position requests; the position comes from its diagnostics instead.</string>
+    <string name="pos_dish_not_enabled">Location on the local network is off on the dish. Enable it under Mock GPS, How to enable it.</string>
+    <string name="pos_dish_not_enabled_diag">Location on the local network is off on the dish; the position comes from its diagnostics meanwhile. Enable it under Mock GPS, How to enable it.</string>
+    <string name="pos_src_dish_diagnostics">Dish diagnostics</string>
+    <string name="home_line_refused">No dish position: %1$s</string>
+    <string name="notif_line_refused">No dish position · %1$s</string>
+    <string name="local_location_unimplemented">This dish\'s firmware or plan does not offer position requests to apps on the local network; switching this setting on does not change that.</string>
+    <string name="setup_dish_location_via_diagnostics">The dish\'s diagnostics still give its position, which %1$s uses instead.</string>
 </resources>

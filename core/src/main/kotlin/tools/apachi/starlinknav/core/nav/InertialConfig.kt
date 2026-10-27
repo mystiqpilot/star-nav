@@ -304,6 +304,7 @@ data class InertialConfig(
     val stallAgeS: Double get() = so.stallAgeS
     val stallTurnDegS: Double get() = so.stallTurnDegS
     val stallSpeedMps: Double get() = so.stallSpeedMps
+    val diagFallback: Boolean get() = so.diagFallback
 
     companion object {
         /** The app's configuration (decision 2026-10-15, exit policy of the sideways hold added the same day). */
@@ -319,7 +320,7 @@ data class InertialConfig(
             reverseHold = false, network = false, rebaseM = Double.POSITIVE_INFINITY,
             holdSig = false, returnRule = false, leakGuard = false,
             mntLongChordS = 6.0, mntSeDeg = null, mntSkipReversing = false, gateHoldNeedsMount = false, mountFlip = false,
-            so = StarlinkOnlyConfig(soEnabled = false, slotAware = false, stallDetector = false),
+            so = StarlinkOnlyConfig(soEnabled = false, slotAware = false, stallDetector = false, diagFallback = false),
         )
 
         /** CFG2 with the shipped detector (h = 9 m, hold 25 s): what `nav2.py` runs for the port comparison. */
@@ -462,6 +463,14 @@ data class StarlinkOnlyConfig(
     val stallTurnDegS: Double = 3.0,
     /** ... or the latest dish speed, or the filter's speed state, at or above this, m/s (or the IMU not still). */
     val stallSpeedMps: Double = 2.0,
+    /**
+     * The dish-location fallback chain's second link (`DishLocationChain`, 2026-10-27): while `get_location` is refused by
+     * the plan's or the firmware's policy, as UNIMPLEMENTED, or because location on the local network is off, the
+     * diagnostics' position (the same solution, enabled and not a placeholder) is fed as the AUTO answer. Off: a refused
+     * `get_location` is a failure as before (dead reckoning). Kept here, not a filter parameter: the flat class is at the
+     * JVM's slot limit, and the replay comparison `shipped` vs `shipped,diag=0` needs the switch.
+     */
+    val diagFallback: Boolean = true,
 )
 
 internal const val D2R = Math.PI / 180.0

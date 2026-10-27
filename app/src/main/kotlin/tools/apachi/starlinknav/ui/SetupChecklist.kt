@@ -38,6 +38,7 @@ import tools.apachi.starlinknav.R
 import tools.apachi.starlinknav.account.AccountEnableButton
 import tools.apachi.starlinknav.core.dish.DishCallKind
 import tools.apachi.starlinknav.core.dish.LocalLocationState
+import tools.apachi.starlinknav.core.nav.LocationRefusal
 import tools.apachi.starlinknav.service.CapabilityStore
 import tools.apachi.starlinknav.service.DeviceCall
 import tools.apachi.starlinknav.service.FusedMock
@@ -226,11 +227,20 @@ private fun DishLocationRow(check: SetupCheck, appName: String) {
     val reading = detail?.reading
     val blocked = caps.unavailable(DishCallKind.ALLOW_LOCAL_LOCATION)
     Hint(stringResource(R.string.setup_dish_location_why, appName))
-    if (detail != null && !detail.reachable) Hint(stringResource(R.string.local_location_dish_silent))
-    else if (reading != null) Hint(localLocationSentence(reading))
+    // The three refusals of get_location in their own words: the plan's / the firmware's (this setting changes nothing), or
+    // the setting off (the reading's sentence says how that was found); then whether the diagnostics' position stands in.
+    when {
+        detail != null && !detail.reachable -> Hint(stringResource(R.string.local_location_dish_silent))
+        detail?.refusal == LocationRefusal.POLICY_DENIED -> Hint(stringResource(R.string.local_location_plan))
+        detail?.refusal == LocationRefusal.UNIMPLEMENTED -> Hint(stringResource(R.string.local_location_unimplemented))
+        reading != null -> Hint(localLocationSentence(reading))
+    }
+    if (detail?.diagnosticsPosition == true) Hint(stringResource(R.string.setup_dish_location_via_diagnostics, appName))
     LocalLocationOutcomeLine(showRemembered = true)
-    // The button is there while location is not known to be available, and while the dish answers at all.
-    val canAsk = detail?.reachable == true && reading?.planRestricted != true && check.state != CheckState.OK
+    // The button is there while location is not known to be available, the dish answers at all, and enabling the setting
+    // can help (not against the plan's or the firmware's refusal).
+    val canAsk = detail?.reachable == true && reading?.planRestricted != true && reading?.unimplemented != true &&
+        (detail.refusal == null || detail.refusal == LocationRefusal.NOT_ENABLED) && check.state != CheckState.OK
     if (canAsk) {
         ActionRow {
             PrimaryButton(stepLabel(1, R.string.setup_action_allow_on_dish), enabled = blocked == null && !sender.busy, onClick = {

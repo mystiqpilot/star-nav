@@ -87,7 +87,8 @@ class FixExtrapolator(
         }
         val age = latencyS + (atNs - firstSeenNs) / 1e9
         val c = course
-        if (c == null || fix.horizontalSpeedMps < minSpeedMps) return Served(fix.lat, fix.lon, c, age, 0.0)
+        // (a fix without a speed, NaN, is served where it is: the diagnostics' first position after a gap has none)
+        if (c == null || !(fix.horizontalSpeedMps >= minSpeedMps)) return Served(fix.lat, fix.lon, c, age, 0.0)
         val shift = fix.horizontalSpeedMps * min(age, maxShiftS)
         val (lat, lon) = Geo.offset(fix.lat, fix.lon, c, shift)
         return Served(lat, lon, c, age, shift)

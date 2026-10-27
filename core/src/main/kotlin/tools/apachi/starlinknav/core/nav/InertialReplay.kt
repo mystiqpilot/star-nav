@@ -157,7 +157,18 @@ class InertialReplay(
                 call.response?.dish_get_diagnostics?.location?.gps_time_s?.let { nav.clock.fixAgeS(it, i.wallMs) }?.let(today::onFixAge)
             }
             if (call.kind != DishCallKind.LOCATION_AUTO) {
-                nav.onDishCall(call, i.t, i.wallMs)
+                val est = nav.onDishCall(call, i.t, i.wallMs)
+                // the diagnostics' position standing in for a refused get_location (DishLocationChain): served like an AUTO answer,
+                // in the filter's lane and in today's (the app's plain path serves it too)
+                val standIn = if (call.kind == DishCallKind.DIAGNOSTICS) nav.diagnosticsAsPosition else null
+                if (standIn != null) {
+                    lastAnswer = i.t
+                    nextServe = 1
+                    autoSeen(standIn, i.t)
+                    phoneFlag(i.t)
+                    today(standIn, i.t)
+                    onServe(Served(Kind.AUTO, i.t, est, todayLat, todayLon, standIn))
+                }
                 return
             }
             val answer = isAnswer(call)
