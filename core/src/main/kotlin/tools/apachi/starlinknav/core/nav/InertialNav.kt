@@ -151,6 +151,14 @@ class InertialNav(
     val dishRegime: DishGnssRegime get() = core.dishRegime
     /** The Starlink-only / suspect / unconverged floor in force now, m (0 = none). */
     val dishFloorM: Double get() = core.dishFloorM
+    /**
+     * The floor from the dish's own state alone (Starlink-only, its decay after the switch back, unconverged), without
+     * the phone flag, m: what the owner's GPS check adds to the dish's σ when it compares the phone with the dish
+     * ([InertialReplay], the app's service), so a distrust cannot widen the very limit that would clear it.
+     */
+    val trustFloorM: Double get() = core.trustFloorM
+    /** The owner's latest phone flag ([onPhoneGnssSuspect]). */
+    val phoneGnssSuspect: Boolean get() = phoneSuspect
     /** The dish is refused by the stall detector now. */
     val stalled: Boolean get() = core.stalled
     /** IMU samples dropped because their tick had already run (live delivery later than a dish call). */

@@ -23,8 +23,9 @@ import kotlin.math.max
  * the position to use, or null to drop the answer (a simulated cut-off).
  *
  * The owner's phone flag ([InertialNav.onPhoneGnssSuspect]) is fed from a [GpsTrust] run over the same queue: the
- * phone's real GPS fixes and every AUTO answer (with the filter's honest accuracy, [InertialNav.dishFloorM], so a
- * wandering Starlink-only dish does not flag a good phone), the verdict read at every AUTO call and every gap serve. It is fed from the time-ordered
+ * phone's real GPS fixes and every AUTO answer (with the filter's honest accuracy from the dish's own state,
+ * [InertialNav.trustFloorM], so a wandering Starlink-only dish does not flag a good phone and a flag does not clear
+ * itself), the verdict read at every AUTO call and every gap serve. It is fed from the time-ordered
  * queue, not from [add]: the queue runs up to [windowNs] behind `add`, which would exceed [GpsTrustConfig.maxSkewS]
  * and never compare.
  */
@@ -213,7 +214,7 @@ class InertialReplay(
 
     /** An AUTO answer with a position (repeats included) for the GPS check, at its fix time with the honest accuracy. */
     private fun autoSeen(f: DishFix, tNs: Long) {
-        trust?.onAutoFix(f.lat, f.lon, max(f.sigmaM, nav.dishFloorM), f.horizontalSpeedMps, tNs - (nav.latencyS * 1e9).toLong())
+        trust?.onAutoFix(f.lat, f.lon, max(f.sigmaM, nav.trustFloorM), f.horizontalSpeedMps, tNs - (nav.latencyS * 1e9).toLong())
     }
 
     private fun phoneFlag(tNs: Long) {

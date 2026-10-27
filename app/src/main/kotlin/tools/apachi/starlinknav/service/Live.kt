@@ -8,6 +8,7 @@ import tools.apachi.starlinknav.core.dish.DishCallResult
 import tools.apachi.starlinknav.core.log.proto.PhoneLocation
 import tools.apachi.starlinknav.core.nav.ChosenPosition
 import tools.apachi.starlinknav.core.nav.Cutoff
+import tools.apachi.starlinknav.core.nav.DishGnssRegime
 import tools.apachi.starlinknav.core.nav.DishReboot
 import tools.apachi.starlinknav.core.nav.ImuState
 import tools.apachi.starlinknav.core.nav.GpsTrustState
@@ -160,6 +161,16 @@ data class InertialUi(
     /** Failures inside the filter's thread since the service started, and the last one's message. */
     val errors: Int = 0,
     val lastError: String? = null,
+    /** The dish's GNSS regime as the filter reports it, and the accuracy floor it puts under the output, m (0 = none). */
+    val dishRegime: DishGnssRegime = DishGnssRegime.UNKNOWN,
+    val dishFloorM: Double = 0.0,
+    /**
+     * The floor from the dish's own state alone (no phone flag), m: what the service's GPS check adds to the dish AUTO
+     * fix's σ (`InertialNav.trustFloorM`); read at every AUTO fix, so it lags the filter by up to one publish.
+     */
+    val trustFloorM: Double = 0.0,
+    /** The phone flag last fed to the filter: the GPS check distrusts the phone's own GNSS. */
+    val phoneSuspect: Boolean = false,
     /** When this snapshot was taken (monotonic ns). */
     val atNs: Long = 0,
 )

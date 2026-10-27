@@ -667,6 +667,13 @@ class StarlinkOnlyTest {
         val (near, evNear) = drive(false)
         assertTrue(near.filter { rel(it) > 5.0 }.all { it.dishRegime == DishGnssRegime.TRUSTED }, near.map { it.dishRegime }.distinct().toString())
         assertTrue(evNear.none { it.name == "dish_regime" && it.detail.endsWith("cause=phone") })
+        // a phone 160 m off for the rest of the drive: rule 1 (far from Starlink) holds the flag once the 30 s jump latch
+        // has run out. The check is fed the dish's own floor, not the SUSPECT floor: with that one the limit would widen
+        // to ~200 m, the distrust clear after 5 s within, the floor drop, the distrust return, every 5 s
+        val (held, evHeld) = drive(true, farM = 160.0, farUntil = 119)
+        val showHeld = held.map { "%.0f %s".format(java.util.Locale.ROOT, rel(it), it.dishRegime) }.toString()
+        assertTrue(held.filter { rel(it) in 47.0..119.0 }.let { it.size > 60 && it.all { e -> e.dishRegime == DishGnssRegime.SUSPECT && e.dishFloorM == 85.0 } }, showHeld)
+        assertEquals(1, evHeld.count { it.name == "dish_regime" && it.detail.endsWith("cause=phone") }, evHeld.filter { it.name == "dish_regime" }.joinToString { it.detail })
     }
 
     // ------------------------------------------------------------------ the facade's phone flag before the first dish call
@@ -712,7 +719,10 @@ class StarlinkOnlyTest {
         assertTrue(regimes.none { it.tNs == 0L } && regimes.all { it.tNs >= sec }, regimes.map { it.tNs }.toString())
         assertTrue(served.isNotEmpty() && served.all { it.dishRegime == DishGnssRegime.SUSPECT && it.dishFloorM == 85.0 && it.accuracyM >= 85.0 }, served.map { it.dishRegime }.distinct().toString())
         assertEquals(DishGnssRegime.SUSPECT, nav.dishRegime)
+        // the GPS check's floor has no phone term (dish GNSS valid: 0), and the facade keeps the flag it was given
+        assertEquals(0.0, nav.trustFloorM, "trust floor while SUSPECT")
         assertEquals(85.0, nav.dishFloorM, "told floor while SUSPECT")
+        assertTrue(nav.phoneGnssSuspect)
         // (raised and lowered again before the first call: the latest value counts, TRUSTED as without a flag)
         val off = drive(listOf(true, false))
         assertEquals(DishGnssRegime.TRUSTED, off.firstRegime)

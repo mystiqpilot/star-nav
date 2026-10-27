@@ -57,6 +57,8 @@ import tools.apachi.starlinknav.core.nav.DishReboot
 import tools.apachi.starlinknav.core.nav.FixExtrapolator
 import tools.apachi.starlinknav.core.nav.ReceiverClock
 import tools.apachi.starlinknav.core.nav.GpsTrust
+import tools.apachi.starlinknav.core.nav.GpsTrustState
+import tools.apachi.starlinknav.core.nav.NmeaFixes
 import tools.apachi.starlinknav.core.nav.TrustFix
 import tools.apachi.starlinknav.core.nav.InertialState
 import tools.apachi.starlinknav.core.nav.RebootTracker
@@ -124,8 +126,16 @@ class NavService : Service() {
     /** Sends the commands the screens ask for through [CommandBus]: logged into the session, counted by the restart tracker. */
     private val commandHandler = CommandBus.Handler { call -> sendCommand(call) }
     private var served = FixExtrapolator()
-    /** Is the phone's GPS spoofed: its fixes against the dish's; fed from the location thread and the dish poller. */
+    /**
+     * Is the phone's GPS spoofed: its fixes against the dish's; fed from the location thread (the `gps` provider; under
+     * the app's own mock the phone's position from NMEA instead, GNSS thread) and the dish poller (AUTO with the
+     * filter's honest accuracy). Its verdict is the filter's phone flag ([publishTrust]).
+     */
     private val trust = GpsTrust()
+    /** The phone's own position from its NMEA sentences while the mock replaces the `gps` fixes (GNSS thread only). */
+    private val nmeaFixes = NmeaFixes()
+    /** When an NMEA position last fed [trust] (monotonic ns, 0 = never). */
+    @Volatile private var lastNmeaFixNs = 0L
     /** Course of the Starlink-only source from its own fixes (no GNSS-derived data in that mode). */
     private var starlinkCourse = FixExtrapolator()
     private var starlinkLast: DishFix? = null
@@ -254,7 +264,7 @@ class NavService : Service() {
 
     private fun startGnss(full: Boolean) {
         gnss?.stop()
-        gnss = GnssCollector(this, ::submit, rates, phoneState, ::onReceived, onNmea = { m -> receiverClock.onNmea(m, System.currentTimeMillis()) }).also {
+        gnss = GnssCollector(this, ::submit, rates, phoneState, ::onReceived, onNmea = ::onNmea).also {
             it.start(full)
             // The Position page keeps the satellite counts and AGC current without a recording.
             if (!full && watching) it.setLive(true)
@@ -463,7 +473,11 @@ class NavService : Service() {
         }
         // The GPS check: the AUTO fix at the moment it describes (receipt minus its age), the Starlink-only one as it came.
         if (result.kind == DishCallKind.LOCATION_AUTO && autoPosition != null) {
-            trust.onAutoFix(fix.lat, fix.lon, fix.sigmaM, fix.horizontalSpeedMps, now - (autoPosition.ageS * 1e9).toLong())
+            // With the dish's honest accuracy: on a Starlink-only stretch the AUTO fix wanders 50-140 m from the truth
+            // while its own σ says 1-8 m, which would make a correct phone look "far from Starlink". The floor is the
+            // filter's (from the dish's state alone, not the phone flag), published twice a second: up to 0.5 s behind.
+            val sigmaM = maxOf(fix.sigmaM, Live.inertial.value.trustFloorM)
+            trust.onAutoFix(fix.lat, fix.lon, sigmaM, fix.horizontalSpeedMps, now - (autoPosition.ageS * 1e9).toLong())
         } else if (result.kind == DishCallKind.LOCATION_STARLINK) {
             trust.onStarlinkOnlyFix(fix.lat, fix.lon, now)
         }
@@ -628,12 +642,31 @@ class NavService : Service() {
         imu = PhoneSensors(this, if (wantRecord) ::submit else null, rates, tap).also { it.start(settings().imuRateHz) }
     }
 
+    /**
+     * Every NMEA sentence the chipset emits (GNSS thread): the receiver clock reads its time; while the app's own mock
+     * is on, its position feeds the GPS check in place of the `gps` provider's fixes, which are then the mock's own
+     * (the check would read MOCKED and the phone flag could never rise). With the mock off the provider's real fixes
+     * are the source and NMEA stays out: it would feed the same fix a second time.
+     */
+    private fun onNmea(sentence: String) {
+        receiverClock.onNmea(sentence, System.currentTimeMillis())
+        val now = SystemClock.elapsedRealtimeNanos()
+        val f = nmeaFixes.onNmea(sentence, now) ?: return
+        if (!mockEnabled) return
+        lastNmeaFixNs = now
+        trust.onGpsFix(f.lat, f.lon, f.accuracyM, f.atNs, isMock = false)
+    }
+
     /** A location some provider handed to this app: with the mock on, check it is the pushed one. */
     private fun onReceived(source: String, loc: Location) {
         if (source == "gps") {
             val at = loc.elapsedRealtimeNanos.takeIf { it > 0 } ?: SystemClock.elapsedRealtimeNanos()
             if (!loc.isMockFix) receiverClock.onGpsFix(loc.time, loc.elapsedRealtimeNanos, System.currentTimeMillis(), SystemClock.elapsedRealtimeNanos())
-            trust.onGpsFix(loc.latitude, loc.longitude, if (loc.hasAccuracy()) loc.accuracy.toDouble() else 0.0, at, isMock = loc.isMockFix)
+            // Under the app's own mock the provider's fixes are the mock's; while NMEA gives the phone's real position
+            // ([onNmea]) they stay out of the GPS check, where each would wipe it as a mock fix. When the chip's NMEA stops
+            // under the mock (device-specific) they go in again after [NMEA_FRESH_NS] and the verdict reads MOCKED as before.
+            val nmeaFeeds = loc.isMockFix && mockEnabled && SystemClock.elapsedRealtimeNanos() - lastNmeaFixNs < NMEA_FRESH_NS
+            if (!nmeaFeeds) trust.onGpsFix(loc.latitude, loc.longitude, if (loc.hasAccuracy()) loc.accuracy.toDouble() else 0.0, at, isMock = loc.isMockFix)
         }
         // The phone's own positions for the live map; with the mock on they are the mock's.
         if (!loc.isMockFix) {
@@ -898,8 +931,11 @@ class NavService : Service() {
         } else {
             null
         }
+        val verdict = trust.verdict(nowNs)
+        // The filter's phone flag (SUSPECT with the 85 m floor while the dish's GNSS is valid): a level, with every verdict.
+        inertial?.phoneSuspect(nowNs, verdict.state == GpsTrustState.DISTRUSTED)
         Live.trust.value = TrustUi(
-            verdict = trust.verdict(nowNs), gps = trust.latestGps, auto = trust.latestAuto, comparison = trust.lastComparison,
+            verdict = verdict, gps = trust.latestGps, auto = trust.latestAuto, comparison = trust.lastComparison,
             chosen = trust.choose(nowNs, servedFix), atNs = nowNs,
         )
     }
@@ -1053,6 +1089,8 @@ class NavService : Service() {
 
         /** A pushed position older than this no longer counts as what apps get (Center, Open in Maps). */
         private const val TRUST_SERVED_FRESH_S = 10.0
+        /** An NMEA position within this of now keeps the mock's own `gps` fixes out of the GPS check (NMEA comes at 1 Hz). */
+        private const val NMEA_FRESH_NS = 3_000_000_000L
 
         /** How long the mount setting must stay unchanged before the filter restarts with it. */
         private const val MOUNT_SETTLE_MS = 1500L

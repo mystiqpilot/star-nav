@@ -169,6 +169,13 @@ internal class InertialCore(
     /** The Starlink-only / suspect / unconverged floor in force at the last evaluation, m (0 = none). */
     var dishFloorM = 0.0
         private set
+    /**
+     * [dishFloorM] without the phone flag's term (Starlink-only, its decay, unconverged), m: what the owner's GPS check
+     * adds to the dish's σ when it compares the phone with the dish. The SUSPECT floor must not go in there: it would
+     * widen the very limit whose excess raised the flag, and the distrust would clear and return every 5 s.
+     */
+    var trustFloorM = 0.0
+        private set
     /** The re-anchor (σ per axis, m) waiting for the next AUTO fix after a switch back to dish GNSS; 0 = none. */
     private var pendingSwitchK = 0.0
     /** When the source last went back to GNSS: the floor decays from there. */
@@ -1067,6 +1074,7 @@ internal class InertialCore(
             else -> DishGnssRegime.TRUSTED
         }
         dishFloorM = dishFloor(t)
+        trustFloorM = dishFloor(t, phone = false)
         if (r == dishRegime) return
         log(t, "dish_regime", "from=${dishRegime.name} to=${r.name} cause=${if (r == DishGnssRegime.UNKNOWN) "stale" else cause}")
         dishRegime = r
@@ -1088,11 +1096,12 @@ internal class InertialCore(
      * phone is flagged, its decay after the switch back (from what the dwell could have built, [setSource]), the
      * unconverged floor whatever the regime; 0 = none. The source is the last known one (a stale status changes nothing
      * here); when the phone flag clears with dish GNSS valid the floor drops at once (the dish was fine all along: no decay).
+     * [phone] false leaves the phone flag out ([trustFloorM]).
      */
-    private fun dishFloor(t: Double): Double {
+    private fun dishFloor(t: Double, phone: Boolean = true): Double {
         if (!c.soEnabled) return 0.0
         var floor = when {
-            source == DishSource.STARLINK_ONLY || phoneSuspect -> soAcc()
+            source == DishSource.STARLINK_ONLY || (phone && phoneSuspect) -> soAcc()
             source == DishSource.GNSS -> decayedFloor(t)
             else -> 0.0
         }
@@ -1284,6 +1293,7 @@ internal class InertialCore(
             lastState = InertialState.TRACKING
             val floor = dishFloor(t)
             dishFloorM = floor
+            trustFloorM = dishFloor(t, phone = false)
             return Out(
                 r.first, r.second, InertialState.TRACKING, max(c.accFloorM, floor), Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, 0.0, 0.0, true,
                 dishRegime = dishRegime, dishFloorM = floor, stalled = stalled,
@@ -1324,6 +1334,7 @@ internal class InertialCore(
         // the dish's regime floor (§4) in quadrature with the filter's own radius: dead-reckoning growth adds to it
         val floor = dishFloor(t)
         dishFloorM = floor
+        trustFloorM = dishFloor(t, phone = false)
         if (floor > 0.0) accuracy = max(accuracy, hypot(floor, acc68))
         val dr = state == InertialState.DEAD_RECKONING || state == InertialState.NETWORK_AIDED
         // push stop on what would be told (the prototype's acc68, or more with the port-side rules)

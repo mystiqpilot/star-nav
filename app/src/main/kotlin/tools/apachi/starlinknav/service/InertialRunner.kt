@@ -33,7 +33,8 @@ import java.util.concurrent.TimeUnit
  * ([network]'s `unused`).
  *
  * The filter is fed every dish call while the service runs, also with the mock off or in another mode, so it is
- * warm (and has learned the mount) when Auto serves it; the IMU and network fixes only while it serves. All
+ * warm (and has learned the mount) when Auto serves it; the IMU and network fixes only while it serves. The phone
+ * flag ([phoneSuspect], the service's GPS check) reaches it every 0.5 s and is given again to a new filter. All
  * callbacks run on the inertial thread.
  */
 class InertialRunner(
@@ -76,6 +77,8 @@ class InertialRunner(
     private var state = InertialState.NO_OUTPUT
     private var stateSinceNs = 0L
     private var lastEstimate: InertialEstimate? = null
+    /** The phone flag last fed to the filter; a new filter starts with it. */
+    private var suspect = false
     // Counts since the service started; a new filter (mount change) adds its own to those of the old ones.
     private var openings = 0
     private var gateRejects = 0
@@ -111,6 +114,8 @@ class InertialRunner(
             persistedMountDeg = start.persisted,
             clock = clock,
         )
+        // The flag is a level: the new filter keeps it (applied with its first dish call).
+        if (suspect) nav.onPhoneGnssSuspect(SystemClock.elapsedRealtimeNanos(), true)
         lastEvalNs = 0L
         lastAutoNs = 0L
         lastFixNs = 0L
@@ -143,6 +148,16 @@ class InertialRunner(
 
     /** One accelerometer or gyroscope event as the sensor thread got it. */
     fun imu(sensorType: Int, tNs: Long, values: List<Float>) = post { nav.onImuSample(sensorType, tNs, values) }
+
+    /**
+     * The service's GPS check says at [nowNs] whether the phone's own GNSS is distrusted ([suspect]): a level, sent with
+     * every publish of the verdict (0.5 s). The filter reports SUSPECT (and the 85 m floor) while the dish's GNSS is
+     * valid and the flag is up; the filter itself does not change. A new filter ([reset]) starts with the last value.
+     */
+    fun phoneSuspect(nowNs: Long, suspect: Boolean) = post {
+        this.suspect = suspect
+        nav.onPhoneGnssSuspect(nowNs, suspect)
+    }
 
     /**
      * A real (not mocked) network-provider fix; the filter uses it only while dead reckoning. While it serves, what
@@ -211,7 +226,8 @@ class InertialRunner(
             mountDeg = deg, mountSource = source, mountSavedAtMs = if (source == MountSource.SAVED) start.savedAtMs else 0L,
             sinceNs = stateSinceNs, lastFixNs = lastFixNs, sidewaysOpenings = openings, watchSuspects = suspectsBefore + nav.watchSuspects,
             gateRejects = gateRejects, resets = resetsBefore + nav.resets, deadReckoningS = deadReckoningS,
-            errors = errors, lastError = lastError, atNs = now,
+            errors = errors, lastError = lastError,
+            dishRegime = nav.dishRegime, dishFloorM = nav.dishFloorM, trustFloorM = nav.trustFloorM, phoneSuspect = suspect, atNs = now,
         )
         // A task that was running when the service stopped must not bring back a stale state.
         synchronized(publishLock) { if (!stopped) Live.inertial.value = ui }

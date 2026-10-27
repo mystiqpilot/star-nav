@@ -97,8 +97,8 @@ class ReceiverClock {
             }
         }
 
-        /** `hhmmss` or `hhmmss.sss` to ms of the day. */
-        private fun timeOfDayMs(field: String): Long? {
+        /** `hhmmss` or `hhmmss.sss` to ms of the day (also what [NmeaFixes] keys an epoch on). */
+        internal fun timeOfDayMs(field: String): Long? {
             if (field.length < 6) return null
             val h = field.substring(0, 2).toIntOrNull() ?: return null
             val m = field.substring(2, 4).toIntOrNull() ?: return null
