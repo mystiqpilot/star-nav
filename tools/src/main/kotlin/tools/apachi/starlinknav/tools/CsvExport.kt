@@ -45,6 +45,9 @@ object CsvExport {
                 "t_mono_ns", "gps_valid", "gps_sats", "inhibit_gps", "att_state", "att_unc_deg", "tilt_deg",
                 "bore_az", "bore_el", "qw", "qx", "qy", "qz", "heading_x", "x_elev", "normal_az", "normal_el",
                 "moving_fast", "uptime_s", "class_of_service", "mobility", "pop_latency_ms", "drop_rate", "disablement",
+                // Satellite-slot and signal fields (appended 2026-10-27; old readers take the columns by name).
+                "slot_s", "signal_quality", "snr_ok", "snr_low", "outage_cause", "outage_start_ns", "outage_dur_ns",
+                "outage_switch", "pnt_state", "dl_bps", "ul_bps",
             ),
         )
         val diag = Table(outDir, "dish_diag", listOf("t_mono_ns", "t_wall_ms", "enabled", "lat", "lon", "alt", "unc_valid", "unc_m", "gps_time_s"))
@@ -97,6 +100,9 @@ object CsvExport {
                                 at?.headingDeg, at?.xElevationDeg, at?.normalAzimuthDeg, at?.normalElevationDeg,
                                 s.is_moving_fast_persisted, s.device_state?.uptime_s, s.class_of_service, s.mobility_class,
                                 s.pop_ping_latency_ms, s.pop_ping_drop_rate, s.disablement_code,
+                                s.seconds_to_first_nonempty_slot, s.signal_quality, s.is_snr_above_noise_floor, s.is_snr_persistently_low,
+                                s.outage?.cause, s.outage?.start_timestamp_ns, s.outage?.duration_ns, s.outage?.did_switch,
+                                g?.pnt_filter_convergence_state, s.downlink_throughput_bps, s.uplink_throughput_bps,
                             )
                         }
                         resp.dish_get_diagnostics?.location?.let { l ->
