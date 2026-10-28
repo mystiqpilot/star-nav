@@ -13,18 +13,17 @@ const translations = {
         eyebrow: "Застосунок для Android · відкритий код, GPL-3.0",
         tagline: "GPS, якому смартфон може довіряти, коли супутникову навігацію глушать або підміняють.",
         intro:
-            "Коли GNSS глушать або підміняють, GPS у смартфоні зависає, «пливе» або перестрибує на інший континент, а за ним і всі навігаційні застосунки. Антена Starlink на даху авто при цьому знає, де вона є. Star Nav читає положення антени через її локальну мережу й віддає його всім застосункам на смартфоні як GPS Android — через механізм фіктивного місцезнаходження.",
+            "Коли GNSS глушать або підміняють, GPS у смартфоні зависає, «пливе» або перестрибує на інший континент, а за ним і всі навігаційні застосунки. Антена Starlink на даху авто при цьому знає, де вона є. Star Nav віддає її положення всім застосункам на смартфоні як GPS Android. Екстрені служби можуть використовувати його у своїх автомобілях, щоб не втрачати навігацію під час підміни GPS.",
         download: "Завантажити",
         releasesHref: `${REPO}/releases/latest`,
         source: "Код на GitHub",
         howLink: "Як це працює",
-        releaseNote: "Безкоштовно, для Android 8.0 і новіших; на сторінці випуску сказано, який файл вибрати. Можна й зібрати з коду:",
+        releaseNote: "Безкоштовно. Потрібні Android 8.0 або новіший і тариф Starlink Priority. Можна й зібрати з коду:",
         buildLink: "як це зробити",
         buildHref: `${REPO}/blob/main/README.uk.md#збирання-з-коду`,
         heroAlt: "Сторінка «Позиція»: позиція антени Starlink і GPS смартфона",
         screensTitle: "Екрани",
-        screensLead:
-            "Унизу п'ять сторінок: Позиція, Імітація, Starlink, Сесії й Параметри. Знімки зроблено на емуляторі з тестовою антеною.",
+        screensLead: "Унизу п'ять сторінок. Знімки зроблено на емуляторі з тестовою антеною.",
         shotPosition: "Позиція",
         shotPositionText: "Позиція антени й GPS смартфона, кожна зі своїм станом",
         shotMock: "Імітація",
@@ -39,57 +38,60 @@ const translations = {
         shotSettingsText: "Тема, запис сесій і як довго їх зберігати",
         howTitle: "Як це працює",
         step1: "Антена на даху",
-        step1Text: "Антена Starlink на даху авто знає, де вона є, навіть коли GPS у смартфоні зависає чи перестрибує.",
+        step1Text: "Антена Starlink на даху авто знає, де вона є, хоч би що показував GPS смартфона.",
         step2: "Її локальна мережа",
-        step2Text:
-            "Смартфон під'єднаний до Wi-Fi антени. Star Nav читає положення антени з її локального API за адресою 192.168.100.1.",
+        step2Text: "Смартфон під'єднаний до Wi-Fi антени; Star Nav читає її положення з локального API.",
         step3: "Корекція на смартфоні",
         step3Text:
-            "Датчики руху смартфона й курс антени тримають авто на траєкторії, коли позиція антени «пливе» вбік, і ведуть позицію далі під час збоїв антени.",
+            "Датчики руху смартфона й курс антени тримають траєкторію, коли позиція антени «пливе» вбік або зникає.",
         step4: "Кожен застосунок",
         step4Text:
-            "Позиція надходить усім застосункам на смартфоні як GPS Android — через механізм фіктивного місцезнаходження.",
+            "Усі застосунки на смартфоні отримують позицію як GPS Android — через механізм фіктивного місцезнаходження.",
         featuresTitle: "Що вміє",
         fGps: "Положення антени як GPS смартфона",
         fGpsText:
-            "Передає найкраще положення антени в Android як провайдер GPS, зсунуте вперед за курсом на свій вік, щоб не відставати на трасі.",
+            "Найкраще положення антени йде в Android як провайдер GPS, зсунуте вперед на свій вік, щоб не відставати на трасі.",
         fInertial: "Інерціальна корекція",
         fInertialText:
-            "У режимі Авто тримає авто на траєкторії, коли позиція антени зсувається вбік, а під час збоїв антени веде позицію далі численням шляху й чесно каже застосункам, наскільки вона ще точна. Обчислюється лише на смартфоні.",
+            "У режимі Авто датчики руху смартфона тримають авто на траєкторії, коли позиція антени зсувається вбік, а під час збоїв антени ведуть позицію далі численням шляху й кажуть застосункам, наскільки вона ще точна.",
         fModes: "Один перемикач, три режими",
         fModesText:
-            "Авто (рекомендовано), Сирий (позиція антени як є) і Лише Starlink (джерело антени без GNSS). Також з плитки швидких налаштувань і з постійного сповіщення.",
+            "Авто (рекомендовано), Сирий (позиція антени як є) і Лише Starlink (джерело антени без GNSS). Також з плитки швидких налаштувань і зі сповіщення.",
         fCutoff: "Відсічки й перезапуски",
         fCutoffText:
-            "Помічає, коли антена вимикає місцезнаходження, бо авто «рухається занадто швидко для тарифу», і коли антена перезапускається та чому. Про відсічку ще й тихо сповіщає.",
+            "Показує, коли антена вимикає місцезнаходження («рухається занадто швидко для тарифу») або перезапускається, і чому.",
         fChecklist: "Перелік налаштувань",
-        fChecklistText:
-            "Усе, що потрібно смартфону: дозвіл на місцезнаходження, параметри розробника, програма для фіктивного місцезнаходження, батарея, Wi-Fi, доступ до місцезнаходження антени. Кожен пункт зі станом і кнопкою до потрібної сторінки налаштувань.",
+        fChecklistText: "Усе, що потрібно смартфону, зі станом і кнопкою до потрібної сторінки налаштувань.",
         fRecorder: "Запис і звіти про точність",
         fRecorderText:
-            "Записує відповіді антени, GNSS смартфона й датчики руху на смартфоні. Кожен запис має звіт: трек, розфарбований за похибкою, відсічки, завади й швидкість. Один перемикач повністю вимикає запис.",
+            "Записує антену, GNSS і датчики руху смартфона; кожна сесія має звіт із треком, розфарбованим за похибкою. Запис можна повністю вимкнути.",
         fExport: "Приватний експорт",
-        fExportText:
-            "Ви самі обираєте початок і кінець того, що покине смартфон; ідентифікатори антени й роутера видаляються.",
+        fExportText: "Ви обираєте, яка частина запису покине смартфон; ідентифікатори антени й роутера видаляються.",
         fStarlink: "Антена й роутер",
         fStarlinkText:
-            "Усе, що пропонує локальний API антени, простими словами: стан, сповіщення, графіки, карта перешкод, керування, а також стан роутера, пристрої й налаштування Wi-Fi. Кожна зміна спершу питає.",
+            "Усе, що пропонує локальний API антени, простими словами: стан, сповіщення, графіки, карта перешкод, керування, а також пристрої й Wi-Fi роутера. Кожна зміна спершу питає.",
         fLook: "Світла й темна тема, дві мови",
-        fLookText: "Іде за темою Android або за вашим вибором. Українська й англійська, готовий до інших мов.",
+        fLookText: "Як в Android або на ваш вибір. Українська й англійська.",
         reqTitle: "Вимоги",
         req1: "Android 8.0 або новіший.",
-        req2: "Антена Starlink, що повідомляє своє місцезнаходження в локальній мережі. Перевірено на Gen 3 Mini з тарифом Priority; інші антени можуть працювати, але не перевірені.",
+        reqPlan:
+            "Тариф Starlink Priority (Local Priority або Global Priority): з травня 2026 року Starlink віддає місцезнаходження антени в локальну мережу тільки на цих тарифах.",
+        reqPlanLink: "Що таке тарифи Priority (Starlink, англійською)",
+        req2:
+            "Антена, що повідомляє своє місцезнаходження в локальній мережі. Перевірено на Gen 3 Mini; інші антени можуть працювати, але не перевірені.",
         req3: "Смартфон під'єднаний до Wi-Fi антени (антена відповідає за адресою 192.168.100.1).",
-        req4: "Увімкнені параметри розробника, і Star Nav обрано програмою для фіктивного місцезнаходження; сторінка «Імітація» в застосунку проведе вас крок за кроком.",
+        req4:
+            "Увімкнені параметри розробника, і Star Nav обрано програмою для фіктивного місцезнаходження; сторінка «Імітація» проведе вас крок за кроком.",
         privacyTitle: "Приватність",
         privacy1:
-            "Жодних облікових записів, аналітики, реклами чи звітів про збої. Застосунок спілкується з антеною та роутером у вашій локальній мережі; тайли мап завантажує лише після того, як ви оберете підкладку, і тоді сервер тайлів бачить місцевість на екрані. Записи лишаються в приватному сховищі застосунку, доки ви самі не експортуєте частину запису.",
+            "Жодних облікових записів, аналітики, реклами чи звітів про збої. Застосунок спілкується з антеною та роутером у вашій локальній мережі, а із сервером тайлів — лише після того, як ви оберете підкладку мапи. Записи лишаються на смартфоні, доки ви самі не експортуєте частину.",
         privacy2:
-            "Єдиний виняток, вимкнений, доки ви його не натиснете: якщо антена відмовляється вмикати «місцезнаходження в локальній мережі» з смартфона, Star Nav може один раз провести вас у ваш власний обліковий запис Starlink на сторінці Starlink, щоб Starlink це ввімкнув; потім нічого не зберігається. Starlink не публікує для цього API (воно може перестати працювати, а умови Starlink можуть цього не дозволяти), і це на ваш власний ризик.",
+            "Єдиний виняток, лише за вашим натисканням: якщо антена відмовляється вмикати місцезнаходження в локальній мережі, Star Nav може один раз провести вас у ваш власний обліковий запис Starlink на сторінці Starlink, щоб Starlink це ввімкнув; нічого не зберігається. Starlink не публікує для цього API: воно може перестати працювати або суперечити умовам Starlink, тож це на ваш власний ризик.",
         privacyLink: "Повна політика приватності (англійською)",
         privacyPage: "Ця сторінка теж нічого не відстежує: без аналітики, сторонніх скриптів і шрифтів. Лише захист Cloudflare від ботів може ставити свій технічний файл cookie.",
         safetyTitle: "Безпека",
-        safety: "Використовуйте як допомогу, а не як єдиний засіб навігації. Положення антени може помилятися на десятки метрів при різкому гальмуванні чи під завадами і зникає під час відсічок за швидкістю; числення шляху інерціальної корекції з кожною секундою менш точне. Не керуйте застосунком під час водіння.",
+        safety:
+            "Використовуйте як допомогу, а не як єдиний засіб навігації. Положення антени може помилятися на десятки метрів при різкому гальмуванні чи під завадами і зникає під час відсічок; числення шляху з кожною секундою менш точне. Не керуйте застосунком під час водіння.",
         creditsTitle: "Подяки",
         creditStarDebug:
             "від ertong — інструмент для Starlink з відкритим кодом, створений для волонтерської ініціативи «Народний Starlink», — надихнув цей застосунок: багато з того, що Star Nav показує й робить з антеною та роутером, зроблено за його прикладом. Дякуємо, що розвиваєте його відкрито.",
@@ -118,18 +120,19 @@ const translations = {
         dark: "Dark theme",
         eyebrow: "Android app · open source, GPL-3.0",
         tagline: "A GPS your phone can trust when satellite navigation is jammed or spoofed.",
-        intro: "When GNSS is jammed or spoofed, a phone's GPS freezes, drifts or jumps to another continent, and every navigation app follows it. A Starlink dish on the car roof keeps knowing where it is. Star Nav reads the dish's position over its local network and serves it to all apps on the phone as Android's GPS, using Android's mock location provider.",
+        intro:
+            "When GNSS is jammed or spoofed, the phone's GPS freezes, drifts or jumps to another continent, and every navigation app follows it. A Starlink dish on the car roof still knows where it is. Star Nav gives its position to every app on the phone as Android's GPS. Emergency services can use it in their vehicles to keep navigating while GPS is spoofed.",
         download: "Download",
         releasesHref: `${REPO}/releases/latest`,
         source: "Source on GitHub",
         howLink: "How it works",
-        releaseNote: "Free, for Android 8.0 and newer; the release page says which file to pick. You can also build it from source:",
+        releaseNote:
+            "Free. Needs Android 8.0 or newer and a Starlink Priority plan. You can also build it from source:",
         buildLink: "how to",
         buildHref: `${REPO}#build-from-source`,
         heroAlt: "The Position page: the Starlink dish's position and the phone's GPS",
         screensTitle: "Screens",
-        screensLead:
-            "Five pages in the bottom bar: Position, Mock GPS, Starlink, Sessions and Settings. Screenshots taken on the emulator with a test dish.",
+        screensLead: "Five pages in the bottom bar. Screenshots taken on the emulator with a test dish.",
         shotPosition: "Position",
         shotPositionText: "The dish's position and the phone's GPS, each with its state",
         shotMock: "Mock GPS",
@@ -144,57 +147,59 @@ const translations = {
         shotSettingsText: "Theme, session logging and how long recordings are kept",
         howTitle: "How it works",
         step1: "Dish on the roof",
-        step1Text:
-            "A Starlink dish on the car roof keeps knowing where it is, even while the phone's GPS freezes or jumps.",
+        step1Text: "The Starlink dish on the car roof knows where it is, whatever the phone's GPS shows.",
         step2: "Its local network",
-        step2Text:
-            "The phone is on the dish's Wi-Fi. Star Nav reads the dish's position from its local API at 192.168.100.1.",
+        step2Text: "The phone is on the dish's Wi-Fi; Star Nav reads the dish's position from its local API.",
         step3: "Correction on the phone",
         step3Text:
-            "The phone's motion sensors and the dish heading hold the car on its track when the dish position drifts off to the side, and carry the position on through dish outages.",
+            "The phone's motion sensors and the dish heading hold the track when the dish position drifts sideways or drops out.",
         step4: "Every app",
-        step4Text:
-            "Every app on the phone gets the position as Android's GPS, through Android's mock location provider.",
+        step4Text: "Every app on the phone gets the position as Android's GPS, through the mock location provider.",
         featuresTitle: "What it does",
         fGps: "Dish position as the phone's GPS",
         fGpsText:
-            "Passes the dish's best position to Android as the GPS provider, moved forward along the course by its age so it keeps up at highway speed.",
+            "The dish's best position goes to Android as the GPS provider, moved forward by its age so it keeps up at highway speed.",
         fInertial: "Inertial correction",
         fInertialText:
-            "In Auto mode it holds the car on its track when the dish position drifts sideways, and carries the position on by dead reckoning through dish outages, telling apps honestly how accurate it still is. Computed on the phone only.",
+            "In Auto mode the phone's motion sensors hold the car on its track when the dish position drifts sideways, and carry it on by dead reckoning through dish outages, telling apps how accurate it still is.",
         fModes: "One switch, three modes",
         fModesText:
-            "Auto (recommended), Raw (the dish's position as reported) and Starlink only (the dish's GNSS-free source). Also from a Quick Settings tile and the permanent notification.",
+            "Auto (recommended), Raw (the dish's position as reported) and Starlink only (the dish's GNSS-free source). Also from a Quick Settings tile and the notification.",
         fCutoff: "Cut-offs and restarts",
         fCutoffText:
-            "Notices when the dish switches its location off because the car is “moving too fast for the plan”, and when the dish restarts and why. A cut-off also gets a silent heads-up alert.",
+            "Shows when the dish switches its location off (“moving too fast for the plan”) or restarts, and why.",
         fChecklist: "Setup checklist",
-        fChecklistText:
-            "Every setting the phone needs: location permission, developer options, mock location app, battery, Wi-Fi, dish location access. Each with its current state and a button to the exact settings page.",
+        fChecklistText: "Every setting the phone needs, with its state and a button to the exact settings page.",
         fRecorder: "Recorder and accuracy reports",
         fRecorderText:
-            "Records the dish's answers, the phone's GNSS and its motion sensors on the phone. Each recording gets a report: the track coloured by error, cut-offs, interference and speed. One switch turns logging off completely.",
+            "Records the dish, the phone's GNSS and motion sensors; each session gets a report with the track coloured by error. Logging can be switched off completely.",
         fExport: "Private export",
-        fExportText: "You choose the start and end of what leaves the phone; dish and router identifiers are removed.",
+        fExportText: "You choose which part of a recording leaves the phone; dish and router identifiers are removed.",
         fStarlink: "Dish and router",
         fStarlinkText:
-            "Everything the dish's local API offers, in plain words: state, alerts, charts, obstruction map, controls, and the router's status, devices and Wi-Fi settings. Every change asks first.",
+            "Everything the dish's local API offers, in plain words: state, alerts, charts, obstruction map, controls, and the router's devices and Wi-Fi. Every change asks first.",
         fLook: "Light and dark theme, two languages",
-        fLookText: "Follows Android's theme or your choice. English and Ukrainian, ready for more languages.",
+        fLookText: "Follows Android's theme or your choice. English and Ukrainian.",
         reqTitle: "Requirements",
         req1: "Android 8.0 or newer.",
-        req2: "A Starlink dish that reports its location on the local network. Tested with a Gen 3 Mini on a Priority plan; other dishes may work but are untested.",
+        reqPlan:
+            "A Starlink Priority plan (Local Priority or Global Priority): since May 2026 Starlink gives the dish's location to the local network only on these plans.",
+        reqPlanLink: "What Priority plans are (Starlink)",
+        req2:
+            "A dish that reports its location on the local network. Tested with a Gen 3 Mini; other dishes may work but are untested.",
         req3: "The phone connected to the dish's Wi-Fi (the dish answers at 192.168.100.1).",
-        req4: "Developer options enabled and Star Nav selected as the mock location app; the in-app Mock GPS page walks you through it.",
+        req4:
+            "Developer options on and Star Nav chosen as the mock location app; the Mock GPS page walks you through it.",
         privacyTitle: "Privacy",
         privacy1:
-            "No accounts, analytics, ads or crash reporting. The app talks to the dish and router on your local network; it downloads map tiles only after you pick a map background, and the tile server then sees the area on screen. Recordings stay in the app's private storage until you export a part of one yourself.",
+            "No accounts, analytics, ads or crash reporting. The app talks to the dish and router on your local network, and to a map tile server only after you pick a map background. Recordings stay on the phone until you export a part yourself.",
         privacy2:
-            "The only exception, off until you tap it: if the dish refuses to switch on “location on the local network” from the phone, Star Nav can sign you in to your own Starlink account, on Starlink's own page and once, so Starlink switches it on; nothing is kept afterwards. Starlink publishes no API for it (it may stop working, and its terms may not allow it) and it is at your own risk.",
+            "One opt-in exception: if the dish refuses to switch on its local-network location, Star Nav can sign you in once to your own Starlink account, on Starlink's page, so Starlink switches it on; nothing is kept. Starlink publishes no API for this: it may stop working or go against Starlink's terms, so it is at your own risk.",
         privacyLink: "The full privacy policy",
         privacyPage: "This page tracks nothing either: no analytics, third-party scripts or fonts. Only Cloudflare's bot protection may set its own technical cookie.",
         safetyTitle: "Safety",
-        safety: "Use it as an aid, not as your only means of navigation. The dish's position can be off by tens of metres in hard braking or under jamming, and it disappears during speed-policy cut-offs; the inertial correction's dead reckoning grows less accurate with every second. Do not operate the app while driving.",
+        safety:
+            "Use it as an aid, not as your only means of navigation. The dish's position can be off by tens of metres in hard braking or under jamming and disappears during cut-offs; dead reckoning loses accuracy every second. Do not operate the app while driving.",
         creditsTitle: "Credits",
         creditStarDebug:
             "by ertong, an open-source Starlink tool made for the volunteer initiative Narodnyi Starlink, inspired this app: much of what Star Nav shows and does with the dish and the router follows its lead. Thank you for building it in the open.",
