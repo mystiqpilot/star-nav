@@ -54,11 +54,11 @@ private const val USAGE = """slnav — starlink-nav desktop tools
                   [--deny-set-config true|false] [--allow-set-config] [--unimplemented a,b,...]
                   [--mount-offset -177] [--fault-sideways METRES --fault-at S [--fault-ramp S] [--fault-for S]]
                   [--router-port N] [--router-reboot-down 30] [--router-deny-set-config]
-                  [--router-unimplemented a,b,...]
-      Synthetic dish (gRPC-Web) circling in Kyiv at 12 m/s; its GPS source jumps to Lima
-      during spoofing windows. Its dish heading is the track plus --mount-offset (default -177°, a dish
-      facing backwards), its fixes are 0.45 s old like a Mini's, and --fault-sideways moves
-      the AUTO and diagnostics positions that many metres to the right of the track (negative = left) from
+                  [--router-unimplemented a,b,...] [--route FILE]
+      Synthetic dish (gRPC-Web) circling in Kyiv at 12 m/s, or with --route FILE driving that road there and back
+      (one "lat,lon" per line, # starts a comment); its GPS source jumps to Lima during spoofing windows.
+      Its dish heading is the track plus --mount-offset (default -177°, a dish facing backwards), its fixes
+      are 0.45 s old like a Mini's, and --fault-sideways moves the AUTO and diagnostics positions that many metres to the right of the track (negative = left) from
       --fault-at seconds after the start, reached over --fault-ramp seconds (0 = a step), for --fault-for
       seconds (0 = for good): the inertial filter's sideways correction can be watched on an emulator. --location-off starts with location sharing on the local
       network switched off: location_request_mode is NONE in dish_get_config and in the status config, and GetLocation is refused
@@ -344,6 +344,13 @@ private fun export(o: Opts) {
     println("wrote $out  records ${m.records}")
 }
 
+/** `--route FILE`: one "lat,lon" per line; blank lines and # comments are skipped. */
+private fun readRoute(file: File): List<Pair<Double, Double>> =
+    file.readLines().map { it.substringBefore('#').trim() }.filter { it.isNotEmpty() }.map { line ->
+        val (lat, lon) = line.split(',').map { it.trim().toDouble() }
+        lat to lon
+    }.also { require(it.size >= 2) { "--route needs at least two points" } }
+
 private fun fakeDish(o: Opts) {
     val deny = if (o.flag("--allow-set-config")) false else o.boolOption("--deny-set-config", default = true)
     val unimplemented = o.value("--unimplemented")?.split(',')?.flatMap { FakeArms.forToken(it) }?.toSet().orEmpty() +
@@ -367,6 +374,7 @@ private fun fakeDish(o: Opts) {
         faultAtS = o.value("--fault-at")?.toDouble() ?: 0.0,
         faultRampS = o.value("--fault-ramp")?.toDouble() ?: 0.0,
         faultForS = o.value("--fault-for")?.toDouble() ?: 0.0,
+        route = o.value("--route")?.let { readRoute(File(it)) }.orEmpty(),
     )
     val bind = o.value("--bind") ?: "127.0.0.1"
     val server = FakeDishServer(sim, bind, o.value("--port")?.toInt() ?: DishClient.WEB_PORT)

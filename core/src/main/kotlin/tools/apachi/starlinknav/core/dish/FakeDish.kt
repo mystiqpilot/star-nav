@@ -55,7 +55,9 @@ import tools.apachi.starlinknav.core.dish.proto.UXEvent
 import tools.apachi.starlinknav.core.dish.proto.UpdateResponse
 import java.io.IOException
 import java.util.Random
+import kotlin.math.atan2
 import kotlin.math.cos
+import kotlin.math.hypot
 import kotlin.math.sin
 
 /** A simulated device (dish or router): what the fake servers and [FakeTransport] serve. */
@@ -166,7 +168,8 @@ internal object FakeSupport {
 }
 
 /**
- * Synthetic dish for development without hardware: a car circling at constant speed. Its
+ * Synthetic dish for development without hardware: a car circling at constant speed, or driving a given
+ * [route] there and back. Its
  * answers follow what a real Gen 3 Mini (firmware 2026.05.13) returned on 2026-10-14: AUTO
  * is labelled STARLINK with sigma ~1.6 m, GPS reports a nominal 15 m, the Starlink-only
  * source ~100 m, the GNC_* / UT_INFO / EXTERNAL sources are "not supported", GNSS
@@ -190,6 +193,11 @@ class FakeDishSimulation(
     private val centerLon: Double = 30.5234,
     private val radiusM: Double = 400.0,
     private val speedMps: Double = 12.0,
+    /**
+     * A road to drive instead of the circle: lat/lon points, from the first to the last and back again (a U-turn at
+     * each end). Fewer than two points = the circle around [centerLat]/[centerLon]. `slnav fake-dish --route FILE`.
+     */
+    private val route: List<Pair<Double, Double>> = emptyList(),
     private val spoofEverySec: Long = 120,
     private val spoofForSec: Long = 30,
     private val tiltDeg: Double = 20.0,
@@ -281,15 +289,46 @@ class FakeDishSimulation(
 
     /** Where the car was [t] seconds after the start. */
     fun truthAt(t: Double): Truth {
+        val (lat, lon, heading) = if (legs.isNotEmpty()) alongRoute(speedMps * t) else onCircle(t)
+        val spoofed = spoofEverySec > 0 && (t.toLong() % spoofEverySec) >= spoofEverySec - spoofForSec
+        val disabled = disableEverySec > 0 && (t.toLong() % disableEverySec) >= disableEverySec - disableForSec
+        return Truth(lat, lon, heading, spoofed, t, disabled)
+    }
+
+    private fun onCircle(t: Double): Triple<Double, Double, Double> {
         val angle = speedMps * t / radiusM
         val north = radiusM * sin(angle)
         val east = radiusM * cos(angle)
         val lat = centerLat + north / 110_540.0
         val lon = centerLon + east / (111_320.0 * cos(Math.toRadians(centerLat)))
-        val heading = (Math.toDegrees(-angle) + 360.0) % 360.0
-        val spoofed = spoofEverySec > 0 && (t.toLong() % spoofEverySec) >= spoofEverySec - spoofForSec
-        val disabled = disableEverySec > 0 && (t.toLong() % disableEverySec) >= disableEverySec - disableForSec
-        return Truth(lat, lon, heading, spoofed, t, disabled)
+        return Triple(lat, lon, (Math.toDegrees(-angle) + 360.0) % 360.0)
+    }
+
+    /** Each leg of [route] as metres north, metres east and its length (flat earth: a route is a few km). */
+    private val legs: List<DoubleArray> = if (route.size < 2) emptyList() else route.zipWithNext { (lat1, lon1), (lat2, lon2) ->
+        val north = (lat2 - lat1) * 110_540.0
+        val east = (lon2 - lon1) * 111_320.0 * cos(Math.toRadians(lat1))
+        doubleArrayOf(north, east, hypot(north, east))
+    }
+    private val routeM = legs.sumOf { it[2] }
+
+    /** The point [s] metres along [route] driven to its end and back again, and the track there. */
+    private fun alongRoute(s: Double): Triple<Double, Double, Double> {
+        var d = s % (2 * routeM)
+        val back = d > routeM
+        if (back) d = 2 * routeM - d
+        var i = 0
+        while (i < legs.size - 1 && d > legs[i][2]) {
+            d -= legs[i][2]
+            i++
+        }
+        val (north, east, length) = legs[i]
+        val f = if (length > 0) minOf(d / length, 1.0) else 0.0
+        val (lat0, lon0) = route[i]
+        val lat = lat0 + f * north / 110_540.0
+        val lon = lon0 + f * east / (111_320.0 * cos(Math.toRadians(lat0)))
+        val track = Math.toDegrees(atan2(east, north)) + if (back) 180.0 else 0.0
+        return Triple(lat, lon, (track % 360.0 + 360.0) % 360.0)
     }
 
     /** The dish heading (body +x) for a car on [trackDeg]. */

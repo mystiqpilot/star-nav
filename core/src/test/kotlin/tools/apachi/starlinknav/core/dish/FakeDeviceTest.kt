@@ -27,6 +27,18 @@ class FakeDeviceTest {
 
     private fun client(sim: FakeDevice) = DishClient(FakeTransport(sim))
 
+    @Test
+    fun aRouteIsDrivenToItsEndAndBack() {
+        // 110.54 m north, then 78.72 m east (0.001° of longitude at 45°): 189.26 m at 10 m/s.
+        val sim = FakeDishSimulation(route = listOf(45.0 to 34.0, 45.001 to 34.0, 45.001 to 34.001), speedMps = 10.0, spoofEverySec = 0, startNs = 0, clock = { 0L })
+        sim.truthAt(0.0).let { assertEquals(45.0, it.lat, 1e-9); assertEquals(34.0, it.lon, 1e-9); assertEquals(0.0, it.headingDeg, 1e-6) }
+        sim.truthAt(5.527).let { assertEquals(45.0005, it.lat, 1e-7); assertEquals(34.0, it.lon, 1e-9) }
+        sim.truthAt(15.0).let { assertEquals(45.001, it.lat, 1e-9); assertEquals(34.0005, it.lon, 1e-5); assertEquals(90.0, it.headingDeg, 1e-6) }
+        sim.truthAt(18.92).let { assertEquals(45.001, it.lat, 1e-9); assertEquals(34.001, it.lon, 1e-6) }
+        sim.truthAt(25.0).let { assertEquals(45.001, it.lat, 1e-9); assertEquals(270.0, it.headingDeg, 1e-6) }
+        sim.truthAt(37.8).let { assertEquals(45.0, it.lat, 1e-5); assertEquals(34.0, it.lon, 1e-9); assertEquals(180.0, it.headingDeg, 1e-6) }
+    }
+
     // ---- every new query answers on the dish, with the response tag the dump gives
 
     @Test
