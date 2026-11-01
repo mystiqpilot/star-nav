@@ -36,7 +36,7 @@ jobs:
         with:
           packages: "platforms;android-37.2 build-tools;36.1.0"
       # No cache: a release is built from the tag alone.
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@v6
         with:
           cache-disabled: true
       - name: Keystore
