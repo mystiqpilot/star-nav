@@ -1,0 +1,1 @@
+A stored mount offset that is wrong by any angle is now corrected while driving (until now only one about 180° off was flipped); one about 90° off made Auto hold positions far beside the road. The recording switch on the Sessions page is never greyed out, and a recording started by the mock GPS no longer shows as stopped after a quick off and on.

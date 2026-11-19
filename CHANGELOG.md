@@ -6,6 +6,8 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-11-19
+
 ### Fixed
 - A stored mount offset that is wrong by any angle is now corrected while driving. Until now only one that was about
   180° off (the dish turned round) was flipped. One about 90° off made the dish seem to drive sideways, so Auto held
@@ -17,6 +19,10 @@ All notable changes to this project are listed here. The format follows
   starts the recording once it is granted. While the last recording is still being saved, a tap starts the next one.
 - After the mock GPS was switched off and on again within a second or two, the recording it had started could show as
   stopped while it ran, and the switch then did nothing.
+
+### Added
+- `slnav fake-dish --route FILE` drives the fake dish along a road (one "lat,lon" per line) there and back instead of
+  circling.
 
 ## [0.6.0] - 2026-10-27
 
