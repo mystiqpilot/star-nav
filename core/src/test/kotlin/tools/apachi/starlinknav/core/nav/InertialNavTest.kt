@@ -228,6 +228,41 @@ class InertialNavTest {
     }
 
     @Test
+    fun aMountOffsetStoredAQuarterTurnOffIsTurnedBack() {
+        // The stored −89° is 88° from the real −177° (a tester's drive 2026-11-18: stored +179.6°, real about +92°). It
+        // does not read as reversing, so the 180° flip never came: the dish velocity read as sideways, the dish error
+        // stayed open and the filter dead-reckoned away from AUTO for the whole drive. Straight at 15 m/s; AUTO gap
+        // (receipts) 70-85 s.
+        val synth = Synth(100.0, autoOk = { it < 70.0 || it >= 85.0 })
+        val ev = ArrayList<Triple<Double, String, String>>()
+        val all = synth.run(InertialConfig.SHIPPED, events = ev, storedMount = -89.0)
+        val turn = ev.single { it.second == "mount_turned" }
+        assertTrue(turn.first < 40.0, "turned early: $turn")
+        val to = turn.third.substringAfter("to=").substringBefore(' ').toDouble()
+        assertTrue(abs(wrapDeg(to + 177.0)) < 3.0, turn.third)
+        assertTrue(ev.none { it.second == "mount_flipped" }, "$ev")
+        // AUTO is taken back at once and the gap is dead-reckoned along the real course
+        val after = all.filter { it.t in (turn.first + 3.0)..70.0 }
+        assertTrue(after.isNotEmpty() && after.all { it.out != null && it.err < 5.0 }, "after the turn: max ${after.maxOf { it.err }}")
+        val gap = all.filter { it.t in 73.0..85.0 }
+        assertTrue(gap.isNotEmpty())
+        for (s in gap) {
+            val o = assertNotNull(s.out, "served at ${s.t}")
+            assertTrue(s.err < 20.0, "driven on at ${s.t}: ${s.err} m")
+            assertTrue(s.err <= o.accuracyM, "honest at ${s.t}: error ${s.err} vs ${o.accuracyM}")
+        }
+        // a right offset never turns, on a straight road or a winding one, nor does one 15° off (the calibrator's job)
+        for (head in listOf({ _: Double -> 30.0 }, { t: Double -> 30.0 + 60.0 * sin(t / 8.0) })) {
+            val ok = Synth(100.0, head = head, autoOk = { it < 70.0 || it >= 85.0 })
+            for (stored in listOf(-177.0, -162.0)) {
+                val ev2 = ArrayList<Triple<Double, String, String>>()
+                ok.run(InertialConfig.SHIPPED, events = ev2, storedMount = stored)
+                assertTrue(ev2.none { it.second == "mount_turned" || it.second == "mount_flipped" }, "stored $stored: $ev2")
+            }
+        }
+    }
+
+    @Test
     fun stoppingThenDrivingOffInAGapTakesAutoBack() {
         // stopped from 25 s, AUTO lost at 30 s, the car drives off at 35-40 s (no forward axis learned, so the
         // filter cannot see it), AUTO back at 70 s some 300 m further on

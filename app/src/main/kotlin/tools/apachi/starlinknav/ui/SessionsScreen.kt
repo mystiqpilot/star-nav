@@ -5,6 +5,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.text.format.DateFormat
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -81,11 +83,21 @@ fun SessionsScreen(onOpenSettings: () -> Unit) {
 private fun RecordingCard(rec: RecorderUi, recordWithMock: Boolean) {
     val ctx = LocalContext.current
     val now = rememberMonoNow()
-    val hasLocation = ContextCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    fun granted() = ContextCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    val hasLocation = granted()
+    // Without the permission a tap asks for it and records once it is granted.
+    val askLocation = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        if (granted()) NavService.record(ctx, true)
+    }
     Section(stringResource(R.string.status_recorder_title)) {
         Row(Modifier.heightIn(min = Space.touch), verticalAlignment = Alignment.CenterVertically) {
             Text(stringResource(R.string.home_record_drive), Modifier.weight(1f))
-            Switch(checked = rec.running, enabled = hasLocation && !rec.stopping, onCheckedChange = { NavService.record(ctx, it) })
+            // Always usable (user, 2026-11-19: "Recordings should be available always"): never greyed out, also while
+            // the last recording is still being closed (a new one starts at once) and before the permission is granted.
+            Switch(checked = rec.running, onCheckedChange = { on ->
+                if (on && !granted()) askLocation.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+                else NavService.record(ctx, on)
+            })
         }
         if (rec.running) {
             // `now` ticks twice a second so the time keeps running.

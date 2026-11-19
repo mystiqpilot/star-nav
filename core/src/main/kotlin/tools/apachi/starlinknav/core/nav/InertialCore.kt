@@ -118,6 +118,9 @@ internal class InertialCore(
         private set
     /** Seconds of AUTO chords at [InertialConfig.flipSpeed] or more while "reversing" (see [flipMount]). */
     private var reverseFastS = 0.0
+    /** The mount-turn test's last [InertialConfig.flipS] s of fast AUTO chords: (signed angle off the car heading °, s). */
+    private val turnVotes = ArrayDeque<Pair<Double, Double>>()
+    private var turnLastT = -1e9
     private var reverseVotes = 0
     private var holdActive = false
     /** The held position is the position at this time (the last fix's receipt, or its fix time while reversing). */
@@ -624,6 +627,21 @@ internal class InertialCore(
                     }
                 }
             }
+            // ---- a mount offset far off that does not read as reversing (port-side): fast chords at a steady angle off
+            // the car heading. Also while the dish error is open: that hold is what the wrong offset causes. The offset
+            // turned, AUTO is taken back at once (RETURN_REF: the dish error goes, the position re-anchors on AUTO).
+            if (c.mountTurn && window == null && dt > 0.3 && dt <= 2.5 &&
+                mountTurnVote(t, e - prev.e, n - prev.n, dt, hs, prev.hs, 0.5 * (tf + prev.tf))
+            ) {
+                verdict = Verdict.RETURN_REF
+                det.reset()
+                watch?.reset()
+                trigSign = 0
+                endRef(t, null)
+                mirrorF0 = Double.NaN
+                nReject = 0
+                lastHoldEnd = t
+            }
         }
         // ---- forward-axis epoch fit (trusted fixes only)
         val trusted = bMode == B_TIGHT && verdict == Verdict.NONE && t - lastTrustBreak > 10.0
@@ -719,6 +737,49 @@ internal class InertialCore(
         reverseVotes = 0
         reverseFastS = 0.0
         if (ekf.ok) ekf.flipHeading()
+        lastTrustBreak = t
+    }
+
+    /**
+     * One AUTO chord for the mount-turn test ([InertialConfig.mountTurn]); true when it turned the offset. Chords count at
+     * [InertialConfig.flipSpeed] or more when they move at about the dish speed and the dish heading is known; one past
+     * [InertialConfig.reverseOnDeg] is the reversing test's (and the flip's); 30 s without a counted chord start afresh.
+     * Over the last [InertialConfig.flipS] s the median angle must be [InertialConfig.turnMinDeg] or more with
+     * [InertialConfig.turnShare] of the chords within [InertialConfig.turnSpreadDeg] of it (chords along the heading
+     * count too and keep a good offset's median near 0°).
+     */
+    private fun mountTurnVote(t: Double, de: Double, dn: Double, dt: Double, hs: Double, hsPrev: Double, tMid: Double): Boolean {
+        val hsMean = 0.5 * (hs + hsPrev)
+        if (hsMean < c.flipSpeed || minOf(hs, hsPrev) < c.reverseMinChordSpeed) return false
+        if (abs(hypot(de, dn) / dt - hsMean) > max(1.5, 0.3 * hsMean)) return false
+        val psi = headAt(tMid)?.first ?: return false
+        val off = wrap(atan2(de, dn) - psi) * R2D
+        if (abs(off) > c.reverseOnDeg) return false
+        if (t - turnLastT > 30.0) turnVotes.clear()
+        turnLastT = t
+        turnVotes.addLast(off to dt)
+        var span = turnVotes.sumOf { it.second }
+        while (turnVotes.size > 1 && span - turnVotes.first().second >= c.flipS) span -= turnVotes.removeFirst().second
+        if (span < c.flipS - 1e-9) return false
+        val offs = turnVotes.map { it.first }
+        val med = MountCalibrator.median(offs)
+        if (abs(med) < c.turnMinDeg) return false
+        if (offs.count { abs(it - med) <= c.turnSpreadDeg } < c.turnShare * offs.size) return false
+        turnMount(t, med)
+        return true
+    }
+
+    /**
+     * The mount offset in use is [offDeg] wrong ([InertialConfig.mountTurn]): turn it and the filter's heading (with the
+     * dish headings kept in the ring), drop "reversing" and the votes, and give the calibrator a fresh start.
+     */
+    private fun turnMount(t: Double, offDeg: Double) {
+        mount.turn(t, offDeg)
+        reversing = false
+        reverseVotes = 0
+        reverseFastS = 0.0
+        turnVotes.clear()
+        if (ekf.ok) ekf.rotateHeading(offDeg * D2R)
         lastTrustBreak = t
     }
 

@@ -6,6 +6,18 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+- A stored mount offset that is wrong by any angle is now corrected while driving. Until now only one that was about
+  180° off (the dish turned round) was flipped. One about 90° off made the dish seem to drive sideways, so Auto held
+  positions hundreds of metres to kilometres beside the road for a whole drive. After 20 s of driving at 8 m/s or more
+  with the dish's track at a steady angle to its heading, the offset turns by that angle and the position goes back to
+  the dish's at once. The new value is saved, and the next value learned while driving replaces it even when it
+  differs by less than 5°.
+- The recording switch on the Sessions page is never greyed out. Without the location permission a tap asks for it and
+  starts the recording once it is granted. While the last recording is still being saved, a tap starts the next one.
+- After the mock GPS was switched off and on again within a second or two, the recording it had started could show as
+  stopped while it ran, and the switch then did nothing.
+
 ## [0.6.0] - 2026-10-27
 
 ### Added

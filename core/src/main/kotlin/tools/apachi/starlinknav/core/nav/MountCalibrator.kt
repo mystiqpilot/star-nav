@@ -33,6 +33,14 @@ internal class MountCalibrator(
     private var reported: Double? = persisted
 
     /**
+     * The value in use came from [flip] or [turn]: right to a few degrees only (the turn takes the chords' median angle),
+     * so the learned value replaces it as soon as it is precise, as if nothing had been stored. Tester's drive 2026-11-18:
+     * turned to +89.7°, learned +91.9°, and the 2.2° under the relearn threshold left the dead reckoning drifting
+     * sideways 0.6 m/s.
+     */
+    private var provisional = false
+
+    /**
      * The value in use is 180° wrong (the car "reversed" for too long and too fast, [InertialConfig.mountFlip]): turn it
      * round, forget the samples taken against the wrong value, and report the corrected value as learned so the app
      * saves it.
@@ -43,6 +51,25 @@ internal class MountCalibrator(
         log(t, "mount_flipped", "from=%+.1f to=%+.1f".format(Locale.ROOT, cur, v))
         value = v
         learned = v
+        provisional = true
+        samples.clear()
+        lastSampleT = -1e9
+        reported = v
+        onLearned(v)
+    }
+
+    /**
+     * The value in use is [offDeg] wrong the other way (the car drove [offDeg] off its heading for too long and too
+     * fast, [InertialConfig.mountTurn]): the car course is heading + [offDeg], so the offset becomes value − [offDeg].
+     * Samples taken against the wrong value go, and the corrected value is reported as learned so the app saves it.
+     */
+    fun turn(t: Double, offDeg: Double) {
+        val cur = value ?: return
+        val v = wrapDeg(cur - offDeg)
+        log(t, "mount_turned", "from=%+.1f to=%+.1f by=%+.1f".format(Locale.ROOT, cur, v, -offDeg))
+        value = v
+        learned = v
+        provisional = true
         samples.clear()
         lastSampleT = -1e9
         reported = v
@@ -109,7 +136,7 @@ internal class MountCalibrator(
                 } else if (samples.size >= c.mntRelearnN && abs(wrapDeg(v - cur)) > c.mntRelearnDiffDeg) {
                     log(t, "mount_relearned", "from=%+.1f to=%+.1f".format(Locale.ROOT, cur, v))
                     value = v
-                } else if (stored == null) {
+                } else if (stored == null || provisional) {
                     value = v
                 }
                 val r = reported

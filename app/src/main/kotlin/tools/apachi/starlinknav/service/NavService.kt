@@ -161,6 +161,8 @@ class NavService : Service() {
     private var lastNotificationText: String? = null
     /** The running recording was started by switching the mock on, so it ends with the mock. */
     private var recordingFollowsMock = false
+    /** Recordings stopped whose file is still being closed and indexed (main thread). */
+    private var closing = 0
     /** The start id of the last command handled (main thread): [stopIfIdle] stops only if no later one is queued. */
     private var lastStartId = 0
 
@@ -315,11 +317,17 @@ class NavService : Service() {
         sessionId = null
         updateImu()
         if (running) startGnss(full = false)
+        closing++
         scope.launch {
             w.close()
             withContext(Dispatchers.IO) { runCatching { Sessions.writeIndex(w.file, Sessions.scan(w.file)) } }
-            Live.recorder.value = RecorderUi()
             withContext(Dispatchers.Main) {
+                closing--
+                // A recording started while this one was closing (the mock off and on again within seconds, a tap on the
+                // switch) owns the state now. Clearing it here showed "not recording" while that one ran, and the switch
+                // then did nothing: startRecording() returns while a writer exists (tester's drive 2026-11-18).
+                if (writer == null) Live.recorder.value = RecorderUi(stopping = closing > 0)
+                else Live.recorder.update { it.copy(stopping = false) }
                 updateNotification(force = true)
                 stopIfIdle()
             }

@@ -275,7 +275,14 @@ data class InertialConfig(
      * change with `copy(so = so.copy(...))`.
      */
     val so: StarlinkOnlyConfig = StarlinkOnlyConfig(),
+    /** The mount-turn test (port-side, 2026-11-19; off in [CFG2]), a nested group for the same reason as [so]. */
+    val turn: MountTurnConfig = MountTurnConfig(),
 ) {
+    val mountTurn: Boolean get() = turn.mountTurn
+    val turnMinDeg: Double get() = turn.turnMinDeg
+    val turnSpreadDeg: Double get() = turn.turnSpreadDeg
+    val turnShare: Double get() = turn.turnShare
+
     // [so], read as if its parameters were this class's own (what the filter's code and the KDoc of [StarlinkOnlyConfig] use)
     val soEnabled: Boolean get() = so.soEnabled
     val soAccM: Double get() = so.soAccM
@@ -321,12 +328,30 @@ data class InertialConfig(
             holdSig = false, returnRule = false, leakGuard = false,
             mntLongChordS = 6.0, mntSeDeg = null, mntSkipReversing = false, gateHoldNeedsMount = false, mountFlip = false,
             so = StarlinkOnlyConfig(soEnabled = false, slotAware = false, stallDetector = false, diagFallback = false),
+            turn = MountTurnConfig(mountTurn = false),
         )
 
         /** CFG2 with the shipped detector (h = 9 m, hold 25 s): what `nav2.py` runs for the port comparison. */
         val CFG2_H9 = CFG2.copy(cusumH = 9.0, holdMax = 25.0)
     }
 }
+
+/**
+ * A car does not drive sideways either: AUTO chords [turnMinDeg]..[InertialConfig.reverseOnDeg] off the car heading for
+ * [InertialConfig.flipS] s at [InertialConfig.flipSpeed] m/s or more, at a steady angle ([turnShare] of them within
+ * [turnSpreadDeg] of their median), mean the mount offset in use is that far wrong. Tester's drive 2026-11-18: a stored
+ * +179.6° against a real one of about +92°; the chords ran ~90° off, the sideways detector held the dish for 13 min, the
+ * calibrator learned nothing during the hold, the flip (only ~180°) never fired, and Auto served 0.4-2.7 km off. The
+ * offset and the filter's heading are turned by the chords' median angle, the corrected value is reported as learned,
+ * the hold the wrong offset caused ends and the position is re-anchored on AUTO. Votes also count while the dish error
+ * is open (a constant sideways offset leaves the chords parallel to the track; a steady angle at speed is the mount).
+ */
+data class MountTurnConfig(
+    val mountTurn: Boolean = true,
+    val turnMinDeg: Double = 30.0,
+    val turnSpreadDeg: Double = 20.0,
+    val turnShare: Double = 0.8,
+)
 
 /**
  * The dish's GNSS regime (port-side, 2026-10-27; off in [InertialConfig.CFG2]): Starlink-only accuracy, the switch back,

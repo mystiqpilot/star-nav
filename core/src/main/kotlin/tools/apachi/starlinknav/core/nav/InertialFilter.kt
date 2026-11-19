@@ -417,6 +417,25 @@ internal class Ekf(private val c: InertialConfig) {
         for (e in buf) e.x[3] = wrap(e.x[3] + Math.PI)
     }
 
+    /**
+     * Turns the car heading by [d] rad in the state, the whole ring and the dish-heading measurements kept in it (the
+     * mount offset was wrong by [d]): a later insert replays the ring, and a stored heading still made with the old
+     * offset would pull the turned heading straight back.
+     */
+    fun rotateHeading(d: Double) {
+        x[3] = wrap(x[3] + d)
+        fun turned(ms: List<Meas>) {
+            for (m in ms) if (m.parts.any { it is Part.Head }) {
+                m.parts = m.parts.map { if (it is Part.Head) Part.Head(wrap(it.z + d), it.r) else it }
+            }
+        }
+        for (e in buf) {
+            e.x[3] = wrap(e.x[3] + d)
+            turned(e.meas)
+        }
+        turned(pending)
+    }
+
     /** Moves every stored position by the map [f] (re-centring the local plane). */
     fun remap(f: (Double, Double) -> Pair<Double, Double>) {
         fun mv(a: DoubleArray) {
